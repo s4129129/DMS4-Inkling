@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "breakpoints": {
+    "mobileMaxWidthPx": 1013,
+    "tabletMaxWidthPx": 1024,
+    "laptopMinWidthPx": 1025
+  },
+  "themes": {
+    "defaultThemeId": "comic",
+    "legacyDefaultThemeId": "vintage",
+    "comic": {
+      "lightMain1": "#E5E5E5",
+      "darkMain1": "#171717",
+      "pageAndInkChip": "neutral",
+      "quillAndPremiumChip": "#FFCF01",
+      "premiumButtonStops": ["#FFCF01", "#FFCF01", "#DE2915"]
+    }
+  },
+  "landing": {
+    "palette": {
+      "blue": "#025BFE",
+      "blueDeep": "#003ABA",
+      "ink": "#000000",
+      "paper": "#F7F7F7",
+      "yellow": "#FFCF01",
+      "gray": "#9C9C9C",
+      "red": "#DE2915"
+    },
+    "frame": {
+      "borderPx": 4,
+      "navMinHeightRem": 3.95,
+      "shellHeight": "100svh",
+      "heroMinHeightFormula": "strict grid remainder, min-height 0"
+    },
+    "headline": {
+      "fontClampRem": [3.15, "min(12.2vw, 15svh)", 10.8],
+      "lineHeight": 0.78,
+      "maxWidthCh": 14
+    },
+    "comicRack": {
+      "minHeight": 0,
+      "coverWidthClampRem": [6.8, "min(15.4vw, 21svh)", 14.2],
+      "featuredCoverWidthClampRem": [7.4, "min(17vw, 23svh)", 15.8],
+      "coverAspectRatio": 0.72
+    }
+  },
+  "dashboard": {
+    "metaStrip": {
+      "heightRem": 4.875,
+      "paddingLaptopRem": [0.45, 0.78],
+      "paddingMobileRem": [0.4, 0.62],
+      "avatarButtonPx": 44,
+      "avatarRadiusPx": 11,
+      "displayNameFontRem": 0.73,
+      "brandFontRem": 0.96
+    },
+    "sidebar": {
+      "defaultWidthPx": 300,
+      "minWidthPx": 220,
+      "maxWidthPx": 430,
+      "gutterRem": 1,
+      "paddingLaptopRem": [1.5, 1.15, 0.82, 1.15],
+      "bottomBarInsetMobileRem": 0.75,
+      "bottomBarRadiusPx": 18,
+      "bottomBarItemHeightRem": 3.05,
+      "resizeHandleWidthRem": 0.92,
+      "navItemMinHeightPx": 58,
+      "toolButtonRem": 2.75,
+      "iconDefaultPx": 24
+    },
+    "readingTabs": {
+      "heightRem": 2.28,
+      "gapRem": 0.32,
+      "topRadiusPx": 13,
+      "bottomRadiusPx": 0,
+      "labelFontRem": 0.78,
+      "labelMaxWidthPx": 180,
+      "labelMaxWidthMobilePx": 170,
+      "closeButtonRem": 1.74
+    }
+  },
+  "avatarPicker": {
+    "panelWidthPx": 480,
+    "panelPaddingRem": [1.2, 1.5, 1.3, 1.5],
+    "panelRadiusPx": 12,
+    "titleFontRem": 1.2,
+    "tileMinHeightRem": 13.2,
+    "tileGapRem": 0.54,
+    "tileRadiusPx": 8,
+    "recentAvatarRem": 3.4,
+    "recentGapRem": 0.48,
+    "statusFontRem": 0.84
+  },
+  "calendar": {
+    "sideRail": {
+      "defaultWidthPx": 270,
+      "minWidthPx": 220,
+      "maxWidthPx": 420,
+      "paddingRem": 0.9,
+      "gapRem": 0.82,
+      "resizeHandlePx": 10
+    },
+    "mainPanel": {
+      "paddingRem": 0.9,
+      "gapRem": 0.72,
+      "mobileMinHeightVar": "--adaptive-calendar-main-min-height-phone",
+      "tabletMinHeightVar": "--adaptive-calendar-main-min-height-medium"
+    },
+    "miniCards": {
+      "radiusPx": 8,
+      "paddingRem": 0.7,
+      "headingFontRem": 0.94,
+      "bodyFontRem": 0.82
+    }
+  },
+  "adaptability": {
+    "laptop": {
+      "dashboardLayout": "fixed resizable sidebar plus fluid content",
+      "calendarLayout": "resizable side rail, handle, fluid calendar",
+      "readingTabs": "single horizontal tab row"
+    },
+    "mobile": {
+      "dashboardLayout": "single column with non-resizable sidebar",
+      "calendarLayout": "panel picker with hidden resize handle",
+      "readingTabs": "horizontal scroll with smaller tab labels"
+    }
+  }
+}

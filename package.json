@@ -1,0 +1,49 @@
+{
+  "name": "react-template",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "set VITE_DEV_HTTPS=1&& set VITE_DEV_HOST=localhost&& set VITE_DEV_PORT=5173&& vite",
+    "dev:http": "vite --host 127.0.0.1 --port 5173",
+    "dev:https": "npm run dev",
+    "build": "vite build",
+    "build:prod": "vite build",
+    "package:namecheap": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"if (Test-Path deploy-namecheap.zip) { Remove-Item deploy-namecheap.zip -Force }; Get-ChildItem -Path dist -Force | Compress-Archive -DestinationPath deploy-namecheap.zip -Force\"",
+    "package:namecheap:app": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-namecheap-app.ps1",
+    "package:namecheap:books": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-namecheap-book-assets.ps1",
+    "ship:namecheap": "npm run build:prod && npm run package:namecheap",
+    "ship:namecheap:split": "npm run build:prod && npm run package:namecheap:app && npm run package:namecheap:books",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "convex:dev": "npx convex dev",
+    "convex:deploy": "npx convex deploy"
+  },
+  "dependencies": {
+    "@auth/core": "^0.37.4",
+    "@convex-dev/auth": "^0.0.91",
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/list": "^6.1.20",
+    "@fullcalendar/react": "^6.1.20",
+    "@fullcalendar/timegrid": "^6.1.20",
+    "convex": "^1.32.0",
+    "epubjs": "^0.3.93",
+    "jszip": "^3.10.1",
+    "pdfjs-dist": "^5.5.207",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "vite": "^7.1.2"
+  }
+}

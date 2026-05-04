@@ -1,0 +1,105 @@
+:root {
+  /* Shared responsive controls for tablet and phone tuning. */
+  --adaptive-calendar-mini-cell-height: 1.875rem;
+  --adaptive-calendar-mini-day-padding-block: 0.12rem;
+  --adaptive-calendar-mini-day-padding-inline: 0.18rem;
+  --adaptive-calendar-mini-day-number-size: 0.76rem;
+  --adaptive-calendar-mini-day-number-padding-right: 1.55rem;
+  --adaptive-calendar-mini-day-count-size: 1.3rem;
+  --adaptive-calendar-mini-day-count-font-size: 0.68rem;
+  --adaptive-calendar-mini-day-count-top: 0.04rem;
+  --adaptive-calendar-mini-day-count-right: 0.1rem;
+
+  --adaptive-data-calendar-day-min-height: 2.75rem;
+  --adaptive-data-calendar-day-padding: 0.3rem;
+  --adaptive-data-calendar-day-number-size: 0.78rem;
+  --adaptive-data-calendar-day-number-padding-right: 1.25rem;
+  --adaptive-data-calendar-day-count-size: 1.125rem;
+  --adaptive-data-calendar-day-count-font-size: 0.67rem;
+  --adaptive-data-calendar-day-count-top: 0.3rem;
+  --adaptive-data-calendar-day-count-right: 0.3rem;
+
+  --adaptive-calendar-stats-width: min(38.75rem, 54vw);
+  --adaptive-calendar-stats-inset: 0.9rem;
+  --adaptive-calendar-stats-padding: 0.85rem;
+  --adaptive-calendar-stats-gap: 0.85rem;
+  --adaptive-calendar-stats-blur: 1.125rem;
+  --adaptive-calendar-stats-surface-opacity: 58%;
+  --adaptive-calendar-stats-card-opacity: 68%;
+  --adaptive-calendar-stats-chart-min-height: 13.75rem;
+
+  --adaptive-calendar-shell-columns-medium: minmax(11.875rem, 13.75rem) minmax(
+      0,
+      1fr
+    );
+  --adaptive-calendar-main-min-height-medium: 41.25rem;
+  --adaptive-calendar-fullcalendar-min-height-tablet: 38.75rem;
+  --adaptive-calendar-main-min-height-phone: 38.75rem;
+  --adaptive-calendar-mobile-controls-gap: 0.5rem;
+  --adaptive-calendar-mobile-controls-padding: 0.72rem;
+
+  --adaptive-groups-shell-columns-medium: 3rem minmax(13.75rem, 17.5rem) minmax(
+      22.5rem,
+      1fr
+    );
+  --adaptive-groups-shell-columns-tablet: auto minmax(0, 1fr);
+  --adaptive-groups-shell-columns-phone: 1fr;
+  --adaptive-groups-chat-height-tablet: min(40rem, calc(100vh - 6rem));
+  --adaptive-groups-chat-min-height-tablet: 26.25rem;
+  --adaptive-groups-chat-min-height-phone: 26.25rem;
+
+  --adaptive-app-shell-padding-phone: 0.8rem;
+  --adaptive-dashboard-shell-padding-top-phone: 0.6rem;
+}
+
+@media (max-width: 1128px) {
+  :root {
+    --adaptive-calendar-mini-cell-height: 2.125rem;
+    --adaptive-calendar-mini-day-padding-inline: 0.24rem;
+    --adaptive-calendar-mini-day-number-size: 0.82rem;
+    --adaptive-calendar-mini-day-number-padding-right: 1.7rem;
+
+    --adaptive-data-calendar-day-min-height: 3rem;
+    --adaptive-data-calendar-day-padding: 0.34rem;
+    --adaptive-data-calendar-day-number-size: 0.82rem;
+    --adaptive-data-calendar-day-number-padding-right: 1.35rem;
+    --adaptive-data-calendar-day-count-size: 1.25rem;
+
+    --adaptive-calendar-stats-width: calc(100% - 1.8rem);
+    --adaptive-calendar-stats-inset: 0.75rem;
+    --adaptive-calendar-stats-padding: 0.75rem;
+    --adaptive-calendar-stats-gap: 0.72rem;
+    --adaptive-calendar-stats-blur: 0.9375rem;
+    --adaptive-calendar-stats-surface-opacity: 64%;
+    --adaptive-calendar-stats-card-opacity: 74%;
+    --adaptive-calendar-stats-chart-min-height: 11.875rem;
+  }
+}
+
+@media (max-width: 1128px) {
+  :root {
+    --adaptive-calendar-mini-cell-height: 2.25rem;
+    --adaptive-calendar-mini-day-padding-block: 0.16rem;
+    --adaptive-calendar-mini-day-padding-inline: 0.28rem;
+    --adaptive-calendar-mini-day-number-size: 0.86rem;
+    --adaptive-calendar-mini-day-number-padding-right: 1.85rem;
+    --adaptive-calendar-mini-day-count-size: 1.42rem;
+    --adaptive-calendar-mini-day-count-font-size: 0.72rem;
+
+    --adaptive-data-calendar-day-min-height: 3.25rem;
+    --adaptive-data-calendar-day-padding: 0.38rem;
+    --adaptive-data-calendar-day-number-size: 0.86rem;
+    --adaptive-data-calendar-day-number-padding-right: 1.48rem;
+    --adaptive-data-calendar-day-count-size: 1.25rem;
+    --adaptive-data-calendar-day-count-font-size: 0.7rem;
+    --adaptive-data-calendar-day-count-top: 0.34rem;
+    --adaptive-data-calendar-day-count-right: 0.34rem;
+
+    --adaptive-calendar-stats-width: calc(100% - 1rem);
+    --adaptive-calendar-stats-inset: 0.5rem;
+    --adaptive-calendar-stats-padding: 0.65rem;
+    --adaptive-calendar-stats-gap: 0.62rem;
+    --adaptive-calendar-stats-blur: 0.8125rem;
+    --adaptive-calendar-stats-chart-min-height: 10.625rem;
+  }
+}

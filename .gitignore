@@ -137,3 +137,37 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Generated builds / packages
+dist
+dist-ssr
+deploy-*.zip
+**/dist/
+**/dist-ssr/
+**/deploy-*.zip
+
+# Local env/logs
+*.local
+*.log
+
+# Dependencies
+node_modules
+**/node_modules/
+
+# Large reader/book assets belong in R2, not GitHub
+Manga/
+**/Manga/
+public/official/*.pdf
+public/official/*.cbz
+public/official/*.cbr
+public/official/*.epub
+public/official/*.mobi
+public/official/*.azw3
+public/official/books/
+**/public/official/*.pdf
+**/public/official/*.cbz
+**/public/official/*.cbr
+**/public/official/*.epub
+**/public/official/*.mobi
+**/public/official/*.azw3
+**/public/official/books/

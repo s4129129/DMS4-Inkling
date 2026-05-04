@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/inkling-favicon.svg?v=20260419"
+    />
+    <link rel="shortcut icon" href="/inkling-favicon.svg?v=20260419" />
+    <title>DMS4 Usage Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise-layer" aria-hidden="true"></div>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="tag">Operational Analytics</p>
+        <h1>Website Usage Dashboard</h1>
+        <p class="subtitle">
+          Live local telemetry captured from your main app session.
+        </p>
+        <p class="subtitle" id="sourceStatus">
+          Source: waiting for tracker connection
+        </p>
+        <div class="hero-actions">
+          <select
+            id="segmentFilter"
+            class="url-input"
+            aria-label="Traffic segment"
+          >
+            <option value="all">All traffic</option>
+            <option value="local">Local only</option>
+            <option value="namecheap">Namecheap only</option>
+            <option value="other">Other hosts</option>
+          </select>
+          <input
+            id="convexUrlInput"
+            class="url-input"
+            type="url"
+            placeholder="https://your-deployment.convex.cloud"
+          />
+          <button id="connectBtn" class="btn" type="button">
+            Connect Convex
+          </button>
+        </div>
+        <div class="hero-actions">
+          <button id="refreshBtn" class="btn btn-primary" type="button">
+            Refresh now
+          </button>
+          <button id="exportBtn" class="btn" type="button">Export JSON</button>
+          <button id="exportMdBtn" class="btn" type="button">
+            Export Markdown
+          </button>
+          <button id="clearBtn" class="btn btn-danger" type="button">
+            Clear data
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="metrics-grid" aria-label="Key metrics">
+          <article class="metric-card">
+            <p>Total users</p>
+            <h2 id="totalUsers">0</h2>
+          </article>
+          <article class="metric-card">
+            <p>Active users (5m)</p>
+            <h2 id="activeUsers">0</h2>
+          </article>
+          <article class="metric-card">
+            <p>Total sessions</p>
+            <h2 id="totalSessions">0</h2>
+          </article>
+          <article class="metric-card">
+            <p>Total page views</p>
+            <h2 id="pageViews">0</h2>
+          </article>
+          <article class="metric-card">
+            <p>Avg session</p>
+            <h2 id="avgSession">0s</h2>
+          </article>
+          <article class="metric-card">
+            <p>Bounce rate</p>
+            <h2 id="bounceRate">0%</h2>
+          </article>
+        </section>
+
+        <section class="panel-grid" aria-label="Usage breakdowns">
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Top pages</h3>
+              <small id="topPagesCount">0 pages</small>
+            </div>
+            <div id="topPages" class="bars"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Session duration buckets</h3>
+              <small>Distribution</small>
+            </div>
+            <div id="durationBuckets" class="bars"></div>
+          </article>
+        </section>
+
+        <section class="panel panel-wide" aria-label="Recent sessions">
+          <div class="panel-head">
+            <h3>Recent sessions</h3>
+            <small id="updatedAt">Never updated</small>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Session</th>
+                  <th>User</th>
+                  <th>Google account</th>
+                  <th>Stage</th>
+                  <th>Duration</th>
+                  <th>Pages</th>
+                  <th>Scroll</th>
+                  <th>Source</th>
+                  <th>Last page</th>
+                  <th>Last seen</th>
+                </tr>
+              </thead>
+              <tbody id="sessionsTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section
+          class="panel panel-wide"
+          aria-label="Users grouped by sessions"
+        >
+          <div class="panel-head">
+            <h3>Users grouped by sessions</h3>
+            <small id="groupedUsersCount">0 users</small>
+          </div>
+          <div id="groupedUsers" class="bars"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./dashboard.js" defer></script>
+  </body>
+</html>
