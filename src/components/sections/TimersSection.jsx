@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import HintPopover from "../common/HintPopover";
 
+const MAX_SESSION_MINUTES = 120;
+const LONG_SESSION_WARNING =
+  "Any more than 2hours of work per session is not recommended by scientfic research";
+
 function getTimerRemaining(timer, now) {
   if (!timer) {
     return 0;
@@ -31,7 +35,16 @@ export default function TimersSection({
   onClaim,
   showTutorialClaimPlaceholder = false,
 }) {
-  const safeDuration = Math.max(1, Math.floor(durationMinutes || 1));
+  const durationValue = Number(durationMinutes);
+  const isDurationOverLimit =
+    Number.isFinite(durationValue) && durationValue > MAX_SESSION_MINUTES;
+  const safeDuration = Math.max(
+    1,
+    Math.min(
+      MAX_SESSION_MINUTES,
+      Math.floor(Number.isFinite(durationValue) ? durationValue : 1),
+    ),
+  );
   const visualClock = `${String(safeDuration).padStart(2, "0")}:00`;
   const [isFocusExpanded, setIsFocusExpanded] = useState(false);
 
@@ -84,11 +97,21 @@ export default function TimersSection({
   }, [isFocusExpanded]);
 
   const onStartFocus = (event) => {
-    if (!hasTimerGoal) {
+    if (!hasTimerGoal || isDurationOverLimit) {
       return;
     }
     setIsFocusExpanded(true);
     onCreateTimer?.(event);
+  };
+
+  const onMinutesInputChange = (event) => {
+    const digits = event.target.value.replace(/\D/g, "");
+    setDurationMinutes(digits ? Number(digits) : "");
+  };
+
+  const onMinutesPerPageInputChange = (event) => {
+    const digits = event.target.value.replace(/\D/g, "");
+    setMinutesPerPageInput(digits ? Number(digits) : "");
   };
 
   const onPauseOrResumeFocus = () => {
@@ -166,14 +189,17 @@ export default function TimersSection({
             <label>
               Minutes
               <input
-                type="number"
-                min={1}
-                max={240}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={durationMinutes}
-                onChange={(event) =>
-                  setDurationMinutes(Number(event.target.value))
-                }
+                onChange={onMinutesInputChange}
               />
+              {isDurationOverLimit && (
+                <span className="timer-duration-warning">
+                  {LONG_SESSION_WARNING}
+                </span>
+              )}
             </label>
 
             <label data-tutorial-anchor="timers-ratio">
@@ -185,12 +211,11 @@ export default function TimersSection({
                 />
               </span>
               <input
-                type="number"
-                min={1}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={minutesPerPageInput}
-                onChange={(event) =>
-                  setMinutesPerPageInput(Number(event.target.value))
-                }
+                onChange={onMinutesPerPageInputChange}
               />
             </label>
 
@@ -211,7 +236,9 @@ export default function TimersSection({
               <button
                 type="button"
                 className="timer-visual-start-btn"
-                disabled={timerState.busy || !hasTimerGoal}
+                disabled={
+                  timerState.busy || !hasTimerGoal || isDurationOverLimit
+                }
                 onClick={onStartFocus}
               >
                 {timerState.busy ? "starting..." : "start"}

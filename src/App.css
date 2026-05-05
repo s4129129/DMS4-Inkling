@@ -2532,6 +2532,15 @@ body,
   align-items: stretch;
 }
 
+.timer-duration-warning {
+  display: block;
+  margin-top: 0.38rem;
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .timer-create-visual {
   border-radius: 12px;
   border: 1px solid var(--card-border);

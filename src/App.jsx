@@ -167,6 +167,9 @@ const DASHBOARD_SECTION_KEYS = new Set([
 
 const TUTORIAL_STORAGE_PREFIX = "inkling-dashboard-tutorial-complete:v1:";
 const AD_POPUP_DURATION_SECONDS = 30;
+const MAX_SESSION_MINUTES = 120;
+const LONG_SESSION_WARNING =
+  "Any more than 2hours of work per session is not recommended by scientfic research";
 const FAQ_STORAGE_PREFIX = "inkling-dashboard-faq-complete:v1:";
 
 const DASHBOARD_TUTORIAL_STEPS = [
@@ -2619,11 +2622,22 @@ function ReaderWorkspace({ onThemeChange }) {
       setTimerState({ busy: false, message: "" });
       return;
     }
+    const normalizedDurationMinutes = Math.max(
+      1,
+      Math.floor(Number(durationMinutes) || 1),
+    );
+    if (normalizedDurationMinutes > MAX_SESSION_MINUTES) {
+      setTimerState({ busy: false, message: LONG_SESSION_WARNING });
+      return;
+    }
     setTimerState({ busy: true, message: "" });
     try {
       await createTimer({
         label: safeLabel,
-        durationMinutes,
+        durationMinutes: Math.min(
+          MAX_SESSION_MINUTES,
+          normalizedDurationMinutes,
+        ),
       });
       if ("Notification" in window && Notification.permission === "default") {
         void Notification.requestPermission();
@@ -2636,13 +2650,17 @@ function ReaderWorkspace({ onThemeChange }) {
 
   const onSavePreferences = async (dailyQuotaPagesOverride) => {
     setSettingsMessage("");
+    const normalizedMinutesPerPage = Math.max(
+      1,
+      Math.floor(Number(minutesPerPageInput) || 1),
+    );
     const normalizedDailyQuota =
       Number.isFinite(Number(dailyQuotaPagesOverride))
         ? Math.max(1, Math.floor(Number(dailyQuotaPagesOverride)))
         : dailyQuotaInput;
     try {
       await updatePreferences({
-        minutesPerPage: minutesPerPageInput,
+        minutesPerPage: normalizedMinutesPerPage,
         dailyQuotaPages: normalizedDailyQuota,
         timeZone: getBrowserTimeZone(),
       });

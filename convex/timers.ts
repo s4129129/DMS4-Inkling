@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 const DEFAULT_MINUTES_PER_PAGE = 20;
+const MAX_SESSION_MINUTES = 120;
 const DEFAULT_DAILY_QUOTA_PAGES = 3;
 const DEFAULT_THEME = "default";
 const DEFAULT_MODE = "dark";
@@ -326,7 +327,13 @@ export const createTimer = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const profile = await getOrCreateProfile(ctx, userId);
-    const minutes = Math.max(1, Math.floor(args.durationMinutes));
+    const requestedMinutes = Number.isFinite(args.durationMinutes)
+      ? args.durationMinutes
+      : 1;
+    const minutes = Math.min(
+      MAX_SESSION_MINUTES,
+      Math.max(1, Math.floor(requestedMinutes)),
+    );
     const ratio = Math.max(
       1,
       Math.floor(profile.minutesPerPage ?? DEFAULT_MINUTES_PER_PAGE),
