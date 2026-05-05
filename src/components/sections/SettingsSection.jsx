@@ -9,10 +9,14 @@ const SETTINGS_TAB_LABELS = {
 };
 
 const MONO_ASSET_THEME_OPTIONS = [
-  { id: "comic", label: "Comic" },
+  { id: "default", label: "Default" },
   { id: "vintage", label: "Vintage" },
   { id: "command", label: "Mono" },
 ];
+
+function normalizeLogoPresetId(presetId) {
+  return String(presetId || "").replace(/^comic-/, "default-");
+}
 
 function ThemePaletteRow({ label, swatches }) {
   return (
@@ -109,7 +113,7 @@ export default function SettingsSection({
 
   const themeSaturatedColors = useMemo(() => {
     const colors = getThemeSaturatedColors(
-      selectedThemeId || "comic",
+      selectedThemeId || "default",
       normalizedThemeMode,
     );
     return {
@@ -128,14 +132,12 @@ export default function SettingsSection({
     ),
   );
 
-  const themeList = useMemo(
-    () => (themeOptions ?? []).filter((item) => item.type === "theme"),
-    [themeOptions],
-  );
-
   const ownedThemes = useMemo(
-    () => themeList.filter((item) => item.owned),
-    [themeList],
+    () =>
+      (themeOptions ?? []).filter(
+        (item) => item.type === "theme" && item.owned,
+      ),
+    [themeOptions],
   );
 
   useEffect(() => {
@@ -174,7 +176,7 @@ export default function SettingsSection({
 
   const selectedMonoAssetTheme =
     MONO_ASSET_THEME_OPTIONS.find((option) =>
-      String(userIconPreset || "").startsWith(`${option.id}-`),
+      normalizeLogoPresetId(userIconPreset).startsWith(`${option.id}-`),
     )?.id || "command";
 
   const onSelectMonoAssetTheme = (assetThemeId) => {
@@ -350,7 +352,7 @@ export default function SettingsSection({
                     type="button"
                     className={`mode-pill${selectedThemeMode === "light" ? " active" : ""}`}
                     onClick={() =>
-                      onApplyThemeChoice?.(selectedThemeId || "comic", "light")
+                      onApplyThemeChoice?.(selectedThemeId || "default", "light")
                     }
                   >
                     Light Mode
@@ -359,7 +361,7 @@ export default function SettingsSection({
                     type="button"
                     className={`mode-pill${selectedThemeMode === "dark" ? " active" : ""}`}
                     onClick={() =>
-                      onApplyThemeChoice?.(selectedThemeId || "comic", "dark")
+                      onApplyThemeChoice?.(selectedThemeId || "default", "dark")
                     }
                   >
                     Dark Mode
@@ -456,7 +458,7 @@ export default function SettingsSection({
                 </div>
 
                 <div className="settings-theme-grid">
-                  {themeList.map((theme) => {
+                  {ownedThemes.map((theme) => {
                     const isSelected = selectedThemeId === theme.id;
                     const lightSwatches = getDisplayedSwatches(theme.id, "light");
                     const darkSwatches = getDisplayedSwatches(theme.id, "dark");
@@ -469,7 +471,7 @@ export default function SettingsSection({
                         <div className="settings-theme-head">
                           <h3>{theme.name}</h3>
                           <span className="mode-pill">
-                            {theme.owned ? "Owned" : `${theme.cost} Ink`}
+                            Owned
                           </span>
                         </div>
 
@@ -485,7 +487,7 @@ export default function SettingsSection({
                           <button
                             type="button"
                             className="action"
-                            disabled={!theme.owned || isSelected}
+                            disabled={isSelected}
                             onClick={() =>
                               onApplyThemeChoice?.(
                                 theme.id,
@@ -495,29 +497,13 @@ export default function SettingsSection({
                           >
                             {isSelected ? "In Use" : "Apply Theme"}
                           </button>
-                          {!theme.owned && (
-                            <button
-                              type="button"
-                              className="ghost"
-                              onClick={onOpenMarketplace}
-                            >
-                              Buy in Marketplace
-                            </button>
-                          )}
                         </div>
                       </article>
                     );
                   })}
 
-                  {!themeList.length && (
-                    <p className="status-text">No themes found yet.</p>
-                  )}
-
                   {!ownedThemes.length && (
-                    <p className="status-text">
-                      You currently only have starter themes. Buy more in
-                      Marketplace.
-                    </p>
+                    <p className="status-text">No owned themes found yet.</p>
                   )}
                 </div>
               </>

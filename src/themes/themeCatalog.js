@@ -32,21 +32,21 @@ export const THEME_ROLE_DEFINITIONS = [
 
 // Theme catalog: each theme includes two modes (light + dark).
 export const THEME_CATALOG = {
-  comic: {
-    id: "comic",
-    name: "Comic",
-    description: "Bold comic inspired theme",
+  default: {
+    id: "default",
+    name: "Default",
+    description: "Bold default reader theme",
     modes: {
       light: {
         preview: {
-          bg: "#e5e5e5",
-          surface: "#eeeeee",
+          bg: "#d8d8d2",
+          surface: "#e1e1dc",
           accent: "#025bfe",
           text: "#151515",
         },
         roles: {
-          main1: "#e5e5e5",
-          main2: "#eeeeee",
+          main1: "#d8d8d2",
+          main2: "#e1e1dc",
           support: "#ffcf01",
           accent: "#025bfe",
           text: "#151515",
@@ -54,14 +54,14 @@ export const THEME_CATALOG = {
       },
       dark: {
         preview: {
-          bg: "#171717",
-          surface: "#101010",
+          bg: "#242428",
+          surface: "#2d2d33",
           accent: "#025bfe",
           text: "#ededed",
         },
         roles: {
-          main1: "#171717",
-          main2: "#101010",
+          main1: "#242428",
+          main2: "#2d2d33",
           support: "#ffcf01",
           accent: "#025bfe",
           text: "#ededed",

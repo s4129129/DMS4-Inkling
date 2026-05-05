@@ -8,8 +8,8 @@ This file is the default source of truth for UI work in this project unless a ta
 - Use theme tokens instead of one-off colors. Prefer `var(--surface-container-*)`, `var(--primary)`, `var(--on-surface)`, `var(--muted)`, `var(--ghost-border)`, and `var(--card-surface)`.
 - Before designing or adding UI, read the active theme's `src/themes/*/prompt-guidelines.md` and let those instructions override generic layout instincts.
 - Do not add explanatory in-app copy for new buttons or features. Use short direct button text when it is naturally one or two words; otherwise use numbered `[PLACEHOLDER n]` copy until final product wording is provided.
-- The default dashboard theme is `comic`; the old parchment theme is now `vintage`. Legacy saved `default` theme IDs should resolve to `vintage`.
-- Comic dashboard backgrounds use neutral Main1 shades; keep non-premium surfaces flat. Premium may use the theme's saturated color blend; Quills stays saturated yellow.
+- The default dashboard theme is `default`; the old parchment theme is now `vintage`. Legacy saved `comic` theme IDs should resolve to `default`.
+- Default dashboard backgrounds use neutral Main1 shades; keep non-premium surfaces flat. Premium may use the theme's saturated color blend; Quills stays saturated yellow.
 - Keep panels rectangular and disciplined. Default radius is `8px`; use `12px` for overlays and major shells only.
 - Avoid nested card visuals. A panel can contain rows or cards, but do not put floating card styling inside another floating card unless it is a modal or repeated item.
 - Clickable items must show `cursor: pointer`, a border or outline change on hover, and a visible focus state.

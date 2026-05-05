@@ -39,7 +39,7 @@ export const me = query({
       name,
       email,
       image,
-      iconPreset: profile?.userIconPreset ?? "comic-light",
+      iconPreset: profile?.userIconPreset ?? "default-light",
       initials: initials || "U",
     };
   },

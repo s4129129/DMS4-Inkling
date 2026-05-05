@@ -4,10 +4,10 @@ import { v } from "convex/values";
 
 const DEFAULT_MINUTES_PER_PAGE = 20;
 const DEFAULT_DAILY_QUOTA_PAGES = 3;
-const DEFAULT_THEME = "comic";
+const DEFAULT_THEME = "default";
 const DEFAULT_MODE = "dark";
 const DEFAULT_TIME_ZONE = "UTC";
-const DEFAULT_OWNED_THEMES = ["comic"];
+const DEFAULT_OWNED_THEMES = ["default"];
 const DEFAULT_OWNED_FEATURES: string[] = [];
 const DEFAULT_BANNER_POSITION_X = 50;
 const DEFAULT_BANNER_POSITION_Y = 50;

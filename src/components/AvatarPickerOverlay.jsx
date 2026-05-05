@@ -14,11 +14,15 @@ function getLogoPresetOptions() {
   }
   return [
     {
-      id: "comic-light",
-      label: "Comic Light",
-      src: getPresetLogo("comic-light"),
+      id: "default-light",
+      label: "Default Light",
+      src: getPresetLogo("default-light"),
     },
   ];
+}
+
+function normalizeLogoPresetId(presetId) {
+  return String(presetId || "").replace(/^comic-/, "default-");
 }
 
 function loadImageForCanvas(src) {
@@ -427,7 +431,8 @@ export default function AvatarPickerOverlay({
                 {recentAvatars.map((avatar) => {
                   const isActive =
                     avatar.type === "preset"
-                      ? !userIconUrl && avatar.preset === userIconPreset
+                      ? !userIconUrl &&
+                        avatar.preset === normalizeLogoPresetId(userIconPreset)
                       : Boolean(
                           userIconUrl &&
                             ((avatar.storageId &&

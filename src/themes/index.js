@@ -1,9 +1,9 @@
 import { THEME_CATALOG, THEME_ROLE_DEFINITIONS } from "./themeCatalog";
 
-const FALLBACK_THEME_ID = "comic";
+const FALLBACK_THEME_ID = "default";
 
 const LEGACY_THEME_ID_MAP = {
-  default: "vintage",
+  comic: "default",
 };
 
 function normalizeThemeId(themeId) {

@@ -1,21 +1,21 @@
-import comicLightLogo from "../assets/logos/Comic/Comic lightd.svg";
-import comicDarkLogo from "../assets/logos/Comic/Comic dark.svg";
-import defaultLightLogo from "../assets/logos/Default/Logo Default Light.svg";
-import defaultDarkLogo from "../assets/logos/Default/Logo Default Dark.svg";
+import defaultThemeLightLogo from "../assets/logos/Comic/Comic lightd.svg";
+import defaultThemeDarkLogo from "../assets/logos/Comic/Comic dark.svg";
+import vintageLightLogo from "../assets/logos/Default/Logo Default Light.svg";
+import vintageDarkLogo from "../assets/logos/Default/Logo Default Dark.svg";
 import monochromeLightLogo from "../assets/logos/Monochrome/Logo Mono Light.svg";
 import monochromeDarkLogo from "../assets/logos/Monochrome/Logo Mono Dark.svg";
 
-const FALLBACK_THEME_ID = "comic";
+const FALLBACK_THEME_ID = "default";
 const FALLBACK_MODE = "light";
 
 const THEME_LOGO_CATALOG = {
-  comic: {
-    light: comicLightLogo,
-    dark: comicDarkLogo,
+  default: {
+    light: defaultThemeLightLogo,
+    dark: defaultThemeDarkLogo,
   },
   vintage: {
-    light: defaultLightLogo,
-    dark: defaultDarkLogo,
+    light: vintageLightLogo,
+    dark: vintageDarkLogo,
   },
   command: {
     light: monochromeLightLogo,
@@ -24,30 +24,30 @@ const THEME_LOGO_CATALOG = {
 };
 
 const LEGACY_THEME_ID_MAP = {
-  default: "vintage",
+  comic: "default",
 };
 
-export const DEFAULT_THEME_LOGO = comicLightLogo;
+export const DEFAULT_THEME_LOGO = defaultThemeLightLogo;
 export const LOGO_PRESET_OPTIONS = [
   {
-    id: "comic-light",
-    label: "Comic Light",
-    src: comicLightLogo,
+    id: "default-light",
+    label: "Default Light",
+    src: defaultThemeLightLogo,
   },
   {
-    id: "comic-dark",
-    label: "Comic Dark",
-    src: comicDarkLogo,
+    id: "default-dark",
+    label: "Default Dark",
+    src: defaultThemeDarkLogo,
   },
   {
     id: "vintage-light",
     label: "Vintage Light",
-    src: defaultLightLogo,
+    src: vintageLightLogo,
   },
   {
     id: "vintage-dark",
     label: "Vintage Dark",
-    src: defaultDarkLogo,
+    src: vintageDarkLogo,
   },
   {
     id: "command-light",
@@ -86,8 +86,8 @@ export function getThemeLogoAsset(themeId, mode) {
 
 export function getLogoPresetAsset(presetId) {
   const legacyPresetMap = {
-    "default-light": "vintage-light",
-    "default-dark": "vintage-dark",
+    "comic-light": "default-light",
+    "comic-dark": "default-dark",
   };
   const normalizedPresetId = legacyPresetMap[presetId] ?? presetId;
   return (

@@ -1,6 +1,6 @@
-# Comic Light Prompt Guidelines
+# Default Light Prompt Guidelines
 
-Use this when generating UI copy, component styles, or visual prompts for the Comic theme in light mode.
+Use this when generating UI copy, component styles, or visual prompts for the Default theme in light mode.
 
 ## Core Identity
 

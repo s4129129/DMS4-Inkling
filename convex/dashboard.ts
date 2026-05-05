@@ -4,17 +4,17 @@ import { v } from "convex/values";
 
 const DEFAULT_MINUTES_PER_PAGE = 20;
 const DEFAULT_DAILY_QUOTA_PAGES = 3;
-const DEFAULT_THEME = "comic";
+const DEFAULT_THEME = "default";
 const DEFAULT_MODE = "dark";
 const DEFAULT_TIME_ZONE = "UTC";
 const DEFAULT_INTERACTION_MODE = "classic";
-const DEFAULT_OWNED_THEMES = ["comic"];
+const DEFAULT_OWNED_THEMES = ["default"];
 const DEFAULT_INTERACTION_FEATURE_ID = "default-interaction-pack";
 const DEFAULT_OWNED_FEATURES: string[] = [];
 const CUSTOM_BANNER_FEATURE_ID = "custom-banner-upload";
 const MECHANICAL_INTERACTION_FEATURE_ID = "sink-button-interactions";
 const ECONOMY_RESET_VERSION = 2;
-const DEFAULT_USER_ICON_PRESET = "comic-light";
+const DEFAULT_USER_ICON_PRESET = "default-light";
 const OFFICIAL_ENBJ_BOOK_ID = "enbj01";
 const OFFICIAL_BOOK_ITEMS = [
   {
@@ -41,8 +41,8 @@ const ONE_HOUR_MS = 60 * 60 * 1000;
 const ONE_MINUTE_MS = 60 * 1000;
 
 const LEGACY_THEME_MAP: Record<string, string> = {
+  comic: "default",
   mono: "command",
-  default: "vintage",
   ocean: "vintage",
   amber: "vintage",
   forest: "vintage",
@@ -51,11 +51,11 @@ const LEGACY_THEME_MAP: Record<string, string> = {
 
 const MARKET_ITEMS = [
   {
-    id: "comic",
+    id: "default",
     type: "theme",
-    name: "Comic",
+    name: "Default",
     cost: 0,
-    description: "Bold comic inspired theme",
+    description: "Bold default reader theme",
   },
   {
     id: "vintage",

@@ -6,6 +6,12 @@
   var SEGMENT_KEY = "dms4.analytics.segment";
   var ACTIVE_WINDOW_MS = 5 * 60 * 1000;
   var segment = localStorage.getItem(SEGMENT_KEY) || "all";
+  var SEGMENT_LABELS = {
+    all: "All traffic",
+    local: "Local",
+    production: "Production",
+    other: "Other hosts",
+  };
 
   function normalizeUrl(value) {
     if (!value || typeof value !== "string") {
@@ -112,22 +118,64 @@
     if (!id) {
       return "-";
     }
+    id = String(id);
     if (id.length <= 10) {
       return id;
     }
     return id.slice(0, 5) + "..." + id.slice(-4);
   }
 
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function classifyHost(sourceHost) {
+    var host = String(sourceHost || "")
+      .toLowerCase()
+      .replace(/:\d+$/, "");
+    if (
+      host.startsWith("localhost") ||
+      host.startsWith("127.0.0.1") ||
+      host.startsWith("[::1]")
+    ) {
+      return "local";
+    }
+    if (
+      host === "inklingreader.xyz" ||
+      host === "www.inklingreader.xyz" ||
+      host === "s4129129.github.io" ||
+      host.includes("dms.onl")
+    ) {
+      return "production";
+    }
+    return "other";
+  }
+
   function normalizeSegment(value) {
     if (
       value === "all" ||
       value === "local" ||
-      value === "namecheap" ||
+      value === "production" ||
       value === "other"
     ) {
       return value;
     }
+    if (value === "namecheap") {
+      return "production";
+    }
     return "all";
+  }
+
+  function matchesSegment(sourceHost) {
+    if (segment === "all") {
+      return true;
+    }
+    return classifyHost(sourceHost) === segment;
   }
 
   function normalizeSessionStage(value) {
@@ -161,8 +209,19 @@
     var usersMap = store && store.users ? store.users : {};
     var sessionsMap = store && store.sessions ? store.sessions : {};
 
-    var users = Object.values(usersMap);
-    var sessions = Object.values(sessionsMap);
+    var sessions = Object.values(sessionsMap).filter(function (session) {
+      return matchesSegment(session.sourceHost || window.location.host);
+    });
+    var sessionUserIds = new Set(
+      sessions
+        .map(function (session) {
+          return session.userId;
+        })
+        .filter(Boolean),
+    );
+    var users = Object.values(usersMap).filter(function (user) {
+      return segment === "all" || sessionUserIds.has(user.id);
+    });
     var now = Date.now();
 
     var activeUsers = users.filter(function (user) {
@@ -183,11 +242,16 @@
     var bounceRate =
       totalSessions > 0 ? (bounceCount / totalSessions) * 100 : 0;
 
-    var totals = (store && store.totals) || {
+    var totals = segment === "all" && store && store.totals ? store.totals : {
       sessions: totalSessions,
       pageViews: 0,
     };
-    var totalPageViews = Number(totals.pageViews || 0);
+    var totalPageViews =
+      segment === "all"
+        ? Number(totals.pageViews || 0)
+        : sessions.reduce(function (sum, session) {
+            return sum + Number(session.pageViews || 0);
+          }, 0);
 
     var pageMap = {};
     sessions.forEach(function (session) {
@@ -326,10 +390,7 @@
       .map(function (row) {
         var value = Number(row[valueKey] || 0);
         var width = max > 0 ? Math.max(8, Math.round((value / max) * 100)) : 0;
-        var safeLabel = String(row[labelKey] || "-")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+        var safeLabel = escapeHtml(row[labelKey] || "-");
 
         return [
           "<div class='bar-row'>",
@@ -362,19 +423,18 @@
 
     tbody.innerHTML = sessions
       .map(function (session) {
-        var safePath = String(session.lastPath || "-")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+        var safePath = escapeHtml(session.lastPath || "-");
         var stage = normalizeSessionStage(session.sessionStage);
+        var googleAccount = escapeHtml(
+          session.googleAccountName || session.googleAccountEmail || "-",
+        );
+        var sourceHost = escapeHtml(session.sourceHost || "-");
 
         return [
           "<tr>",
-          "<td>" + shortId(session.id) + "</td>",
-          "<td>" + shortId(session.userId) + "</td>",
-          "<td>" +
-            (session.googleAccountName || session.googleAccountEmail || "-") +
-            "</td>",
+          "<td>" + escapeHtml(shortId(session.id)) + "</td>",
+          "<td>" + escapeHtml(shortId(session.userId)) + "</td>",
+          "<td>" + googleAccount + "</td>",
           "<td><span class='stage-pill stage-" +
             stage +
             "'>" +
@@ -383,7 +443,7 @@
           "<td>" + formatDuration(session.durationSec) + "</td>",
           "<td>" + formatNumber(session.pageViews) + "</td>",
           "<td>" + formatNumber(session.maxScrollPercent || 0) + "%</td>",
-          "<td>" + (session.sourceHost || "-") + "</td>",
+          "<td>" + sourceHost + "</td>",
           "<td title='" + safePath + "'>" + safePath + "</td>",
           "<td>" +
             timeAgo(Number(session.lastSeen || session.endAt || 0)) +
@@ -419,11 +479,11 @@
           .map(function (session) {
             return (
               "<span class='session-chip'>" +
-              shortId(session.id) +
+              escapeHtml(shortId(session.id)) +
               " | " +
               formatDuration(session.durationSec) +
               " | " +
-              (session.sourceHost || "-") +
+              escapeHtml(session.sourceHost || "-") +
               "</span>"
             );
           })
@@ -432,7 +492,7 @@
         return [
           "<article class='group-card'>",
           "<div class='group-head'>",
-          "<strong>" + label + "</strong>",
+          "<strong>" + escapeHtml(label) + "</strong>",
           "<span>sessions: " +
             formatNumber(group.sessionCount) +
             " | pages: " +
@@ -459,10 +519,14 @@
     var stamp = new Date(
       data.generatedAt || data.updatedAt || Date.now(),
     ).toISOString();
-    lines.push("# DMS4 Analytics Report");
+    lines.push("# Inkling Analytics Report");
     lines.push("");
     lines.push("Generated: " + stamp);
-    lines.push("Segment: " + normalizeSegment(data.segment || segment));
+    lines.push(
+      "Segment: " +
+        (SEGMENT_LABELS[normalizeSegment(data.segment || segment)] ||
+          "All traffic"),
+    );
     lines.push("");
     lines.push("## KPI");
     lines.push("");
@@ -477,6 +541,9 @@
     lines.push("");
 
     if (data.breakdown) {
+      var productionBreakdown =
+        data.breakdown.production ||
+        data.breakdown.namecheap || { sessions: 0, users: 0, pageViews: 0 };
       lines.push("## Source Breakdown");
       lines.push("");
       lines.push("| Source | Sessions | Users | Page Views |");
@@ -491,12 +558,12 @@
           " |",
       );
       lines.push(
-        "| Namecheap | " +
-          data.breakdown.namecheap.sessions +
+        "| Production | " +
+          productionBreakdown.sessions +
           " | " +
-          data.breakdown.namecheap.users +
+          productionBreakdown.users +
           " | " +
-          data.breakdown.namecheap.pageViews +
+          productionBreakdown.pageViews +
           " |",
       );
       lines.push(
@@ -681,16 +748,23 @@
     setText("topPagesCount", formatNumber(data.topPages.length) + " pages");
 
     if (data.breakdown) {
+      var productionBreakdown =
+        data.breakdown.production ||
+        data.breakdown.namecheap || { sessions: 0 };
+      var currentSegment = normalizeSegment(data.segment || segment);
       setSourceStatus(
         "Source: Convex | Local sessions: " +
           formatNumber(data.breakdown.local.sessions) +
-          " | Namecheap sessions: " +
-          formatNumber(data.breakdown.namecheap.sessions) +
+          " | Production sessions: " +
+          formatNumber(productionBreakdown.sessions) +
           " | Current filter: " +
-          normalizeSegment(data.segment || segment),
+          (SEGMENT_LABELS[currentSegment] || "All traffic"),
       );
     } else {
-      setSourceStatus("Source: local browser storage fallback");
+      setSourceStatus(
+        "Source: local browser storage fallback | Current filter: " +
+          (SEGMENT_LABELS[normalizeSegment(segment)] || "All traffic"),
+      );
     }
 
     var updated =
@@ -785,7 +859,7 @@
           var anchor = document.createElement("a");
           var stamp = new Date().toISOString().replace(/[.:]/g, "-");
           anchor.href = url;
-          anchor.download = "dms4-analytics-" + stamp + ".json";
+          anchor.download = "inkling-analytics-" + stamp + ".json";
           document.body.appendChild(anchor);
           anchor.click();
           anchor.remove();
@@ -808,7 +882,7 @@
           var anchor = document.createElement("a");
           var stamp = new Date().toISOString().replace(/[.:]/g, "-");
           anchor.href = url;
-          anchor.download = "dms4-analytics-" + stamp + ".md";
+          anchor.download = "inkling-analytics-" + stamp + ".md";
           document.body.appendChild(anchor);
           anchor.click();
           anchor.remove();

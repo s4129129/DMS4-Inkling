@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { getThemePalette } from "../themePreview";
 import marketplaceBannerImage from "../../assets/Marketplace/Banner.png";
-import marketplaceComicDarkImage from "../../assets/Marketplace/Comic D.png";
-import marketplaceComicLightImage from "../../assets/Marketplace/Comic L.png";
+import marketplaceDefaultDarkImage from "../../assets/Marketplace/Comic D.png";
+import marketplaceDefaultLightImage from "../../assets/Marketplace/Comic L.png";
 import marketplaceMonoDarkImage from "../../assets/Marketplace/Mono D.png";
 import marketplaceMonoLightImage from "../../assets/Marketplace/Mono L.png";
 import marketplaceVintageDarkImage from "../../assets/Marketplace/VIntage D.png";
@@ -30,9 +30,9 @@ const BOOK_CATEGORIES = [
 
 const MARKETPLACE_ITEM_IMAGES = {
   themes: {
-    comic: {
-      light: marketplaceComicLightImage,
-      dark: marketplaceComicDarkImage,
+    default: {
+      light: marketplaceDefaultLightImage,
+      dark: marketplaceDefaultDarkImage,
     },
     vintage: {
       light: marketplaceVintageLightImage,

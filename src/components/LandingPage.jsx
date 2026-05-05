@@ -139,7 +139,7 @@ export default function LandingPage({
   errorMessage,
   onGoogleSignIn,
 }) {
-  const landingLogoSrc = getThemeLogoAsset("comic", "dark");
+  const landingLogoSrc = getThemeLogoAsset("default", "dark");
   const sectionFlowRef = useRef(null);
   const wheelDeltaRef = useRef(0);
   const lastSectionTurnRef = useRef(0);

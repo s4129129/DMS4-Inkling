@@ -343,7 +343,7 @@ async function getUserIconPayload(ctx: any, userId: any) {
     image: profile?.userIconStorageId
       ? await ctx.storage.getUrl(profile.userIconStorageId)
       : null,
-    iconPreset: profile?.userIconPreset ?? "comic-light",
+    iconPreset: profile?.userIconPreset ?? "default-light",
   };
 }
 

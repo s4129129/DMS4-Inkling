@@ -4,7 +4,7 @@ import { v } from "convex/values";
 const MAX_PATHS = 80;
 const MAX_RECENT_SESSIONS = 30;
 
-type SegmentKey = "all" | "local" | "namecheap" | "other";
+type SegmentKey = "all" | "local" | "production" | "other";
 
 function sanitizePathCounts(input: unknown) {
   if (!input || typeof input !== "object") {
@@ -29,19 +29,31 @@ function clampNumber(value: number, min: number, max: number) {
 }
 
 function classifyHost(sourceHost: string): Exclude<SegmentKey, "all"> {
-  const host = (sourceHost || "").toLowerCase();
-  if (host.startsWith("localhost") || host.startsWith("127.0.0.1")) {
+  const host = (sourceHost || "").toLowerCase().replace(/:\d+$/, "");
+  if (
+    host.startsWith("localhost") ||
+    host.startsWith("127.0.0.1") ||
+    host.startsWith("[::1]")
+  ) {
     return "local";
   }
-  if (host.includes("dms.onl")) {
-    return "namecheap";
+  if (
+    host === "inklingreader.xyz" ||
+    host === "www.inklingreader.xyz" ||
+    host === "s4129129.github.io" ||
+    host.includes("dms.onl")
+  ) {
+    return "production";
   }
   return "other";
 }
 
 function normalizeSegment(input?: string): SegmentKey {
-  if (input === "local" || input === "namecheap" || input === "other") {
+  if (input === "local" || input === "production" || input === "other") {
     return input;
+  }
+  if (input === "namecheap") {
+    return "production";
   }
   return "all";
 }
@@ -168,12 +180,12 @@ export const summary = query({
 
     const breakdown = {
       local: { sessions: 0, users: 0, pageViews: 0 },
-      namecheap: { sessions: 0, users: 0, pageViews: 0 },
+      production: { sessions: 0, users: 0, pageViews: 0 },
       other: { sessions: 0, users: 0, pageViews: 0 },
     };
     const breakdownVisitors = {
       local: new Set<string>(),
-      namecheap: new Set<string>(),
+      production: new Set<string>(),
       other: new Set<string>(),
     };
 
@@ -185,7 +197,7 @@ export const summary = query({
     }
 
     breakdown.local.users = breakdownVisitors.local.size;
-    breakdown.namecheap.users = breakdownVisitors.namecheap.size;
+    breakdown.production.users = breakdownVisitors.production.size;
     breakdown.other.users = breakdownVisitors.other.size;
 
     const visitorSet = new Set<string>();

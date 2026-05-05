@@ -10,7 +10,7 @@ function getPresetLogo(presetId) {
   }
   return (
     logoCatalog.DEFAULT_THEME_LOGO ??
-    logoCatalog.getThemeLogoAsset?.("comic", "light") ??
+    logoCatalog.getThemeLogoAsset?.("default", "light") ??
     ""
   );
 }

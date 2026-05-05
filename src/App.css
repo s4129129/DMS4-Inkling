@@ -29,13 +29,13 @@
   --premium-gradient: linear-gradient(135deg, #40291f 0%, #634334 54%, #be8d56 100%);
 }
 
-.mode-light.theme-comic {
-  --background: #e5e5e5;
-  --surface: #e5e5e5;
-  --surface-container-low: #eeeeee;
-  --surface-container-high: #dedede;
-  --surface-container-highest: #c9c9c9;
-  --surface-container-lowest: #f4f4f4;
+.mode-light.theme-default {
+  --background: #d8d8d2;
+  --surface: #d8d8d2;
+  --surface-container-low: #e1e1dc;
+  --surface-container-high: #d0d0ca;
+  --surface-container-highest: #bdbdb6;
+  --surface-container-lowest: #ebebe5;
   --primary: #025bfe;
   --primary-container: #ffcf01;
   --on-primary: #fff7eb;
@@ -50,33 +50,33 @@
   --theme-saturated-secondary: #ffcf01;
   --on-theme-saturated-primary: #ffffff;
   --on-theme-saturated-secondary: #161616;
-  --ambient-shadow: 0 8px 0 rgb(0 0 0 / 72%);
-  --card-surface: #eeeeee;
+  --ambient-shadow: 0 8px 0 rgb(0 0 0 / 58%);
+  --card-surface: #e1e1dc;
   --card-surface-strong: #ffcf01;
   --card-border: #2a2a2a;
   --premium-gradient: linear-gradient(135deg, #ffcf01 0%, #ffcf01 58%, #025bfe 100%);
   --theme-saturated-gradient: linear-gradient(135deg, #ffcf01 0%, #ffcf01 58%, #025bfe 100%);
 }
 
-.dashboard-shell.mode-light.theme-comic .page-credit-chip,
-.dashboard-shell.mode-light.theme-comic .ink-total-chip,
-.dashboard-shell.mode-light.theme-comic .quills-chip {
+.dashboard-shell.mode-light.theme-default .page-credit-chip,
+.dashboard-shell.mode-light.theme-default .ink-total-chip,
+.dashboard-shell.mode-light.theme-default .quills-chip {
   color: #161616;
 }
 
-.mode-dark.theme-comic {
-  --background: #171717;
-  --surface: #171717;
-  --surface-container-low: #101010;
-  --surface-container-high: #1a1a1a;
-  --surface-container-highest: #2a2a2a;
-  --surface-container-lowest: #0c0c0c;
+.mode-dark.theme-default {
+  --background: #242428;
+  --surface: #242428;
+  --surface-container-low: #1f1f24;
+  --surface-container-high: #2d2d33;
+  --surface-container-highest: #3a3a42;
+  --surface-container-lowest: #1b1b20;
   --primary: #025bfe;
   --primary-container: #ffcf01;
   --on-primary: #ffffff;
   --on-primary-container: #161616;
   --on-surface: #ededed;
-  --muted: #b6b6b6;
+  --muted: #c7c7cc;
   --outline-variant: rgb(237 237 237 / 24%);
   --ghost-border: rgb(237 237 237 / 18%);
   --input-border: #d0d0d0;
@@ -85,16 +85,15 @@
   --theme-saturated-secondary: #ffcf01;
   --on-theme-saturated-primary: #ffffff;
   --on-theme-saturated-secondary: #161616;
-  --ambient-shadow: 0 8px 0 rgb(0 0 0 / 78%);
-  --card-surface: #171717;
-  --card-surface-strong: #202020;
-  --card-border: #777777;
+  --ambient-shadow: 0 8px 0 rgb(0 0 0 / 58%);
+  --card-surface: #26262c;
+  --card-surface-strong: #303036;
+  --card-border: #8a8a92;
   --premium-gradient: linear-gradient(135deg, #ffcf01 0%, #ffcf01 58%, #025bfe 100%);
   --theme-saturated-gradient: linear-gradient(135deg, #ffcf01 0%, #ffcf01 58%, #025bfe 100%);
 }
 
-.mode-dark.theme-vintage,
-.mode-dark.theme-default {
+.mode-dark.theme-vintage {
   --background: #1b1712;
   --surface: #1b1712;
   --surface-container-low: #241f18;
@@ -218,16 +217,15 @@ body,
   background: var(--background);
 }
 
-.app-shell.mode-light.theme-comic {
+.app-shell.mode-light.theme-default {
   background: var(--background);
 }
 
-.app-shell.mode-dark.theme-comic {
-  background: var(--background);
-}
-
-.app-shell.mode-dark.theme-vintage,
 .app-shell.mode-dark.theme-default {
+  background: var(--background);
+}
+
+.app-shell.mode-dark.theme-vintage {
   background: var(--background);
 }
 
@@ -2657,9 +2655,9 @@ body,
   min-width: 130px;
 }
 
-.dashboard-shell.mode-light.theme-comic .timer-focus-shell .timer-visual-mode,
-.dashboard-shell.mode-light.theme-comic .timer-focus-shell .timer-visual-clock,
-.dashboard-shell.mode-light.theme-comic .timer-focus-shell .timer-focus-label {
+.dashboard-shell.mode-light.theme-default .timer-focus-shell .timer-visual-mode,
+.dashboard-shell.mode-light.theme-default .timer-focus-shell .timer-visual-clock,
+.dashboard-shell.mode-light.theme-default .timer-focus-shell .timer-focus-label {
   color: #ffffff;
 }
 
@@ -4828,16 +4826,14 @@ button:disabled {
   }
 }
 
-.dashboard-shell.theme-vintage.mode-light .hint-popover,
-.dashboard-shell.theme-default.mode-light .hint-popover {
+.dashboard-shell.theme-vintage.mode-light .hint-popover {
   --hint-popover-bg: #f8f2e7;
   --hint-popover-border: rgb(86 56 38 / 24%);
   --hint-popover-text: #2d2119;
   --hint-popover-shadow: 0 14px 30px rgb(45 33 25 / 22%);
 }
 
-.dashboard-shell.theme-vintage.mode-dark .hint-popover,
-.dashboard-shell.theme-default.mode-dark .hint-popover {
+.dashboard-shell.theme-vintage.mode-dark .hint-popover {
   --hint-popover-bg: #1e1811;
   --hint-popover-border: rgb(242 212 167 / 28%);
   --hint-popover-text: #f5e8d4;
@@ -8471,109 +8467,109 @@ button:disabled {
   transform: translateX(-50%) translateY(0);
 }
 
-.dashboard-shell.theme-comic {
+.dashboard-shell.theme-default {
   color: var(--on-surface);
   background: var(--surface);
 }
 
-.dashboard-shell.theme-comic::after {
+.dashboard-shell.theme-default::after {
   border-radius: 0;
   background: var(--background);
   background-size: auto;
 }
 
-.dashboard-shell.theme-comic .panel:not(.settings-shell),
-.dashboard-shell.theme-comic .dash-topbar,
-.dashboard-shell.theme-comic .dash-sidebar,
-.dashboard-shell.theme-comic .page-frame,
-.dashboard-shell.theme-comic .fullscreen-overlay-controls,
-.dashboard-shell.theme-comic .dash-brand-logo,
-.dashboard-shell.theme-comic .dash-icon-btn,
-.dashboard-shell.theme-comic .topbar-premium-btn,
-.dashboard-shell.theme-comic .dash-logout-btn {
+.dashboard-shell.theme-default .panel:not(.settings-shell),
+.dashboard-shell.theme-default .dash-topbar,
+.dashboard-shell.theme-default .dash-sidebar,
+.dashboard-shell.theme-default .page-frame,
+.dashboard-shell.theme-default .fullscreen-overlay-controls,
+.dashboard-shell.theme-default .dash-brand-logo,
+.dashboard-shell.theme-default .dash-icon-btn,
+.dashboard-shell.theme-default .topbar-premium-btn,
+.dashboard-shell.theme-default .dash-logout-btn {
   border-radius: 0;
   border-color: var(--card-border);
   box-shadow: 0.28rem 0.28rem 0 rgb(0 0 0 / 62%);
 }
 
-.dashboard-shell.theme-comic .panel:not(.settings-shell),
-.dashboard-shell.theme-comic .dash-topbar,
-.dashboard-shell.theme-comic .dash-sidebar,
-.dashboard-shell.theme-comic .page-frame,
-.dashboard-shell.theme-comic .fullscreen-overlay-controls {
+.dashboard-shell.theme-default .panel:not(.settings-shell),
+.dashboard-shell.theme-default .dash-topbar,
+.dashboard-shell.theme-default .dash-sidebar,
+.dashboard-shell.theme-default .page-frame,
+.dashboard-shell.theme-default .fullscreen-overlay-controls {
   color: var(--on-surface);
   background: var(--surface-container-low);
 }
 
-.dashboard-shell.theme-comic .panel:not(.settings-shell)::after {
+.dashboard-shell.theme-default .panel:not(.settings-shell)::after {
   opacity: 0;
 }
 
-.dashboard-shell.theme-comic .panel h2,
-.dashboard-shell.theme-comic .dash-subtitle,
-.dashboard-shell.theme-comic .market-card h3,
-.dashboard-shell.theme-comic .dashboard-panel-head h3,
-.dashboard-shell.theme-comic .dashboard-stat-card strong {
+.dashboard-shell.theme-default .panel h2,
+.dashboard-shell.theme-default .dash-subtitle,
+.dashboard-shell.theme-default .market-card h3,
+.dashboard-shell.theme-default .dashboard-panel-head h3,
+.dashboard-shell.theme-default .dashboard-stat-card strong {
   font-family: Impact, "Arial Narrow", "Space Grotesk", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0;
 }
 
-.dashboard-shell.theme-comic .dash-nav-item,
-.dashboard-shell.theme-comic .dash-top-actions button,
-.dashboard-shell.theme-comic .dash-logout-btn,
-.dashboard-shell.theme-comic .status-text,
-.dashboard-shell.theme-comic .timer-card p,
-.dashboard-shell.theme-comic .market-card p {
+.dashboard-shell.theme-default .dash-nav-item,
+.dashboard-shell.theme-default .dash-top-actions button,
+.dashboard-shell.theme-default .dash-logout-btn,
+.dashboard-shell.theme-default .status-text,
+.dashboard-shell.theme-default .timer-card p,
+.dashboard-shell.theme-default .market-card p {
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
 }
 
-.dashboard-shell.theme-comic .topbar-premium-btn,
-.dashboard-shell.theme-comic .currency-chip,
-.dashboard-shell.theme-comic .action {
+.dashboard-shell.theme-default .topbar-premium-btn,
+.dashboard-shell.theme-default .currency-chip,
+.dashboard-shell.theme-default .action {
   border-color: var(--card-border);
   color: var(--on-theme-saturated-primary);
   box-shadow: 0.2rem 0.2rem 0 rgb(0 0 0 / 58%);
 }
 
-.dashboard-shell.theme-comic .topbar-premium-btn {
+.dashboard-shell.theme-default .topbar-premium-btn {
   background: var(--theme-saturated-gradient);
   color: var(--on-theme-saturated-secondary);
 }
 
-.dashboard-shell.theme-comic .quills-chip {
+.dashboard-shell.theme-default .quills-chip {
   border-color: var(--card-border);
   background: var(--theme-saturated-secondary);
   color: var(--on-theme-saturated-secondary);
 }
 
-.dashboard-shell.theme-comic .page-credit-chip,
-.dashboard-shell.theme-comic .ink-total-chip {
+.dashboard-shell.theme-default .page-credit-chip,
+.dashboard-shell.theme-default .ink-total-chip {
   border-color: var(--card-border);
   background: #8d8d8d;
   color: #161616;
 }
 
-.dashboard-shell.mode-light.theme-comic .page-credit-chip,
-.dashboard-shell.mode-light.theme-comic .ink-total-chip {
+.dashboard-shell.mode-light.theme-default .page-credit-chip,
+.dashboard-shell.mode-light.theme-default .ink-total-chip {
   background: #d6d6d6;
 }
 
-.dashboard-shell.theme-comic .ghost,
-.dashboard-shell.theme-comic .dash-nav-item {
+.dashboard-shell.theme-default .ghost,
+.dashboard-shell.theme-default .dash-nav-item {
   border-color: var(--card-border);
   background: var(--surface-container-high);
   color: var(--on-surface);
 }
 
-.dashboard-shell.theme-comic .timers-panel .stack > button.ghost {
+.dashboard-shell.theme-default .timers-panel .stack > button.ghost {
   border-radius: 0;
   box-shadow: 0.2rem 0.2rem 0 rgb(0 0 0 / 58%);
 }
 
-.dashboard-shell.theme-comic .ghost:hover,
-.dashboard-shell.theme-comic .dash-nav-item:hover,
-.dashboard-shell.theme-comic .dash-nav-item.active {
+.dashboard-shell.theme-default .ghost:hover,
+.dashboard-shell.theme-default .dash-nav-item:hover,
+.dashboard-shell.theme-default .dash-nav-item.active {
   border-color: var(--theme-saturated-primary);
   background: color-mix(
     in srgb,
@@ -8585,24 +8581,24 @@ button:disabled {
     inset 0 0 0 2px var(--theme-saturated-primary);
 }
 
-.dashboard-shell.mode-dark.theme-comic .dash-nav-item.active,
-.dashboard-shell.mode-dark.theme-comic .ghost:hover,
-.dashboard-shell.mode-dark.theme-comic .dash-nav-item:hover {
+.dashboard-shell.mode-dark.theme-default .dash-nav-item.active,
+.dashboard-shell.mode-dark.theme-default .ghost:hover,
+.dashboard-shell.mode-dark.theme-default .dash-nav-item:hover {
   color: var(--on-surface);
 }
 
-.dashboard-shell.theme-comic input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-.dashboard-shell.theme-comic select {
+.dashboard-shell.theme-default input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.dashboard-shell.theme-default select {
   border: 1px solid var(--card-border);
   border-radius: 0;
   background: var(--surface-container-lowest);
   box-shadow: 0.2rem 0.2rem 0 rgb(0 0 0 / 58%);
 }
 
-.dashboard-shell.theme-comic input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
-.dashboard-shell.theme-comic input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
-.dashboard-shell.theme-comic select:hover,
-.dashboard-shell.theme-comic select:focus {
+.dashboard-shell.theme-default input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+.dashboard-shell.theme-default input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.dashboard-shell.theme-default select:hover,
+.dashboard-shell.theme-default select:focus {
   border-color: var(--theme-saturated-primary);
   background: var(--surface-container-lowest);
   box-shadow:
@@ -8610,77 +8606,77 @@ button:disabled {
     inset 0 0 0 2px color-mix(in srgb, var(--theme-saturated-primary) 62%, transparent);
 }
 
-.dashboard-shell.theme-comic option {
+.dashboard-shell.theme-default option {
   color: var(--on-surface);
   background: var(--surface-container-high);
 }
 
-.dashboard-shell.theme-comic .book-card,
-.dashboard-shell.theme-comic .timer-card,
-.dashboard-shell.theme-comic .progress-item,
-.dashboard-shell.theme-comic .market-card,
-.dashboard-shell.theme-comic .dashboard-stat-card,
-.dashboard-shell.theme-comic .dashboard-book-row,
-.dashboard-shell.theme-comic .dashboard-session-row,
-.dashboard-shell.theme-comic .dashboard-detail-card,
-.dashboard-shell.theme-comic .dashboard-calendar-panel,
-.dashboard-shell.theme-comic .dashboard-timeline-panel,
-.dashboard-shell.theme-comic .calendar-mini-card,
-.dashboard-shell.theme-comic .calendar-list-card,
-.dashboard-shell.theme-comic .calendar-fullcalendar-wrap,
-.dashboard-shell.theme-comic .groups-left-column,
-.dashboard-shell.theme-comic .groups-mode-rail,
-.dashboard-shell.theme-comic .groups-chat-column,
-.dashboard-shell.theme-comic .groups-right-column,
-.dashboard-shell.theme-comic .groups-side-card,
-.dashboard-shell.theme-comic .groups-message,
-.dashboard-shell.theme-comic .groups-room-item,
-.dashboard-shell.theme-comic .groups-file-card {
+.dashboard-shell.theme-default .book-card,
+.dashboard-shell.theme-default .timer-card,
+.dashboard-shell.theme-default .progress-item,
+.dashboard-shell.theme-default .market-card,
+.dashboard-shell.theme-default .dashboard-stat-card,
+.dashboard-shell.theme-default .dashboard-book-row,
+.dashboard-shell.theme-default .dashboard-session-row,
+.dashboard-shell.theme-default .dashboard-detail-card,
+.dashboard-shell.theme-default .dashboard-calendar-panel,
+.dashboard-shell.theme-default .dashboard-timeline-panel,
+.dashboard-shell.theme-default .calendar-mini-card,
+.dashboard-shell.theme-default .calendar-list-card,
+.dashboard-shell.theme-default .calendar-fullcalendar-wrap,
+.dashboard-shell.theme-default .groups-left-column,
+.dashboard-shell.theme-default .groups-mode-rail,
+.dashboard-shell.theme-default .groups-chat-column,
+.dashboard-shell.theme-default .groups-right-column,
+.dashboard-shell.theme-default .groups-side-card,
+.dashboard-shell.theme-default .groups-message,
+.dashboard-shell.theme-default .groups-room-item,
+.dashboard-shell.theme-default .groups-file-card {
   border-radius: 0;
   border-color: var(--card-border);
   background: var(--card-surface);
 }
 
-.dashboard-shell.mode-light.theme-comic .dashboard-stat-card.tone-ink {
+.dashboard-shell.mode-light.theme-default .dashboard-stat-card.tone-ink {
   background: #e1e1e1;
 }
 
-.dashboard-shell.mode-light.theme-comic .dashboard-stat-card.tone-rose {
-  background: #e1e1e1;
-  color: var(--on-surface);
-}
-
-.dashboard-shell.mode-light.theme-comic .dashboard-stat-card.tone-moss {
+.dashboard-shell.mode-light.theme-default .dashboard-stat-card.tone-rose {
   background: #e1e1e1;
   color: var(--on-surface);
 }
 
-.dashboard-shell.mode-light.theme-comic .dashboard-stat-card.tone-blue {
+.dashboard-shell.mode-light.theme-default .dashboard-stat-card.tone-moss {
+  background: #e1e1e1;
+  color: var(--on-surface);
+}
+
+.dashboard-shell.mode-light.theme-default .dashboard-stat-card.tone-blue {
   background: var(--theme-saturated-primary);
   color: var(--on-theme-saturated-primary);
 }
 
-.dashboard-shell.mode-dark.theme-comic .dashboard-stat-card.tone-ink,
-.dashboard-shell.mode-dark.theme-comic .dashboard-stat-card.tone-rose,
-.dashboard-shell.mode-dark.theme-comic .dashboard-stat-card.tone-moss {
+.dashboard-shell.mode-dark.theme-default .dashboard-stat-card.tone-ink,
+.dashboard-shell.mode-dark.theme-default .dashboard-stat-card.tone-rose,
+.dashboard-shell.mode-dark.theme-default .dashboard-stat-card.tone-moss {
   background: #202020;
   color: var(--on-surface);
 }
 
-.dashboard-shell.theme-comic .groups-message.outgoing {
+.dashboard-shell.theme-default .groups-message.outgoing {
   background: var(--theme-saturated-primary);
   color: var(--on-theme-saturated-primary);
   border-color: var(--card-border);
 }
 
-.dashboard-shell.theme-comic .progress-track {
+.dashboard-shell.theme-default .progress-track {
   height: 6px;
   border-radius: 0;
   background: var(--surface-container-highest);
 }
 
-.dashboard-shell.theme-comic .progress-fill,
-.dashboard-shell.theme-comic .dashboard-card-bars i {
+.dashboard-shell.theme-default .progress-fill,
+.dashboard-shell.theme-default .dashboard-card-bars i {
   background: var(--theme-saturated-primary);
 }
 

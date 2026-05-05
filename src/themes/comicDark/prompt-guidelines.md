@@ -1,6 +1,6 @@
-# Comic Dark Prompt Guidelines
+# Default Dark Prompt Guidelines
 
-Use this when generating UI copy, component styles, or visual prompts for the Comic theme in dark mode.
+Use this when generating UI copy, component styles, or visual prompts for the Default theme in dark mode.
 
 ## Core Identity
 

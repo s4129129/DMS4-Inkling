@@ -33,10 +33,10 @@ export function ensureChartJs() {
 
 export function chartPalette(themeId, themeMode) {
   const isCommand = themeId === "command";
-  const isComic = themeId === "comic";
+  const isDefault = themeId === "default" || themeId === "comic";
   const isDark = themeMode === "dark";
 
-  if (isComic) {
+  if (isDefault) {
     return {
       text: isDark ? "#f7f7f7" : "#000000",
       grid: isDark ? "rgba(247, 247, 247, 0.28)" : "rgba(0, 0, 0, 0.24)",

@@ -47,7 +47,7 @@ GlobalWorkerOptions.workerSrc = workerSrc;
 
 const GOOGLE_AUTH_PARAMS = { prompt: "select_account" };
 const APP_TITLE = "Inkling";
-const DEFAULT_THEME_ID = "comic";
+const DEFAULT_THEME_ID = "default";
 const DEFAULT_THEME_MODE = "dark";
 const THEME_STORAGE_KEY = "inkling:active-theme:v1";
 const DEFAULT_WORKSPACE_NAME = "Inkling";
@@ -65,7 +65,7 @@ const DEFAULT_BANNER_OPACITY = 0.24;
 const DEFAULT_BANNER_SCALE = 100;
 const DEFAULT_ACCENT_COLOR = "";
 const LEGACY_THEME_ID_MAP = {
-  default: "vintage",
+  comic: "default",
 };
 const DASHBOARD_SIDEBAR_WIDTH_STORAGE_KEY = "inkling:dashboard-sidebar-width:v1";
 const DEFAULT_DASHBOARD_SIDEBAR_WIDTH = 300;
@@ -1112,7 +1112,7 @@ function ReaderWorkspace({ onThemeChange }) {
     [profile?.recentUserIcons],
   );
   const userIconPreset =
-    profile?.userIconPreset ?? me?.iconPreset ?? "comic-light";
+    profile?.userIconPreset ?? me?.iconPreset ?? "default-light";
   const userIconStorageId = profile?.userIconStorageId ?? "";
   const customBannerPositionX = normalizeBannerPosition(
     profile?.customBannerPositionX,
@@ -2999,13 +2999,10 @@ function ReaderWorkspace({ onThemeChange }) {
           ? `Joined private group: ${result.groupName || "Group"}.`
           : "You are already a member of this private group.",
       });
-    } catch (error) {
+    } catch {
       setGroupState({
         busy: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Could not join private group.",
+        message: "Unable to find group.",
       });
     }
   };
