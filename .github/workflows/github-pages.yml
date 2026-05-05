@@ -20,11 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VITE_BASE_PATH: /
-      VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
-      VITE_CONVEX_SITE_URL: ${{ vars.VITE_CONVEX_SITE_URL }}
-      VITE_BOOK_ASSET_BASE_URL: ${{ vars.VITE_BOOK_ASSET_BASE_URL }}
-      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
-      VITE_GOOGLE_API_KEY: ${{ vars.VITE_GOOGLE_API_KEY }}
+      VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL || 'https://tame-hare-319.convex.cloud' }}
+      VITE_CONVEX_SITE_URL: ${{ vars.VITE_CONVEX_SITE_URL || 'https://tame-hare-319.convex.site' }}
+      VITE_BOOK_ASSET_BASE_URL: ${{ vars.VITE_BOOK_ASSET_BASE_URL || 'https://assets.inklingreader.xyz/official' }}
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID || '268825985658-n0cqs1blqdjhl7j66mtc8ek5lsjhnef7.apps.googleusercontent.com' }}
+      VITE_GOOGLE_API_KEY: ${{ vars.VITE_GOOGLE_API_KEY || 'AIzaSyDeeGZZyb1cDMcB5wOhmmW8fsvbGVjFj8o' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
