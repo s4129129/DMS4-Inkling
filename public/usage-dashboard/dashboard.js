@@ -295,7 +295,10 @@
       { label: "15-30m", min: 900, max: 1800, count: 0 },
       { label: "30-60m", min: 1800, max: 3600, count: 0 },
       { label: "60-120m", min: 3600, max: 7200, count: 0 },
-      { label: "2h+", min: 7200, max: Infinity, count: 0 },
+      { label: "2-4h", min: 7200, max: 14400, count: 0 },
+      { label: "4-8h", min: 14400, max: 28800, count: 0 },
+      { label: "8-12h", min: 28800, max: 43200, count: 0 },
+      { label: "12h+", min: 43200, max: Infinity, count: 0 },
     ];
 
     sessions.forEach(function (session) {
