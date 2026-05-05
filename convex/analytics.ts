@@ -65,6 +65,18 @@ function matchesSegment(sourceHost: string, segment: SegmentKey) {
   return classifyHost(sourceHost) === segment;
 }
 
+function isAuthenticatedSession(sessionStage?: string) {
+  return sessionStage === "authenticated";
+}
+
+function userIdentityKey(session: {
+  googleAccountEmail?: string;
+  appUserId?: string;
+  visitorKey: string;
+}) {
+  return session.googleAccountEmail ?? session.appUserId ?? session.visitorKey;
+}
+
 export const ingestSnapshot = internalMutation({
   args: {
     sessionKey: v.string(),
@@ -193,7 +205,9 @@ export const summary = query({
       const bucket = classifyHost(session.sourceHost);
       breakdown[bucket].sessions += 1;
       breakdown[bucket].pageViews += session.pageViews;
-      breakdownVisitors[bucket].add(session.visitorKey);
+      if (isAuthenticatedSession(session.sessionStage)) {
+        breakdownVisitors[bucket].add(userIdentityKey(session));
+      }
     }
 
     breakdown.local.users = breakdownVisitors.local.size;
@@ -201,9 +215,9 @@ export const summary = query({
     breakdown.other.users = breakdownVisitors.other.size;
 
     const visitorSet = new Set<string>();
+    const activeVisitorSet = new Set<string>();
     let totalDuration = 0;
     let totalPageViews = 0;
-    let activeUsers = 0;
     let bounceCount = 0;
 
     const pathMap = new Map<string, number>();
@@ -242,13 +256,16 @@ export const summary = query({
     >();
 
     for (const session of filteredSessions) {
-      visitorSet.add(session.visitorKey);
+      const isAuthenticated = isAuthenticatedSession(session.sessionStage);
+      if (isAuthenticated) {
+        const identityKey = userIdentityKey(session);
+        visitorSet.add(identityKey);
+        if (now - session.lastSeen <= 5 * 60 * 1000) {
+          activeVisitorSet.add(identityKey);
+        }
+      }
       totalDuration += session.durationSec;
       totalPageViews += session.pageViews;
-
-      if (now - session.lastSeen <= 5 * 60 * 1000) {
-        activeUsers += 1;
-      }
 
       if (session.pageViews <= 1) {
         bounceCount += 1;
@@ -278,8 +295,11 @@ export const summary = query({
         }
       }
 
-      const groupKey =
-        session.googleAccountEmail || session.appUserId || session.visitorKey;
+      if (!isAuthenticated) {
+        continue;
+      }
+
+      const groupKey = userIdentityKey(session);
       const group = groupedUsersMap.get(groupKey) ?? {
         userId: session.visitorKey,
         googleAccountName: session.googleAccountName,
@@ -351,7 +371,7 @@ export const summary = query({
       windowHours,
       generatedAt: now,
       totalUsers: visitorSet.size,
-      activeUsers,
+      activeUsers: activeVisitorSet.size,
       totalSessions,
       totalPageViews,
       avgSessionSec,

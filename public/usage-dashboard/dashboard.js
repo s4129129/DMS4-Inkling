@@ -182,6 +182,20 @@
     return value === "authenticated" ? "authenticated" : "guest";
   }
 
+  function isAuthenticatedSession(session) {
+    return normalizeSessionStage(session && session.sessionStage) === "authenticated";
+  }
+
+  function userIdentityKey(session) {
+    return (
+      session.googleAccountEmail ||
+      session.appUserId ||
+      session.userId ||
+      session.id ||
+      "-"
+    );
+  }
+
   function timeAgo(ts) {
     if (!ts) {
       return "-";
@@ -206,27 +220,23 @@
   }
 
   function aggregate(store) {
-    var usersMap = store && store.users ? store.users : {};
     var sessionsMap = store && store.sessions ? store.sessions : {};
 
     var sessions = Object.values(sessionsMap).filter(function (session) {
       return matchesSegment(session.sourceHost || window.location.host);
     });
-    var sessionUserIds = new Set(
-      sessions
-        .map(function (session) {
-          return session.userId;
-        })
-        .filter(Boolean),
+    var authenticatedSessions = sessions.filter(isAuthenticatedSession);
+    var authenticatedUserIds = new Set(
+      authenticatedSessions.map(userIdentityKey).filter(Boolean),
     );
-    var users = Object.values(usersMap).filter(function (user) {
-      return segment === "all" || sessionUserIds.has(user.id);
-    });
     var now = Date.now();
 
-    var activeUsers = users.filter(function (user) {
-      return now - Number(user.lastSeen || 0) <= ACTIVE_WINDOW_MS;
-    }).length;
+    var activeUserIds = new Set();
+    authenticatedSessions.forEach(function (session) {
+      if (now - Number(session.lastSeen || 0) <= ACTIVE_WINDOW_MS) {
+        activeUserIds.add(userIdentityKey(session));
+      }
+    });
 
     var totalDuration = sessions.reduce(function (sum, session) {
       return sum + Number(session.durationSec || 0);
@@ -310,7 +320,7 @@
       .slice(0, 12);
 
     var groupedUsersMap = {};
-    sessions.forEach(function (session) {
+    authenticatedSessions.forEach(function (session) {
       var key =
         session.googleAccountEmail ||
         session.appUserId ||
@@ -357,8 +367,8 @@
       .slice(0, 40);
 
     return {
-      totalUsers: users.length,
-      activeUsers: activeUsers,
+      totalUsers: authenticatedUserIds.size,
+      activeUsers: activeUserIds.size,
       totalSessions: Number(totals.sessions || totalSessions),
       totalPageViews: totalPageViews,
       avgSession: avgSession,
