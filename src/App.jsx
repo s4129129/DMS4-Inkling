@@ -670,6 +670,9 @@ function getTimerRemainingMs(timer, now) {
 
 function getAuthRedirectUrl() {
   const url = new URL(window.location.href);
+  if (url.hostname === "www.inklingreader.xyz") {
+    return "https://inklingreader.xyz/";
+  }
   return `${url.origin}${url.pathname}`;
 }
 

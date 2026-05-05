@@ -33,6 +33,23 @@ function isAllowedLocalDevRedirect(redirectTo: string) {
   }
 }
 
+function getHostnameVariants(baseUrl: string) {
+  const parsed = new URL(baseUrl);
+  const hostnames = new Set([parsed.hostname]);
+
+  if (parsed.hostname.startsWith("www.")) {
+    hostnames.add(parsed.hostname.slice(4));
+  } else {
+    hostnames.add(`www.${parsed.hostname}`);
+  }
+
+  return [...hostnames].map((hostname) => {
+    const variant = new URL(parsed.toString());
+    variant.hostname = hostname;
+    return variant.toString();
+  });
+}
+
 async function redirect({ redirectTo }: { redirectTo: string }) {
   const siteUrlRaw = process.env.SITE_URL;
   if (!siteUrlRaw) {
@@ -49,7 +66,7 @@ async function redirect({ redirectTo }: { redirectTo: string }) {
   }
 
   const allowedBaseUrls = [
-    siteUrl,
+    ...getHostnameVariants(siteUrl),
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
