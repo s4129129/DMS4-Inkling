@@ -19,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      VITE_BASE_PATH: /${{ github.event.repository.name }}/
+      VITE_BASE_PATH: /
       VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
       VITE_CONVEX_SITE_URL: ${{ vars.VITE_CONVEX_SITE_URL }}
       VITE_BOOK_ASSET_BASE_URL: ${{ vars.VITE_BOOK_ASSET_BASE_URL }}

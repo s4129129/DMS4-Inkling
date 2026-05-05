@@ -155,6 +155,7 @@ node_modules
 **/node_modules/
 
 # Large reader/book assets belong in R2, not GitHub
+Assets/
 Manga/
 **/Manga/
 public/official/*.pdf

@@ -33,13 +33,13 @@ The import flow uses catalog `pageCount`, so adding an official book does not op
 Set this in production:
 
 ```env
-VITE_BOOK_ASSET_BASE_URL=/s4129129-Inkling/official
+VITE_BOOK_ASSET_BASE_URL=https://assets.inklingreader.xyz/official
 ```
 
 Later, if books move to a CDN or object-storage bucket, change it to something like:
 
 ```env
-VITE_BOOK_ASSET_BASE_URL=https://cdn.example.com/inkling/official
+VITE_BOOK_ASSET_BASE_URL=https://assets.inklingreader.xyz/official
 ```
 
 The app will read:
@@ -49,7 +49,7 @@ The app will read:
 - `${VITE_BOOK_ASSET_BASE_URL}/covers/enbj01.svg`
 - `${VITE_BOOK_ASSET_BASE_URL}/covers/enbj002.svg`
 
-## Namecheap Packaging
+## Legacy Namecheap Packaging
 
 For the old all-in-one upload:
 
@@ -68,7 +68,7 @@ That creates:
 - `deploy-namecheap-app.zip`: app shell, JavaScript, CSS, images, and covers, excluding large official PDFs.
 - `deploy-namecheap-book-assets.zip`: the `official/` book asset folder.
 
-Upload book assets less often than the app shell. When a CDN is available, upload `official/` there and set `VITE_BOOK_ASSET_BASE_URL` to the CDN URL.
+This is legacy. For the GitHub Pages + R2 setup, upload official book assets to R2 instead and keep `VITE_BOOK_ASSET_BASE_URL=https://assets.inklingreader.xyz/official`.
 
 ## Uploads
 
@@ -90,12 +90,12 @@ Set these in Convex environment variables, not in the public frontend env:
 
 ```env
 BOOK_ASSET_PROVIDER=r2
-BOOK_ASSET_BUCKET=your-bucket-name
-BOOK_ASSET_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+BOOK_ASSET_BUCKET=timer-reader-tracker
+BOOK_ASSET_ENDPOINT=https://5ef3213701ae8987f3134898e470c4b7.r2.cloudflarestorage.com
 BOOK_ASSET_REGION=auto
 BOOK_ASSET_ACCESS_KEY_ID=...
 BOOK_ASSET_SECRET_ACCESS_KEY=...
-BOOK_ASSET_PUBLIC_BASE_URL=https://cdn.example.com
+BOOK_ASSET_PUBLIC_BASE_URL=https://assets.inklingreader.xyz
 ```
 
 For AWS S3, `BOOK_ASSET_ENDPOINT` can be `https://s3.<region>.amazonaws.com`, and `BOOK_ASSET_REGION` should match the bucket region.
@@ -105,7 +105,7 @@ Configure bucket CORS to allow browser uploads from your site. Example:
 ```json
 [
   {
-    "AllowedOrigins": ["https://dms.onl", "https://www.dms.onl", "http://localhost:5173", "https://localhost:5173"],
+    "AllowedOrigins": ["https://inklingreader.xyz", "http://localhost:5173", "https://localhost:5173"],
     "AllowedMethods": ["PUT", "GET", "HEAD"],
     "AllowedHeaders": ["Content-Type"],
     "ExposeHeaders": ["ETag"],

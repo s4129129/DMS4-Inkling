@@ -20,12 +20,11 @@ Keep the split:
 From this folder:
 
 ```powershell
-Set-Location "c:\Users\PC\Desktop\DMS4 TEST 1\react-template"
-git init
+Set-Location "D:\gitlocal\DMS4-Inkling"
 git add .
 git commit -m "Prepare GitHub Pages deployment"
 git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/inkling-reader.git
+git remote add origin https://github.com/YOUR_USERNAME/DMS4-Inkling.git
 git push -u origin main
 ```
 
@@ -34,7 +33,7 @@ If `git init` says the repo already exists, skip it.
 If `remote add origin` says origin already exists, use:
 
 ```powershell
-git remote set-url origin https://github.com/YOUR_USERNAME/inkling-reader.git
+git remote set-url origin https://github.com/YOUR_USERNAME/DMS4-Inkling.git
 ```
 
 ## 3. Enable GitHub Pages
@@ -60,18 +59,12 @@ In the GitHub repo:
 ```txt
 VITE_CONVEX_URL=https://tame-hare-319.convex.cloud
 VITE_CONVEX_SITE_URL=https://tame-hare-319.convex.site
-VITE_BOOK_ASSET_BASE_URL=https://YOUR-R2-PUBLIC-URL.r2.dev/official
+VITE_BOOK_ASSET_BASE_URL=https://assets.inklingreader.xyz/official
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
 VITE_GOOGLE_API_KEY=your-google-api-key
 ```
 
 Use variables, not secrets, for `VITE_*` values. Vite puts these values into the browser bundle.
-
-For R2, use the public development URL for now. Example:
-
-```txt
-VITE_BOOK_ASSET_BASE_URL=https://pub-abc123.r2.dev/official
-```
 
 That means official assets should exist in R2 like:
 
@@ -87,21 +80,21 @@ official/covers/enbj002.svg
 In the Convex dashboard for `tame-hare-319`, set:
 
 ```txt
-SITE_URL=https://YOUR_USERNAME.github.io/inkling-reader
+SITE_URL=https://inklingreader.xyz
 ```
 
-If you use a different repo name, replace `inkling-reader`.
+If you use a different repo name, replace `DMS4-Inkling`.
 
 For R2 uploads, set these Convex backend env vars:
 
 ```txt
 BOOK_ASSET_PROVIDER=r2
-BOOK_ASSET_BUCKET=your-r2-bucket-name
-BOOK_ASSET_ENDPOINT=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
+BOOK_ASSET_BUCKET=timer-reader-tracker
+BOOK_ASSET_ENDPOINT=https://5ef3213701ae8987f3134898e470c4b7.r2.cloudflarestorage.com
 BOOK_ASSET_REGION=auto
 BOOK_ASSET_ACCESS_KEY_ID=your-r2-access-key-id
 BOOK_ASSET_SECRET_ACCESS_KEY=your-r2-secret-access-key
-BOOK_ASSET_PUBLIC_BASE_URL=https://YOUR-R2-PUBLIC-URL.r2.dev
+BOOK_ASSET_PUBLIC_BASE_URL=https://assets.inklingreader.xyz
 ```
 
 Important distinction:
@@ -116,7 +109,7 @@ In Google Cloud Console, update the OAuth client.
 Authorized JavaScript origins:
 
 ```txt
-https://YOUR_USERNAME.github.io
+https://inklingreader.xyz
 ```
 
 Authorized redirect URI:
@@ -125,7 +118,7 @@ Authorized redirect URI:
 https://tame-hare-319.convex.site/api/auth/callback/google
 ```
 
-Do not put the repo path in the JavaScript origin. Google wants only the origin.
+Do not add a path to the JavaScript origin. Google wants only the origin.
 
 ## 7. Deploy
 
@@ -140,7 +133,7 @@ git push
 Then open:
 
 ```txt
-https://github.com/YOUR_USERNAME/inkling-reader/actions
+https://github.com/YOUR_USERNAME/DMS4-Inkling/actions
 ```
 
 Wait for `Deploy to GitHub Pages` to finish.
@@ -148,7 +141,7 @@ Wait for `Deploy to GitHub Pages` to finish.
 Your site will be:
 
 ```txt
-https://YOUR_USERNAME.github.io/inkling-reader/
+https://inklingreader.xyz/
 ```
 
 ## 8. Check The Site
@@ -167,8 +160,8 @@ Test:
 To simulate GitHub Pages locally:
 
 ```powershell
-$env:VITE_BASE_PATH="/inkling-reader/"
-$env:VITE_BOOK_ASSET_BASE_URL="https://YOUR-R2-PUBLIC-URL.r2.dev/official"
+$env:VITE_BASE_PATH="/"
+$env:VITE_BOOK_ASSET_BASE_URL="https://assets.inklingreader.xyz/official"
 npm run build
 npm run preview
 ```

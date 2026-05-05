@@ -44,7 +44,7 @@ In your Convex deployment, set these environment variables:
 `SITE_URL` should point to your frontend origin, for example:
 
 - Local: `http://127.0.0.1:5173`
-- Production: `https://your-domain.com`
+- Production: `https://inklingreader.xyz`
 
 Use the CLI:
 
@@ -98,26 +98,29 @@ Open `https://localhost:5173/`.
 - Convex Auth Google redirect URI remains your Convex callback URL, for example:
   - `https://tame-hare-319.convex.site/api/auth/callback/google`
 
-## 5) Deploy frontend to Namecheap cPanel
+## 5) Deploy Frontend To GitHub Pages
 
 1. Confirm production auth URLs first:
 
-- Convex `SITE_URL` must equal your production URL (example: `https://yourdomain.com`).
+- Convex `SITE_URL` must equal your production URL: `https://inklingreader.xyz`.
 - Google OAuth must include your production origin and callback URL.
 
-2. Build and package for cPanel:
+2. Configure GitHub Pages:
 
-```powershell
-Set-Location "c:\Users\PC\Desktop\DMS4 TEST 1\react-template"
-npm.cmd run ship:namecheap
+- Repository settings -> Pages -> Source: `GitHub Actions`
+- Custom domain: `inklingreader.xyz`
+
+3. Configure GitHub Actions repository variables:
+
+```env
+VITE_CONVEX_URL=https://tame-hare-319.convex.cloud
+VITE_CONVEX_SITE_URL=https://tame-hare-319.convex.site
+VITE_BOOK_ASSET_BASE_URL=https://assets.inklingreader.xyz/official
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+VITE_GOOGLE_API_KEY=your-google-api-key
 ```
 
-This generates `deploy-namecheap.zip` containing your production site.
-
-3. In cPanel File Manager, upload `deploy-namecheap.zip` into `public_html`.
-4. Extract the zip in `public_html`.
-5. Confirm `.htaccess` exists after extraction for SPA routing support.
-6. If using a subfolder deployment, set Vite base path in `vite.config.js` before rebuilding.
+4. Push to `main`; GitHub Actions builds and deploys `dist`.
 
 ## 6) Backend and auth production checks
 
@@ -132,7 +135,7 @@ npm.cmd run convex:deploy
 
 - `AUTH_GOOGLE_ID`
 - `AUTH_GOOGLE_SECRET`
-- `SITE_URL=https://yourdomain.com`
+- `SITE_URL=https://inklingreader.xyz`
 
 3. In Google Cloud OAuth app:
 
@@ -143,7 +146,7 @@ npm.cmd run convex:deploy
   for example:
   - `http://localhost:5173`
   - `http://127.0.0.1:5173`
-  - `https://dms.onl`
+  - `https://inklingreader.xyz`
 
 ## Notes
 
