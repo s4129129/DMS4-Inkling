@@ -10,7 +10,7 @@
     "legacyComicThemeId": "comic",
     "default": {
       "lightMain1": "#D8D8D2",
-      "darkMain1": "#242428",
+      "darkMain1": "#171717",
       "pageAndInkChip": "neutral",
       "quillAndPremiumChip": "#FFCF01",
       "premiumButtonStops": ["#FFCF01", "#FFCF01", "#DE2915"]

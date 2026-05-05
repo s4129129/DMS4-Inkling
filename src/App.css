@@ -65,18 +65,18 @@
 }
 
 .mode-dark.theme-default {
-  --background: #242428;
-  --surface: #242428;
-  --surface-container-low: #1f1f24;
-  --surface-container-high: #2d2d33;
-  --surface-container-highest: #3a3a42;
-  --surface-container-lowest: #1b1b20;
+  --background: #171717;
+  --surface: #171717;
+  --surface-container-low: #101010;
+  --surface-container-high: #1a1a1a;
+  --surface-container-highest: #2a2a2a;
+  --surface-container-lowest: #0c0c0c;
   --primary: #025bfe;
   --primary-container: #ffcf01;
   --on-primary: #ffffff;
   --on-primary-container: #161616;
   --on-surface: #ededed;
-  --muted: #c7c7cc;
+  --muted: #b6b6b6;
   --outline-variant: rgb(237 237 237 / 24%);
   --ghost-border: rgb(237 237 237 / 18%);
   --input-border: #d0d0d0;
@@ -85,10 +85,10 @@
   --theme-saturated-secondary: #ffcf01;
   --on-theme-saturated-primary: #ffffff;
   --on-theme-saturated-secondary: #161616;
-  --ambient-shadow: 0 8px 0 rgb(0 0 0 / 58%);
-  --card-surface: #26262c;
-  --card-surface-strong: #303036;
-  --card-border: #8a8a92;
+  --ambient-shadow: 0 8px 0 rgb(0 0 0 / 78%);
+  --card-surface: #171717;
+  --card-surface-strong: #202020;
+  --card-border: #777777;
   --premium-gradient: linear-gradient(135deg, #ffcf01 0%, #ffcf01 58%, #025bfe 100%);
   --theme-saturated-gradient: linear-gradient(135deg, #ffcf01 0%, #ffcf01 58%, #025bfe 100%);
 }

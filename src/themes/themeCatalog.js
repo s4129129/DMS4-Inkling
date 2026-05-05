@@ -54,14 +54,14 @@ export const THEME_CATALOG = {
       },
       dark: {
         preview: {
-          bg: "#242428",
-          surface: "#2d2d33",
+          bg: "#171717",
+          surface: "#101010",
           accent: "#025bfe",
           text: "#ededed",
         },
         roles: {
-          main1: "#242428",
-          main2: "#2d2d33",
+          main1: "#171717",
+          main2: "#101010",
           support: "#ffcf01",
           accent: "#025bfe",
           text: "#ededed",
