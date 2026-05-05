@@ -23,7 +23,7 @@ if ("serviceWorker" in navigator) {
 createRoot(document.getElementById("root")).render(
   <ConvexAuthProvider
     client={convex}
-    storage={window.sessionStorage}
+    storage={window.localStorage}
     storageNamespace={authStorageNamespace}
   >
     <App />
