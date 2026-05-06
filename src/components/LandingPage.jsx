@@ -21,7 +21,7 @@ const STORE_NAV_LINKS = [
 
 const LANDING_SECTIONS = [
   {
-    title: ["Quy trình làm việc", "khác"],
+    title: ["Quy trình làm việc"],
     note: "Một trang web tích hợp quy trình làm việc bao gồm: chia nhỏ nhiệm vụ, quản lý thời gian và rèn luyện thói quen đọc sách thông qua cơ chế trò chơi hóa (gamification).",
     image: landing1Image,
   },
