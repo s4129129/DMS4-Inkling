@@ -36,6 +36,7 @@ import AdPlaceholderPopup from "./components/AdPlaceholderPopup";
 import BillingOverlay from "./components/BillingOverlay";
 import AvatarPickerOverlay from "./components/AvatarPickerOverlay";
 import FaqOverlay from "./components/FaqOverlay";
+import PatchNotesOverlay from "./components/PatchNotesOverlay";
 import { getThemeSaturatedColors } from "./themes";
 import {
   OFFICIAL_BOOKS,
@@ -167,6 +168,8 @@ const DASHBOARD_SECTION_KEYS = new Set([
 ]);
 
 const TUTORIAL_STORAGE_PREFIX = "inkling-dashboard-tutorial-complete:v1:";
+const PATCH_NOTES_VERSION = "v0.1";
+const PATCH_NOTES_STORAGE_PREFIX = "inkling-dashboard-patch-notes-seen:v1:";
 const AD_POPUP_DURATION_SECONDS = 30;
 const MAX_SESSION_MINUTES = 120;
 const LONG_SESSION_WARNING =
@@ -359,6 +362,45 @@ function markTutorialCompleted(scopeId) {
     window.localStorage.setItem(key, "1");
   } catch {
     // Ignore storage failures; tutorial can still run in-memory for this session.
+  }
+}
+
+function getPatchNotesStorageKey(scopeId, version = PATCH_NOTES_VERSION) {
+  const safeScope = String(scopeId || "")
+    .trim()
+    .toLowerCase();
+  const safeVersion = String(version || "")
+    .trim()
+    .toLowerCase();
+  if (!safeScope || !safeVersion) {
+    return "";
+  }
+  return `${PATCH_NOTES_STORAGE_PREFIX}${safeVersion}:${safeScope}`;
+}
+
+function isPatchNotesCompleted(scopeId, version = PATCH_NOTES_VERSION) {
+  const key = getPatchNotesStorageKey(scopeId, version);
+  if (!key || typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    return window.localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markPatchNotesCompleted(scopeId, version = PATCH_NOTES_VERSION) {
+  const key = getPatchNotesStorageKey(scopeId, version);
+  if (!key || typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(key, "1");
+  } catch {
+    // Patch notes are informational, so storage failures should not block the app.
   }
 }
 
@@ -1013,7 +1055,6 @@ function ReaderWorkspace({ onThemeChange }) {
   const lastNotifiedSecondRef = useRef(-1);
   const completionNotifiedRef = useRef(false);
   const completedTimerSyncIdsRef = useRef(new Set());
-  const tutorialEnforcedScopeRef = useRef("");
 
   const [pdfDoc, setPdfDoc] = useState(null);
   const [cbzImages, setCbzImages] = useState([]);
@@ -1069,6 +1110,7 @@ function ReaderWorkspace({ onThemeChange }) {
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isFaqOpen, setIsFaqOpen] = useState(false);
   const [isBillingOpen, setIsBillingOpen] = useState(false);
+  const [isPatchNotesOpen, setIsPatchNotesOpen] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [activeSection, setActiveSection] = useState(() =>
@@ -1291,29 +1333,37 @@ function ReaderWorkspace({ onThemeChange }) {
       return;
     }
 
+    if (isTutorialOpen || isFaqOpen || isPatchNotesOpen) {
+      return;
+    }
+
+    if (!isTutorialCompleted(tutorialScope)) {
+      setIsSettingsOpen(false);
+      setIsAvatarPickerOpen(false);
+      setIsProfileOpen(false);
+      setIsSupportOpen(false);
+      setTutorialStepIndex(0);
+      setIsTutorialOpen(true);
+      return;
+    }
+
     if (!isFaqCompleted(tutorialScope)) {
       setIsSettingsOpen(false);
       setIsAvatarPickerOpen(false);
       setIsProfileOpen(false);
       setIsSupportOpen(false);
-      setIsTutorialOpen(false);
       setIsFaqOpen(true);
       return;
     }
 
-    if (tutorialEnforcedScopeRef.current === tutorialScope) {
-      return;
-    }
-    tutorialEnforcedScopeRef.current = tutorialScope;
-
-    if (!isTutorialCompleted(tutorialScope)) {
+    if (!isPatchNotesCompleted(tutorialScope)) {
       setIsSettingsOpen(false);
+      setIsAvatarPickerOpen(false);
       setIsProfileOpen(false);
       setIsSupportOpen(false);
-      setTutorialStepIndex(0);
-      setIsTutorialOpen(true);
+      setIsPatchNotesOpen(true);
     }
-  }, [isFaqOpen, tutorialScope]);
+  }, [isFaqOpen, isPatchNotesOpen, isTutorialOpen, tutorialScope]);
 
   useEffect(() => {
     if (!workspaceScope || me === undefined) {
@@ -3528,6 +3578,13 @@ function ReaderWorkspace({ onThemeChange }) {
     setMarketMessage("Tutorial complete. You are ready to unlock pages.");
   };
 
+  const onClosePatchNotes = () => {
+    if (tutorialScope) {
+      markPatchNotesCompleted(tutorialScope);
+    }
+    setIsPatchNotesOpen(false);
+  };
+
   const onRenameWorkspaceName = async (nextName) => {
     const safeName = String(nextName || "").trim() || DEFAULT_WORKSPACE_NAME;
     setWorkspaceName(safeName);
@@ -3791,6 +3848,7 @@ function ReaderWorkspace({ onThemeChange }) {
             themeId={selectedThemeId}
             themeMode={selectedThemeMode}
             accentColor={selectedAccentColor}
+            language={selectedLanguage}
           />
         )}
 
@@ -4016,6 +4074,13 @@ function ReaderWorkspace({ onThemeChange }) {
 
         {isBillingOpen && (
           <BillingOverlay onClose={() => setIsBillingOpen(false)} />
+        )}
+
+        {isPatchNotesOpen && (
+          <PatchNotesOverlay
+            language={selectedLanguage}
+            onClose={onClosePatchNotes}
+          />
         )}
 
         {isTutorialOpen && (

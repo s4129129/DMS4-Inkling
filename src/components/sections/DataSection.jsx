@@ -53,6 +53,27 @@ function formatWindowLabel(windowMinutes) {
   return `${windowMinutes}m`;
 }
 
+function translateDataChartText(value, language) {
+  if (language !== "vi") {
+    return value;
+  }
+
+  const translations = {
+    Completed: "Đã hoàn thành",
+    Pages: "Trang",
+    "Pages unlocked": "Trang đã mở khóa",
+    Paused: "Đã tạm dừng",
+    "Reading session": "Phiên đọc",
+    Removed: "Đã xóa",
+    Started: "Đã bắt đầu",
+    Time: "Thời gian",
+    Timer: "Bộ đếm giờ",
+    "Timer events": "Sự kiện bộ đếm giờ",
+  };
+
+  return translations[value] ?? value;
+}
+
 export default function DataSection({
   progressBooks,
   weekly,
@@ -66,6 +87,7 @@ export default function DataSection({
   calendarLockedReason = "",
   showOverviewPanel = true,
   embedded = false,
+  language = "en",
 }) {
   const [progressView, setProgressView] = useState("bar");
   const [activityViewport, setActivityViewport] = useState({
@@ -84,6 +106,21 @@ export default function DataSection({
     [themeId, themeMode],
   );
   const weeklyPoints = weekly?.length ? weekly : EMPTY_WEEKLY;
+  const chartText = useMemo(
+    () => ({
+      completed: translateDataChartText("Completed", language),
+      pages: translateDataChartText("Pages", language),
+      pagesUnlocked: translateDataChartText("Pages unlocked", language),
+      paused: translateDataChartText("Paused", language),
+      readingSession: translateDataChartText("Reading session", language),
+      removed: translateDataChartText("Removed", language),
+      started: translateDataChartText("Started", language),
+      time: translateDataChartText("Time", language),
+      timer: translateDataChartText("Timer", language),
+      timerEvents: translateDataChartText("Timer events", language),
+    }),
+    [language],
+  );
   const activityRows = useMemo(
     () => (dailyActivity?.length ? dailyActivity : EMPTY_DAILY_ACTIVITY),
     [dailyActivity],
@@ -231,7 +268,7 @@ export default function DataSection({
           labels: weeklyPoints.map((item) => item.day),
           datasets: [
             {
-              label: "Pages unlocked",
+              label: chartText.pagesUnlocked,
               data: weeklyPoints.map((item) => item.pages),
               borderRadius: 8,
               backgroundColor: palette.bar,
@@ -265,7 +302,7 @@ export default function DataSection({
     return () => {
       isCancelled = true;
     };
-  }, [weeklyPoints, palette]);
+  }, [chartText.pagesUnlocked, weeklyPoints, palette]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -300,7 +337,7 @@ export default function DataSection({
           labels,
           datasets: [
             {
-              label: "Started",
+              label: chartText.started,
               data: metric("started"),
               backgroundColor: palette.started,
               yAxisID: "eventsAxis",
@@ -308,7 +345,7 @@ export default function DataSection({
               borderRadius: 4,
             },
             {
-              label: "Paused",
+              label: chartText.paused,
               data: metric("paused"),
               backgroundColor: palette.paused,
               yAxisID: "eventsAxis",
@@ -316,7 +353,7 @@ export default function DataSection({
               borderRadius: 4,
             },
             {
-              label: "Removed",
+              label: chartText.removed,
               data: metric("removed"),
               backgroundColor: palette.removed,
               yAxisID: "eventsAxis",
@@ -324,7 +361,7 @@ export default function DataSection({
               borderRadius: 4,
             },
             {
-              label: "Completed",
+              label: chartText.completed,
               data: metric("completed"),
               backgroundColor: palette.completed,
               yAxisID: "eventsAxis",
@@ -332,7 +369,7 @@ export default function DataSection({
               borderRadius: 4,
             },
             {
-              label: "Pages unlocked",
+              label: chartText.pagesUnlocked,
               type: "line",
               data: metric("pagesUnlocked"),
               yAxisID: "pagesAxis",
@@ -372,14 +409,14 @@ export default function DataSection({
                     ? row.timerLabels.filter(Boolean)
                     : [];
                   const timerLine = timerLabels.length
-                    ? `Timer: ${timerLabels.slice(0, 2).join(", ")}${
+                    ? `${chartText.timer}: ${timerLabels.slice(0, 2).join(", ")}${
                         timerLabels.length > 2
                           ? ` +${timerLabels.length - 2}`
                           : ""
                       }`
-                    : "Timer: Reading session";
+                    : `${chartText.timer}: ${chartText.readingSession}`;
 
-                  return [`Time ${row.minuteLabel}`, timerLine];
+                  return [`${chartText.time} ${row.minuteLabel}`, timerLine];
                 },
                 label: (context) => {
                   const datasetLabel = context.dataset?.label ?? "";
@@ -406,7 +443,7 @@ export default function DataSection({
               grid: { color: palette.grid },
               title: {
                 display: true,
-                text: "Timer events",
+                text: chartText.timerEvents,
                 color: palette.text,
               },
             },
@@ -417,7 +454,7 @@ export default function DataSection({
               grid: { drawOnChartArea: false },
               title: {
                 display: true,
-                text: "Pages",
+                text: chartText.pages,
                 color: palette.text,
               },
             },
@@ -430,7 +467,7 @@ export default function DataSection({
     return () => {
       isCancelled = true;
     };
-  }, [palette, visibleActivityRows]);
+  }, [chartText, palette, visibleActivityRows]);
 
   useEffect(() => {
     let isCancelled = false;

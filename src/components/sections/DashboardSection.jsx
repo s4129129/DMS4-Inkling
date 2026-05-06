@@ -60,6 +60,19 @@ function firstTwoLetters(value) {
   return String(value || "IK").trim().slice(0, 2).toUpperCase() || "IK";
 }
 
+function translateDashboardText(value, language) {
+  if (language !== "vi") {
+    return value;
+  }
+
+  const translations = {
+    "Pages unlocked": "Trang đã mở khóa",
+    "Reading session": "Phiên đọc",
+  };
+
+  return translations[value] ?? value;
+}
+
 function buildDashboardSessions(timerSessions24h) {
   return (timerSessions24h || [])
     .map((session, index) => {
@@ -129,6 +142,7 @@ export default function DashboardSection({
   accentColor = "",
   hidePrivatePanels = false,
   disableContinueAction = false,
+  language = "en",
 }) {
   const calendarRef = useRef(null);
   const weeklyCanvasRef = useRef(null);
@@ -234,6 +248,7 @@ export default function DashboardSection({
     [themeId, themeMode],
   );
   const weeklyBarColor = accentColor || palette.bar;
+  const pagesUnlockedLabel = translateDashboardText("Pages unlocked", language);
 
   useEffect(() => {
     let isCancelled = false;
@@ -254,7 +269,7 @@ export default function DashboardSection({
           labels: weeklyPoints.map((item) => item.day),
           datasets: [
             {
-              label: "Pages unlocked",
+              label: pagesUnlockedLabel,
               data: weeklyPoints.map((item) => item.pages),
               borderRadius: 8,
               backgroundColor: weeklyBarColor,
@@ -292,7 +307,7 @@ export default function DashboardSection({
         weeklyChartRef.current = null;
       }
     };
-  }, [palette, weeklyBarColor, weeklyPoints]);
+  }, [pagesUnlockedLabel, palette, weeklyBarColor, weeklyPoints]);
 
   return (
     <div className="dash-grid dashboard-command-grid">
@@ -513,20 +528,24 @@ export default function DashboardSection({
                 />
               </div>
               <div className="dashboard-session-list">
-                {(sessions.length ? sessions.slice(-4).reverse() : [null]).map(
-                  (session, index) => (
+                {sessions.length ? (
+                  sessions.slice(-4).reverse().map((session) => (
                     <article
-                      key={session?.id || `empty-session-${index}`}
+                      key={session.id}
                       className="dashboard-session-row"
                     >
-                      <span>{session?.initials || "IK"}</span>
+                      <span>{session.initials}</span>
                       <div>
-                        <strong>{session?.title || "Reading session"}</strong>
-                        <small>{session?.time || "00:00 - 00:00"}</small>
+                        <strong>
+                          {translateDashboardText(session.title, language)}
+                        </strong>
+                        <small>{session.time}</small>
                       </div>
-                      <b>{session?.duration || "0m"}</b>
+                      <b>{session.duration}</b>
                     </article>
-                  ),
+                  ))
+                ) : (
+                  <p className="status-text">No timer sessions logged yet</p>
                 )}
               </div>
             </section>

@@ -64,6 +64,8 @@ const EXACT_TRANSLATIONS = new Map(
     Continue: "Tiếp tục",
     "Open Library": "Mở thư viện",
     Timeline: "Dòng thời gian",
+    "Reading session": "Phiên đọc",
+    "No timer sessions logged yet": "Chưa ghi nhận phiên bộ đếm giờ nào",
     "Weekly Pages Per Day": "Số trang mỗi ngày trong tuần",
     "Pages unlocked": "Trang đã mở khóa",
     "Book Progress": "Tiến độ sách",
