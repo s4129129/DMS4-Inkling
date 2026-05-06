@@ -360,7 +360,7 @@ export default function AvatarPickerOverlay({
             </div>
 
             <div className="avatar-editor-premium">
-              <span>[PLACEHOLDER 2]</span>
+              <span>Premium GIF</span>
               <button type="button" className="action" onClick={onChooseGif}>
                 Premium
               </button>

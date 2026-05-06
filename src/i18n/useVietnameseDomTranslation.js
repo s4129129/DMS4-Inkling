@@ -31,7 +31,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Save Unlock Ratio": "Lưu tỷ lệ mở khóa",
     "focus session": "phiên tập trung",
     "Return to Focus Session": "Quay lại phiên tập trung",
-    "Resume Focus Session": "Tiếp tục phiên tập trung",
+    "Resume Focus Session": "Tiếp tục",
     Resume: "Tiếp tục",
     Pause: "Tạm dừng",
     Cancel: "Hủy",
@@ -138,7 +138,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Open settings": "Mở cài đặt",
     "Log out": "Đăng xuất",
     "Resize sidebar": "Đổi kích thước thanh bên",
-    "Daily streak": "Chuỗi ngày",
+    "Daily streak": "Chuỗi",
     "Switch to light mode": "Chuyển sang chế độ sáng",
     "Switch to dark mode": "Chuyển sang chế độ tối",
     "Change avatar": "Đổi ảnh đại diện",
@@ -150,10 +150,15 @@ const EXACT_TRANSLATIONS = new Map(
     "Open a book in the Library to create a reading tab.":
       "Mở một sách trong Thư viện để tạo tab đọc.",
     "Close quick actions": "Đóng tác vụ nhanh",
+    "Inkling landing page": "Trang giới thiệu Inkling",
+    "Landing navigation": "Điều hướng trang giới thiệu",
+    "Platform sections": "Các mục nền tảng",
+    "Next section": "Mục tiếp theo",
     Month: "Tháng",
     Week: "Tuần",
     View: "Chế độ xem",
     Panel: "Bảng",
+    Main: "Chính",
     "Sessions today": "Phiên hôm nay",
     "Sessions": "Phiên",
     "Day": "Ngày",
@@ -213,6 +218,8 @@ const EXACT_TRANSLATIONS = new Map(
     Join: "Tham gia",
     Leave: "Rời",
     Save: "Lưu",
+    Send: "Gửi",
+    "Sending...": "Đang gửi...",
     Reply: "Trả lời",
     Edit: "Sửa",
     Delete: "Xóa",
@@ -220,6 +227,15 @@ const EXACT_TRANSLATIONS = new Map(
     "View profile": "Xem hồ sơ",
     Block: "Chặn",
     Member: "Thành viên",
+    Members: "Thành viên",
+    Owner: "Chủ nhóm",
+    Admin: "Quản trị viên",
+    You: "Bạn",
+    Muted: "Đã tắt tiếng",
+    DM: "Tin nhắn",
+    "Group Chat": "Đoạn chat nhóm",
+    "Public room": "Phòng công khai",
+    "Private room": "Phòng riêng tư",
     "Loading profile...": "Đang tải hồ sơ...",
     "Profile unavailable.": "Không thể xem hồ sơ.",
     "Conversation tools": "Công cụ trò chuyện",
@@ -231,6 +247,7 @@ const EXACT_TRANSLATIONS = new Map(
     Group: "Nhóm",
     "Group Details": "Chi tiết nhóm",
     "Weekly Progress": "Tiến độ tuần",
+    "This week": "Tuần này",
     "Remove attachment": "Xóa tệp đính kèm",
     "No email": "Không có email",
     User: "Người dùng",
@@ -239,12 +256,22 @@ const EXACT_TRANSLATIONS = new Map(
     "Ad break": "Giờ quảng cáo",
     "Timer complete": "Hoàn thành bộ đếm giờ",
     "Theme already owned.": "Bạn đã sở hữu giao diện này.",
+    "Custom banner is already unlocked.": "Bạn đã mở khóa ảnh bìa tùy chỉnh.",
     "Custom banner unlocked. Customizable in Settings.":
       "Đã mở khóa ảnh bìa tùy chỉnh. Có thể chỉnh trong Cài đặt.",
     "Mechanical Interaction Pack unlocked. Configure Pop Up or Sink Down in Settings.":
       "Đã mở khóa gói tương tác cơ học. Cấu hình Pop Up hoặc Sink Down trong Cài đặt.",
     "Already owned.": "Đã sở hữu.",
     "Book purchased.": "Đã mua sách.",
+    "Item purchased.": "Đã mua mục này.",
+    "Purchase failed. Not enough Ink or invalid item.":
+      "Mua thất bại. Không đủ Ink hoặc mục không hợp lệ.",
+    "Purchase failed. Not enough Quills.": "Mua thất bại. Không đủ Quills.",
+    "Could not apply theme.": "Không thể áp dụng giao diện.",
+    "Accent colors updated.": "Đã cập nhật màu nhấn.",
+    "Could not update accent.": "Không thể cập nhật màu nhấn.",
+    "Could not update interaction behavior.":
+      "Không thể cập nhật kiểu tương tác.",
     "Buy first.": "Hãy mua trước.",
     "Could not create group.": "Không thể tạo nhóm.",
     "Unable to find group": "Không thể tìm thấy nhóm",
@@ -255,6 +282,8 @@ const EXACT_TRANSLATIONS = new Map(
     "Book removed.": "Đã xóa sách.",
     "Language updated.": "Đã cập nhật ngôn ngữ.",
     "Could not update language.": "Không thể cập nhật ngôn ngữ.",
+    "Preferences updated.": "Đã cập nhật tùy chọn.",
+    "Could not update preferences.": "Không thể cập nhật tùy chọn.",
     "Page render failed. Please try another page.":
       "Hiển thị trang thất bại. Vui lòng thử trang khác.",
     "Download failed": "Tải xuống thất bại",
@@ -283,11 +312,31 @@ const EXACT_TRANSLATIONS = new Map(
       "Đã thêm sách chính thức: ${officialBook.title}",
     "Importing official book...": "Đang nhập sách chính thức...",
     "Could not remove book.": "Không thể xóa sách.",
+    "Could not load this PDF from storage.": "Không thể tải PDF này từ kho lưu trữ.",
+    "Could not render this EPUB file.": "Không thể hiển thị tệp EPUB này.",
+    "Could not render this CBZ archive.": "Không thể hiển thị tệp CBZ này.",
     "Could not claim reward yet.": "Chưa thể nhận thưởng.",
     "Reward claimed.": "Đã nhận thưởng.",
     "Group updated.": "Đã cập nhật nhóm.",
     "Member updated.": "Đã cập nhật thành viên.",
     "Member removed.": "Đã xóa thành viên.",
+    "Could not send group message.": "Không thể gửi tin nhắn nhóm.",
+    "Could not update group message.": "Không thể cập nhật tin nhắn nhóm.",
+    "Could not delete group message.": "Không thể xóa tin nhắn nhóm.",
+    "Could not update group.": "Không thể cập nhật nhóm.",
+    "Could not update member.": "Không thể cập nhật thành viên.",
+    "Could not mute member.": "Không thể tắt tiếng thành viên.",
+    "Could not remove member.": "Không thể xóa thành viên.",
+    "Could not upload attachment.": "Không thể tải tệp đính kèm.",
+    "Could not join public group.": "Không thể tham gia nhóm công khai.",
+    "You are already a member of this public group.":
+      "Bạn đã là thành viên của nhóm công khai này.",
+    "You are already a member of this private group.":
+      "Bạn đã là thành viên của nhóm riêng tư này.",
+    "You left the group.": "Bạn đã rời nhóm.",
+    "You are no longer a member of that group.":
+      "Bạn không còn là thành viên của nhóm đó.",
+    "Public group created.": "Đã tạo nhóm công khai.",
     "Update failed.": "Cập nhật thất bại.",
     "Custom banner updated.": "Đã cập nhật ảnh bìa tùy chỉnh.",
     "Custom banner removed.": "Đã xóa ảnh bìa tùy chỉnh.",
@@ -312,6 +361,15 @@ const EXACT_TRANSLATIONS = new Map(
     "Default": "Mặc định",
     "Mono": "Đơn sắc",
     "Vintage": "Cổ điển",
+    "Monochrome": "Đơn sắc",
+    "Bold default reader theme": "Giao diện đọc mặc định nổi bật",
+    "For coffee addicts": "Dành cho người mê cà phê",
+    "Simple mono palette": "Bảng màu đơn sắc tối giản",
+    "Main1": "Nền chính 1",
+    "Main2": "Nền chính 2",
+    "Page background": "Nền trang",
+    "Panel background": "Nền bảng",
+    "Primary text": "Chữ chính",
     "Sample Button": "Nút mẫu",
     "Clear Banner": "Xóa ảnh bìa",
     "All Items": "Tất cả mục",
@@ -367,6 +425,8 @@ const EXACT_TRANSLATIONS = new Map(
       "Chưa có lượt đọc gần đây. Mở một sách trong Thư viện để bắt đầu theo dõi thẻ này.",
     "Download File": "Tải tệp xuống",
     "Download": "Tải xuống",
+    "Open": "Mở",
+    "Fullscreen": "Toàn màn hình",
     "Landing page": "Trang bắt đầu",
     "Thumbnail page": "Trang ảnh bìa",
     "Select or upload a book to begin reading.":
@@ -375,10 +435,15 @@ const EXACT_TRANSLATIONS = new Map(
       "Tệp CBZ này không có trang ảnh đọc được.",
     "Go to previous page": "Đi tới trang trước",
     "Go to next page": "Đi tới trang sau",
+    "Thumbnail page info": "Thông tin trang ảnh bìa",
+    "Unlock ratio details": "Chi tiết tỷ lệ mở khóa",
+    "Show Bar Progress": "Hiển thị thanh tiến độ",
+    "All time": "Tất cả thời gian",
+    "Auto sync off": "Tự động đồng bộ đang tắt",
+    "Not connected": "Chưa kết nối",
     "Attachments": "Tệp đính kèm",
     "Attach file": "Đính kèm tệp",
     "Files": "Tệp",
-    "Members": "Thành viên",
     "Privacy": "Quyền riêng tư",
     "Public": "Công khai",
     "Private": "Riêng tư",
@@ -403,23 +468,118 @@ const EXACT_TRANSLATIONS = new Map(
     "Current": "Hiện tại",
     "Reset": "Đặt lại",
     "Default Light": "Mặc định sáng",
-    "Next section": "Mục tiếp theo",
-    "Landing navigation": "Điều hướng trang giới thiệu",
-    "Platform sections": "Các mục nền tảng",
-    "Inkling landing page": "Trang giới thiệu Inkling",
+    "Default Dark": "Mặc định tối",
+    "Vintage Light": "Cổ điển sáng",
+    "Vintage Dark": "Cổ điển tối",
+    "Mono Light": "Đơn sắc sáng",
+    "Mono Dark": "Đơn sắc tối",
+    "Classic": "Cổ điển",
+    "Raised": "Nổi lên",
+    "Use Default": "Dùng mặc định",
+    "Use Pop Up": "Dùng bật lên",
+    "Use Sink Down": "Dùng chìm xuống",
+    "Pop Up": "Bật lên",
+    "Sink Down": "Chìm xuống",
+    "Uses the original lightweight hover animation for buttons and controls.":
+      "Dùng hiệu ứng di chuột nhẹ mặc định cho nút và điều khiển.",
+    "Controls lift from the surface and compress when hovered or pressed.":
+      "Điều khiển nổi lên khỏi bề mặt và nén lại khi di chuột hoặc nhấn.",
+    "Shows a dark pocket above controls so actions look pressed into the UI.":
+      "Hiển thị một vùng tối phía trên điều khiển để thao tác trông như được nhấn vào giao diện.",
     "Ink is used in the Marketplace to buy and unlock themes.":
       "Ink được dùng trong Cửa hàng để mua và mở khóa giao diện.",
     "Quills are premium currency earned from weekly group reading milestones.":
       "Quills là tiền cao cấp nhận được từ các cột mốc đọc hằng tuần của nhóm.",
     "Export": "Xuất",
-    "Main": "Chính",
     "Support tabs": "Tab hỗ trợ",
     "Close member menu": "Đóng menu thành viên",
     "Open this date in Google Calendar": "Mở ngày này trong Lịch Google",
     "Unable to find group.": "Không thể tìm thấy nhóm.",
     "Sets the first page you can always start from, even when later pages are locked.":
       "Đặt trang đầu tiên mà bạn luôn có thể bắt đầu đọc, ngay cả khi các trang sau vẫn bị khóa.",
-    "[PLACEHOLDER 2]": "[CHỖ TRỐNG 2]",
+    "Choose which page appears on the book card so your library grid shows the visual you want.":
+      "Chọn trang xuất hiện trên thẻ sách để lưới thư viện hiển thị hình bạn muốn.",
+    "Set how many focus minutes are required before one new page can be unlocked.":
+      "Đặt số phút tập trung cần thiết trước khi mở khóa một trang mới.",
+    "Set how much time it takes to unlock a page.":
+      "Đặt thời gian cần để mở khóa một trang.",
+    "Create a timer and set it for how long you want to work.":
+      "Tạo bộ đếm giờ và đặt thời lượng bạn muốn làm việc.",
+    Name: "Tên",
+    Recent: "Gần đây",
+    Completed: "Đã hoàn thành",
+    "Unlocked pages": "Trang đã mở khóa",
+    "Signed-in reader": "Người đọc đã đăng nhập",
+    "No file selected": "Chưa chọn tệp",
+    "Premium GIF": "GIF cao cấp",
+    "English": "Tiếng Anh",
+    "Add": "Thêm",
+    "Applying": "Đang áp dụng",
+    "Sync": "Đồng bộ",
+    "Book": "Sách",
+    "Page": "Trang",
+    "Streak": "Chuỗi",
+    "Accent": "Màu nhấn",
+    "Text": "Chữ",
+    "Accent color": "Màu nhấn",
+    "Asset color": "Màu tài nguyên",
+    "Landing page info": "Thông tin trang bắt đầu",
+    "Last page": "Trang cuối",
+    "Last sync": "Lần đồng bộ cuối",
+    "Auto sync completed.": "Đã tự động đồng bộ.",
+    "Auto sync on": "Tự động đồng bộ đang bật",
+    "Total pages unlocked (ever):": "Tổng trang đã mở khóa (từ trước đến nay):",
+    "Per-minute timeline. Scroll on the chart to zoom to a minimum 1-minute window. Current window:":
+      "Dòng thời gian theo từng phút. Cuộn trên biểu đồ để thu phóng tới cửa sổ tối thiểu 1 phút. Cửa sổ hiện tại:",
+    "Showing page": "Đang xem trang",
+    "of": "trên",
+    ". Landing page": ". Trang bắt đầu",
+    ". Accessible pages 1-": ". Các trang truy cập được 1-",
+    ". Unlocked": ". Đã mở khóa",
+    "pages.": "trang.",
+    "Unlocked:": "Đã mở khóa:",
+    "pages unlocked": "trang đã mở khóa",
+    "pages": "trang",
+    "members": "thành viên",
+    "replies": "trả lời",
+    "(locked)": "(đã khóa)",
+    "- Muted": "- Đã tắt tiếng",
+    "Horizontal position (": "Vị trí ngang (",
+    "Vertical position (": "Vị trí dọc (",
+    "Zoom (": "Thu phóng (",
+    "Opacity (": "Độ mờ (",
+    "files are supported in your library. If the embedded preview fails, use Open or Download below.":
+      "được hỗ trợ trong thư viện của bạn. Nếu bản xem trước nhúng không hoạt động, hãy dùng Mở hoặc Tải xuống bên dưới.",
+    "Any more than 2hours of work per session is not recommended by scientfic research":
+      "Nghiên cứu khoa học không khuyến nghị làm việc quá 2 giờ trong một phiên.",
+    "(Account required)": "(Cần tài khoản)",
+    "2x Ink gained": "Nhận Ink gấp 2 lần",
+    "5x local file uploads": "Tải tệp cục bộ gấp 5 lần",
+    "Able to publish items on the marketplace": "Có thể đăng bán mục trên Cửa hàng",
+    "Check out the Marketplace to customize your dashboard and buy books.":
+      "Ghé thăm Cửa hàng để tùy chỉnh bảng điều khiển và mua sách.",
+    "Upload a book from your device or select a free book in the Marketplace.":
+      "Tải sách từ thiết bị của bạn hoặc chọn một cuốn sách miễn phí trong Cửa hàng.",
+    "When your session is complete, press Claim to unlock pages for your book.":
+      "Khi phiên làm việc hoàn thành, nhấn Nhận để mở khóa các trang sách của bạn.",
+    "What is this website?": "Trang web này là gì?",
+    "A timer, reader, place to buy books and a group chat rolled up into one website.":
+      "Một trang web tích hợp tất cả trong một: Bộ đếm giờ, trình đọc sách, nơi mua sách và cộng đồng trò chuyện.",
+    "Why add a timer?": "Tại sao cần bộ đếm giờ?",
+    "Helps you plan ahead.": "Giúp bạn chủ động lập kế hoạch rõ ràng.",
+    "Helpful to grasp how efficient you actually are with your time.":
+      "Giúp bạn đánh giá hiệu suất thực tế với thời gian của mình.",
+    "Avoid working long hours in one sitting. Any more than 2 hours of work at a time and your efficiency will generally drop.":
+      "Tránh kiệt sức: Làm việc quá 2 tiếng liên tục thường khiến hiệu quả giảm đi đáng kể.",
+    "Why reading?": "Tại sao nên đọc sách?",
+    "In comparison to doomscrolling or video games, reading requires you to slow down and process information. Helps with attention span and an easier time easing back into working.":
+      "Khác với việc lướt web hay chơi điện tử, đọc sách buộc bạn chậm lại và xử lý thông tin. Điều đó giúp tăng khả năng tập trung và giúp bạn quay lại làm việc dễ hơn.",
+    "Why limit the reading?": "Tại sao cần giới hạn đọc sách?",
+    "Reading takes longer to really hook you in, but given time, it still can. This website prioritizes the work, not the reading.":
+      "Đọc sách cần nhiều thời gian hơn để cuốn bạn vào, nhưng nếu đủ lâu thì vẫn có thể. Trang web này ưu tiên công việc, không phải việc đọc.",
+    "For comics and manga, every panel is carefully illustrated and cared for. Limiting makes you appreciate the details in the material instead of just reading for plot.":
+      "Đối với truyện tranh và manga, mỗi khung hình đều được chăm chút kỹ. Việc giới hạn giúp bạn trân trọng chi tiết trong tác phẩm thay vì chỉ đọc lướt để theo dõi cốt truyện.",
+    "Sink": "Chìm xuống",
   }),
 );
 
@@ -587,6 +747,17 @@ const REGEX_TRANSLATIONS = [
   [/^Close\s+(.+)\s+tab$/i, "Đóng tab $1"],
   [/^(\d+)\s+members$/i, "$1 thành viên"],
   [/^(\d+)\/(\d+)\s+members$/i, "$1/$2 thành viên"],
+  [/^(\d+)\s+members\s+-\s+Public\s+room$/i, "$1 thành viên - Phòng công khai"],
+  [/^(\d+)\s+members\s+-\s+Private\s+room$/i, "$1 thành viên - Phòng riêng tư"],
+  [/^(\d+)\s+replies$/i, "$1 trả lời"],
+  [/^Open\s+(.+)\s+options$/i, "Mở tùy chọn của $1"],
+  [/^(.+)\s+is typing\.\.\.$/i, "$1 đang nhập..."],
+  [/^(.+)\s+and\s+(.+)\s+are typing\.\.\.$/i, "$1 và $2 đang nhập..."],
+  [/^(.+)\s+and\s+(\d+)\s+others are typing\.\.\.$/i, "$1 và $2 người khác đang nhập..."],
+  [/^Shared by\s+(.+)$/i, "Được chia sẻ bởi $1"],
+  [/^(.+)\s+uploaded via\s+(.+)\s+and ready to read\.$/i, "$1 đã được tải lên qua $2 và sẵn sàng đọc."],
+  [/^(.+)\s+is ready to claim\.$/i, "$1 đã sẵn sàng nhận thưởng."],
+  [/^Added official book:\s+(.+)$/i, "Đã thêm sách chính thức: $1"],
   [/^Timer:\s+Reading session$/i, "Bộ đếm giờ: Phiên đọc"],
   [/^Timer label:\s+Reading session$/i, "Nhãn bộ đếm giờ: Phiên đọc"],
   [/^Timer events$/i, "Sự kiện bộ đếm giờ"],
@@ -598,7 +769,8 @@ const REGEX_TRANSLATIONS = [
   [/^(.+)'s Overview$/i, "Tổng quan của $1"],
 ];
 
-const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "TEXTAREA", "INPUT"]);
+const TEXT_SKIP_TAGS = new Set(["SCRIPT", "STYLE", "TEXTAREA", "INPUT"]);
+const ATTRIBUTE_SKIP_TAGS = new Set(["SCRIPT", "STYLE"]);
 const originalText = new WeakMap();
 const originalAttributes = new WeakMap();
 const translatedTextChanges = new WeakSet();
@@ -654,7 +826,7 @@ function markTranslatedAttributeChange(element, attributeName) {
 
 function translateTextNode(node, language) {
   const parent = node.parentElement;
-  if (!parent || SKIP_TAGS.has(parent.tagName)) {
+  if (!parent || TEXT_SKIP_TAGS.has(parent.tagName)) {
     return;
   }
 
@@ -679,7 +851,7 @@ function translateTextNode(node, language) {
 }
 
 function translateElementAttributes(element, language) {
-  if (SKIP_TAGS.has(element.tagName)) {
+  if (ATTRIBUTE_SKIP_TAGS.has(element.tagName)) {
     return;
   }
 

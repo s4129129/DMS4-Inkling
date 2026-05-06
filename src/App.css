@@ -6649,10 +6649,10 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 0.44rem;
-  background: var(--surface-container-low);
-  border-radius: 999px;
-  padding: 0.25rem;
-  border: 1px solid var(--card-border);
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  border: 0;
 }
 
 .market-view-switch button {
@@ -9493,6 +9493,33 @@ button:disabled {
 }
 
 @media (min-width: 1129px) and (max-width: 1550px) {
+  .landing-store-hero {
+    grid-template-columns: minmax(0, 0.96fr) minmax(16rem, 0.4fr);
+    column-gap: clamp(0.8rem, 2vw, 1.7rem);
+    padding-inline: clamp(0.72rem, 1.8vw, 1.15rem);
+  }
+
+  .landing-store-headline h1 {
+    font-size: clamp(2.7rem, min(9.3vw, 12.2svh), 7.3rem);
+    line-height: 0.84;
+  }
+
+  .landing-store-hero-panel:first-child .landing-store-headline h1 {
+    font-size: clamp(3.25rem, min(11vw, 14svh), 8.8rem);
+  }
+
+  .landing-store-note {
+    margin-top: clamp(0.82rem, 2.6vw, 2.25rem);
+  }
+
+  .landing-store-section-visual {
+    width: min(50vw, 50rem);
+  }
+
+  .landing-store-section-visual.multi-image {
+    width: min(56vw, 54rem);
+  }
+
   .dashboard-shell {
     --meta-strip-height: 4.35rem;
     --dashboard-sidebar-width: clamp(12.8rem, 17vw, 15.5rem);
