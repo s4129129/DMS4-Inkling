@@ -42,6 +42,7 @@ import {
   OFFICIAL_BOOK_BY_ID,
   getOfficialBookAsset,
 } from "./reader/officialBooks";
+import { useVietnameseDomTranslation } from "./i18n/useVietnameseDomTranslation";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -1166,6 +1167,7 @@ function ReaderWorkspace({ onThemeChange }) {
     profile?.accentColorSecondary,
   );
   const selectedLanguage = normalizeLanguagePreference(profile?.language);
+  useVietnameseDomTranslation(selectedLanguage);
   const dashboardTutorialSteps = useMemo(
     () => getDashboardTutorialSteps(selectedLanguage),
     [selectedLanguage],
