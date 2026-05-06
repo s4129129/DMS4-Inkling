@@ -21,35 +21,35 @@ const STORE_NAV_LINKS = [
 
 const LANDING_SECTIONS = [
   {
-    title: ["A different", "workflow"],
-    note: "A website to house a workflow that combines splitting down tasks, tracking time and promoting reading habits via a gamified feedback loop.",
+    title: ["Quy trình làm việc", "khác"],
+    note: "Một trang web tích hợp quy trình làm việc bao gồm: chia nhỏ nhiệm vụ, quản lý thời gian và rèn luyện thói quen đọc sách thông qua cơ chế trò chơi hóa (gamification).",
     image: landing1Image,
   },
   {
     eyebrow: "01",
-    title: ["Productivity", "support"],
-    note: "Timers, built in calendar to track your sessions",
+    title: ["Hỗ trợ làm việc", "năng suất"],
+    note: "Tích hợp đồng hồ bấm giờ và lịch để theo dõi các phiên làm việc của bạn.",
     images: [landing22Image, landing2Image],
     flipImagesOnScroll: true,
   },
   {
     eyebrow: "02",
-    title: ["Read and", "relax"],
-    note: "Built in web reader for your local files or browse our site for books",
+    title: ["Đọc và", "thư giản"],
+    note: "Đọc tệp tin từ máy của bạn hoặc tìm kiếm sách trực tuyến với trình đọc web tích hợp sẵn.",
     images: [landing32Image, landing3Image, landing31Image],
     stepImagesOnScroll: true,
   },
   {
     eyebrow: "03",
-    title: ["Customize", "your site"],
-    note: "Earn different themes, animation packs and more to design your dashboard",
+    title: ["Cá nhân hóa", "trang web"],
+    note: "Nhận thêm các giao diện, gói hoạt ảnh và nhiều phần quà khác để trang trí trang chủ của bạn.",
     images: [landing41Image, landing42Image, landing43Image, landing44Image],
     stepImagesOnScroll: true,
   },
   {
     eyebrow: "04",
-    title: ["Connect", "with others"],
-    note: "Join online groups or form communities of your personal interest",
+    title: ["Kết nối với", "những người dùng khác"],
+    note: "Tham gia hoặc thành lập cộng đồng theo sở thích cá nhân.",
     image: landing5Image,
   },
 ];
