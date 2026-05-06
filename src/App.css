@@ -1090,7 +1090,7 @@ body,
 .landing-store-auth-btn,
 .landing-store-primary,
 .landing-store-secondary {
-  font-family: "Space Grotesk", "Arial Narrow", Impact, sans-serif;
+  font-family: "Segoe UI Black", "Arial Black", "Segoe UI", sans-serif;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -8523,7 +8523,7 @@ button:disabled {
 .dashboard-shell.theme-default .market-card h3,
 .dashboard-shell.theme-default .dashboard-panel-head h3,
 .dashboard-shell.theme-default .dashboard-stat-card strong {
-  font-family: Impact, "Arial Narrow", "Space Grotesk", sans-serif;
+  font-family: "Segoe UI Black", "Arial Black", "Segoe UI", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0;
 }

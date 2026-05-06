@@ -18,7 +18,7 @@ Use this when generating UI copy, component styles, or visual prompts for the De
 
 ## Typography Direction
 
-- Headings: condensed comic/display energy using Impact/Space Grotesk.
+- Headings: condensed comic/display energy using Segoe UI Black/Arial Black with full Vietnamese glyph support.
 - Body/UI: clean sans with enough weight to survive dark surfaces.
 - Keep letter spacing at `0`; use uppercase through text transform only.
 
