@@ -1225,10 +1225,10 @@ body,
   display: grid;
   gap: 0.035em;
   color: var(--landing-store-red);
-  font-family: Impact, "Arial Narrow", "Space Grotesk", sans-serif;
+  font-family: "Segoe UI Black", "Arial Black", "Space Grotesk", sans-serif;
   font-size: clamp(3.15rem, min(12.2vw, 15svh), 10.8rem);
   font-weight: 900;
-  line-height: 0.78;
+  line-height: 0.86;
   letter-spacing: 0;
   text-transform: uppercase;
   text-wrap: balance;
