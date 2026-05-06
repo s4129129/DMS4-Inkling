@@ -27,7 +27,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Create timers for focused sessions and set how many minutes are required to unlock each reading page.":
       "Tạo phiên làm việc tập trung và đặt số phút cần thiết để mở khóa mỗi trang đọc.",
     "What do you plan to do this session":
-      "Bạn dự định làm gì trong phiên này",
+      "Bạn định làm gì trong phiên làm việc hôm nay",
     "Save Unlock Ratio": "Lưu tỷ lệ mở khóa",
     "focus session": "phiên tập trung",
     "Return to Focus Session": "Quay lại phiên tập trung",
