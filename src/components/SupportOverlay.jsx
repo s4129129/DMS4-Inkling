@@ -10,11 +10,11 @@ const TUTORIAL_HINTS = {
     "Check the Marketplace for dashboard customization and books.",
   ],
   vi: [
-    "Tải sách từ thiết bị của bạn hoặc chọn một cuốn sách miễn phí tại Cửa hàng (Marketplace).",
-    "Hãy tạo một bộ đếm giờ và cài đặt thời lượng mà bạn muốn làm việc.",
-    "Thiết lập khoảng thời gian cần thiết (làm việc) để mở khóa được một trang sách.",
-    'Sau khi hoàn thành phiên làm việc, hãy nhấn "Nhận" để mở khóa các trang sách của bạn.',
-    "Ghé thăm Cửa hàng để tùy chỉnh bảng điều khiển của bạn và chọn mua những cuốn sách mới.",
+    "Tải sách từ máy hoặc chọn sách miễn phí trong cửa hàng.",
+    "Tạo và thiết lập thời gian làm việc.",
+    "Cài đặt mức thời gian cần thiết để mở khóa một trang sách.",
+    'Sau khi hoàn thành, nhấn "Nhận" (Claim) để mở khóa các trang sách của bạn.',
+    "Ghé thăm Cửa hàng để tìm kiếm các mẫu cá nhân hóa giao diện và sách mới.",
   ],
 };
 
