@@ -48,7 +48,7 @@ const LANDING_SECTIONS = [
   },
   {
     eyebrow: "04",
-    title: ["Kết nối với", "những người dùng khác"],
+    title: ["Kết nối với nhau"],
     note: "Tham gia hoặc thành lập cộng đồng theo sở thích cá nhân.",
     image: landing5Image,
   },
