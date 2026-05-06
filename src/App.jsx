@@ -3994,6 +3994,7 @@ function ReaderWorkspace({ onThemeChange }) {
 
         {isFaqOpen && (
           <FaqOverlay
+            language={selectedLanguage}
             onClose={() => {
               if (tutorialScope) {
                 markFaqCompleted(tutorialScope);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FAQ_ITEMS } from "./faqItems";
+import { getFaqItems } from "./faqItems";
 
 const TUTORIAL_HINTS = {
   en: [
@@ -25,6 +25,7 @@ export default function SupportOverlay({
 }) {
   const [activeTab, setActiveTab] = useState("tutorial");
   const tutorialHints = TUTORIAL_HINTS[language] ?? TUTORIAL_HINTS.vi;
+  const faqItems = getFaqItems(language);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -132,7 +133,7 @@ export default function SupportOverlay({
 
             {activeTab === "faq" && (
               <div className="faq-list support-faq-list">
-                {FAQ_ITEMS.map((item, index) => (
+                {faqItems.map((item, index) => (
                   <article key={item.question} className="faq-item">
                     <h3>
                       {index + 1}. {item.question}

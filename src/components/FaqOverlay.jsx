@@ -1,7 +1,9 @@
 import { useEffect } from "react";
-import { FAQ_ITEMS } from "./faqItems";
+import { getFaqItems } from "./faqItems";
 
-export default function FaqOverlay({ onClose }) {
+export default function FaqOverlay({ language = "vi", onClose }) {
+  const faqItems = getFaqItems(language);
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -46,7 +48,7 @@ export default function FaqOverlay({ onClose }) {
         </header>
 
         <div className="faq-list">
-          {FAQ_ITEMS.map((item, index) => (
+          {faqItems.map((item, index) => (
             <article key={item.question} className="faq-item">
               <h3>
                 {index + 1}. {item.question}
