@@ -2895,14 +2895,14 @@ function ReaderWorkspace({ onThemeChange }) {
 
       if (itemId === MECHANICAL_INTERACTION_FEATURE_ID) {
         setMarketMessage(
-          "Mechanical Interaction Pack unlocked. Configure Pop Up or Sink Down in Settings.",
+          "Mechanical Interaction unlocked. Configure Pop Up or Sink Down in Settings.",
         );
         return;
       }
 
       setMarketMessage("Item purchased.");
     } catch {
-      setMarketMessage("Purchase failed. Not enough Ink or invalid item.");
+      setMarketMessage("Purchase failed. Not enough currency or invalid item.");
     }
   };
 
@@ -2946,7 +2946,7 @@ function ReaderWorkspace({ onThemeChange }) {
 
     if (nextMode !== "classic" && !hasMechanicalInteractionFeature) {
       setMarketMessage(
-        "Unlock Mechanical Interaction Pack in Marketplace first.",
+        "Unlock Mechanical Interaction in Marketplace first.",
       );
       return;
     }

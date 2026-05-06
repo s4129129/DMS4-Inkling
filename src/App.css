@@ -2391,6 +2391,19 @@ body,
   fill: currentColor;
 }
 
+.ink-inline-icon {
+  --chip-icon-size: 1em;
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.16em;
+}
+
+.ink-inline-icon-small {
+  --chip-icon-size: 0.9em;
+  width: 0.95em;
+  height: 0.95em;
+}
+
 .mode-toggle {
   width: var(--topbar-mode-size);
   height: var(--topbar-mode-size);
@@ -2421,6 +2434,9 @@ body,
   position: fixed;
   left: 0;
   top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
   padding: 0.32rem 0.58rem;
   border-radius: 999px;
   border: 1px solid rgb(255 173 48 / 46%);
@@ -7107,7 +7123,7 @@ button:disabled {
   align-self: end;
   font-size: 0.98rem;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.24rem;
   color: var(--on-surface);
 }

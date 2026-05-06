@@ -540,8 +540,8 @@ export default function SettingsSection({
                 {!canUseMechanicalModes && (
                   <>
                     <p className="status-text">
-                      Default Interaction Pack is always available. Unlock
-                      Mechanical Interaction Pack to use Pop Up and Sink Down.
+                      Default Interaction is always available. Unlock Mechanical
+                      Interaction to use Pop Up and Sink Down.
                     </p>
                     <button
                       type="button"

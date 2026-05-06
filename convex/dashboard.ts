@@ -75,14 +75,14 @@ const MARKET_ITEMS = [
   {
     id: DEFAULT_INTERACTION_FEATURE_ID,
     type: "feature",
-    name: "Default Interaction Pack",
+    name: "Default Interaction",
     cost: 90,
     description: "Classic hover button animation used across the dashboard.",
   },
   {
     id: CUSTOM_BANNER_FEATURE_ID,
     type: "feature",
-    name: "Custom PNG Banner",
+    name: "Custom banner",
     cost: 180,
     description:
       "Unlock your own PNG dashboard banner and customize it from Settings.",
@@ -90,7 +90,7 @@ const MARKET_ITEMS = [
   {
     id: MECHANICAL_INTERACTION_FEATURE_ID,
     type: "feature",
-    name: "Mechanical Interaction Pack",
+    name: "Mechanical Interaction",
     cost: 90,
     description:
       "Unlocks tactile controls with configurable Pop Up and Sink Down behavior in Settings.",
@@ -1195,7 +1195,7 @@ export const buyTheme = mutation({
     }
 
     if ((profile.ink ?? 0) < item.cost) {
-      throw new Error("Not enough Ink");
+      throw new Error("Not enough currency");
     }
 
     const nextInk = (profile.ink ?? 0) - item.cost;

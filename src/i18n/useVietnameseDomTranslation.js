@@ -111,7 +111,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Unlock this in Marketplace before uploading your own banner.":
       "Mở khóa tính năng này trong Cửa hàng trước khi tải ảnh bìa riêng.",
     "Upload PNG banner": "Tải ảnh bìa PNG",
-    "No custom banner uploaded yet.": "Chưa tải ảnh bìa tùy chỉnh.",
+    "No custom banner uploaded yet.": "Chưa tải ảnh bìa custom.",
     "Primary saturated color": "Màu chính bão hòa",
     "Secondary saturated color": "Màu phụ bão hòa",
     "Categories": "Danh mục",
@@ -125,7 +125,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Open Settings": "Mở Cài đặt",
     "Buy Feature": "Mua tính năng",
     Buy: "Mua",
-    "Need Ink": "Cần Ink",
+    Need: "Cần",
     Free: "Miễn phí",
     Search: "Tìm kiếm",
     "Close preview": "Đóng xem trước",
@@ -256,16 +256,22 @@ const EXACT_TRANSLATIONS = new Map(
     "Ad break": "Giờ quảng cáo",
     "Timer complete": "Hoàn thành bộ đếm giờ",
     "Theme already owned.": "Bạn đã sở hữu giao diện này.",
-    "Custom banner is already unlocked.": "Bạn đã mở khóa ảnh bìa tùy chỉnh.",
+    "Custom banner": "Ảnh bìa custom",
+    "Custom PNG Banner": "Ảnh bìa custom",
+    "Default Interaction": "Tương tác mặc định",
+    "Default Interaction Pack": "Tương tác mặc định",
+    "Mechanical Interaction": "Tương tác cơ",
+    "Mechanical Interaction Pack": "Tương tác cơ",
+    "Custom banner is already unlocked.": "Bạn đã mở khóa ảnh bìa custom.",
     "Custom banner unlocked. Customizable in Settings.":
-      "Đã mở khóa ảnh bìa tùy chỉnh. Có thể chỉnh trong Cài đặt.",
-    "Mechanical Interaction Pack unlocked. Configure Pop Up or Sink Down in Settings.":
-      "Đã mở khóa gói tương tác cơ học. Cấu hình Pop Up hoặc Sink Down trong Cài đặt.",
+      "Đã mở khóa ảnh bìa custom. Có thể chỉnh trong Cài đặt.",
+    "Mechanical Interaction unlocked. Configure Pop Up or Sink Down in Settings.":
+      "Đã mở khóa Tương tác cơ. Cấu hình Pop Up hoặc Sink Down trong Cài đặt.",
     "Already owned.": "Đã sở hữu.",
     "Book purchased.": "Đã mua sách.",
     "Item purchased.": "Đã mua mục này.",
-    "Purchase failed. Not enough Ink or invalid item.":
-      "Mua thất bại. Không đủ Ink hoặc mục không hợp lệ.",
+    "Purchase failed. Not enough currency or invalid item.":
+      "Mua thất bại. Không đủ tiền tệ hoặc mục không hợp lệ.",
     "Purchase failed. Not enough Quills.": "Mua thất bại. Không đủ Quills.",
     "Could not apply theme.": "Không thể áp dụng giao diện.",
     "Accent colors updated.": "Đã cập nhật màu nhấn.",
@@ -338,10 +344,10 @@ const EXACT_TRANSLATIONS = new Map(
       "Bạn không còn là thành viên của nhóm đó.",
     "Public group created.": "Đã tạo nhóm công khai.",
     "Update failed.": "Cập nhật thất bại.",
-    "Custom banner updated.": "Đã cập nhật ảnh bìa tùy chỉnh.",
-    "Custom banner removed.": "Đã xóa ảnh bìa tùy chỉnh.",
-    "Could not upload custom banner.": "Không thể tải ảnh bìa tùy chỉnh.",
-    "Could not remove custom banner.": "Không thể xóa ảnh bìa tùy chỉnh.",
+    "Custom banner updated.": "Đã cập nhật ảnh bìa custom.",
+    "Custom banner removed.": "Đã xóa ảnh bìa custom.",
+    "Could not upload custom banner.": "Không thể tải ảnh bìa custom.",
+    "Could not remove custom banner.": "Không thể xóa ảnh bìa custom.",
     "Only PNG files are supported for this banner.":
       "Ảnh bìa này chỉ hỗ trợ tệp PNG.",
     "Icon updated.": "Đã cập nhật biểu tượng.",
@@ -354,8 +360,8 @@ const EXACT_TRANSLATIONS = new Map(
     "Minutes": "Phút",
     "Minutes needed per page unlock": "Số phút cần để mở khóa mỗi trang",
     "Daily quota": "Chỉ tiêu hằng ngày",
-    "Default Interaction Pack is always available. Unlock Mechanical Interaction Pack to use Pop Up and Sink Down.":
-      "Gói tương tác mặc định luôn có sẵn. Mở khóa Gói tương tác cơ học để dùng Pop Up và Sink Down.",
+    "Default Interaction is always available. Unlock Mechanical Interaction to use Pop Up and Sink Down.":
+      "Tương tác mặc định luôn có sẵn. Mở khóa Tương tác cơ để dùng Pop Up và Sink Down.",
     "Light Mode": "Chế độ sáng",
     "Dark Mode": "Chế độ tối",
     "Default": "Mặc định",
@@ -381,7 +387,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Hover": "Di chuột",
     "Light": "Sáng",
     "Dark": "Tối",
-    "Interaction Packs": "Gói tương tác",
+    Interactions: "Tương tác",
     "Add a book": "Thêm sách",
     "Total pages unlocked": "Tổng trang đã mở khóa",
     "Sessions completed": "Phiên đã hoàn thành",
@@ -486,8 +492,8 @@ const EXACT_TRANSLATIONS = new Map(
       "Điều khiển nổi lên khỏi bề mặt và nén lại khi di chuột hoặc nhấn.",
     "Shows a dark pocket above controls so actions look pressed into the UI.":
       "Hiển thị một vùng tối phía trên điều khiển để thao tác trông như được nhấn vào giao diện.",
-    "Ink is used in the Marketplace to buy and unlock themes.":
-      "Ink được dùng trong Cửa hàng để mua và mở khóa giao diện.",
+    "Marketplace currency used to buy and unlock themes.":
+      "Tiền tệ trong Cửa hàng dùng để mua và mở khóa giao diện.",
     "Quills are premium currency earned from weekly group reading milestones.":
       "Quills là tiền cao cấp nhận được từ các cột mốc đọc hằng tuần của nhóm.",
     "Export": "Xuất",
@@ -553,7 +559,6 @@ const EXACT_TRANSLATIONS = new Map(
     "Any more than 2hours of work per session is not recommended by scientfic research":
       "Nghiên cứu khoa học không khuyến nghị làm việc quá 2 giờ trong một phiên.",
     "(Account required)": "(Cần tài khoản)",
-    "2x Ink gained": "Nhận Ink gấp 2 lần",
     "5x local file uploads": "Tải tệp cục bộ gấp 5 lần",
     "Able to publish items on the marketplace": "Có thể đăng bán mục trên Cửa hàng",
     "Check out the Marketplace to customize your dashboard and buy books.":
@@ -747,6 +752,7 @@ const REGEX_TRANSLATIONS = [
   [/^Close\s+(.+)\s+tab$/i, "Đóng tab $1"],
   [/^(\d+)\s+members$/i, "$1 thành viên"],
   [/^(\d+)\/(\d+)\s+members$/i, "$1/$2 thành viên"],
+  [/^Requires\s+(\d+)\/(\d+)\s+members\s+to\s+activate$/i, "Cần $1/$2 thành viên để kích hoạt"],
   [/^(\d+)\s+members\s+-\s+Public\s+room$/i, "$1 thành viên - Phòng công khai"],
   [/^(\d+)\s+members\s+-\s+Private\s+room$/i, "$1 thành viên - Phòng riêng tư"],
   [/^(\d+)\s+replies$/i, "$1 trả lời"],

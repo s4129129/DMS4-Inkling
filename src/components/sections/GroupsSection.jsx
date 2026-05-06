@@ -537,7 +537,10 @@ function GroupListItem({ group, selected, busy, onSelect, onJoin }) {
           <span className="groups-room-material">
             {group.isWeeklyEligible
               ? `${progressHours}/${targetHours}h`
-              : `${Math.max(0, Math.floor(group.memberCount ?? 0))}/3 members`}
+              : activationRequirementText(
+                  group.memberCount,
+                  group.weeklyRequiredMembers,
+                )}
           </span>
         </span>
       </button>
@@ -565,6 +568,13 @@ function formatProgressHours(value) {
   return Number.isInteger(hours) ? `${hours}` : `${hours.toFixed(1)}`;
 }
 
+function activationRequirementText(memberCount, requiredMembers = 3) {
+  return `Requires ${Math.max(0, Math.floor(memberCount ?? 0))}/${Math.max(
+    1,
+    Math.floor(requiredMembers ?? 3),
+  )} members to activate`;
+}
+
 function WeeklyGroupProgress({ group, periodLabel }) {
   const percent = clampPercent(group?.completionPercent);
   const targetHours = Math.max(1, Math.floor(group?.weeklyHourTarget ?? 80));
@@ -587,7 +597,9 @@ function WeeklyGroupProgress({ group, periodLabel }) {
   if (!group?.isWeeklyEligible) {
     return (
       <div className="groups-weekly-progress">
-        <p className="status-text">{memberCount}/{requiredMembers} members</p>
+        <p className="status-text">
+          {activationRequirementText(memberCount, requiredMembers)}
+        </p>
       </div>
     );
   }

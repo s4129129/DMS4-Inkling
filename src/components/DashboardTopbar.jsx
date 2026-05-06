@@ -89,7 +89,7 @@ function DashboardActionRow({
       <div
         className="currency-chip ink-total-chip"
         data-ink-target="true"
-        title="Ink is used in the Marketplace to buy and unlock themes."
+        title="Marketplace currency used to buy and unlock themes."
       >
         <span
           className="currency-icon"

@@ -16,7 +16,7 @@ const STORE_CATEGORIES = [
   { id: "all", label: "All Items" },
   { id: "featured", label: "Featured" },
   { id: "themes", label: "Themes" },
-  { id: "interaction", label: "Interaction Packs" },
+  { id: "interaction", label: "Interactions" },
   { id: "utility", label: "Utilities" },
   { id: "owned", label: "Owned" },
 ];
@@ -58,7 +58,23 @@ function itemBadge(item) {
   if (item.owned) {
     return "Owned";
   }
-  return item.affordable ? "Buy" : "Need Ink";
+  return item.affordable ? (
+    "Buy"
+  ) : (
+    <>
+      Need <InkIcon className="ink-inline-icon-small" />
+    </>
+  );
+}
+
+function InkIcon({ className = "" }) {
+  return (
+    <span className={`currency-icon ink-inline-icon ${className}`} aria-hidden>
+      <svg viewBox="0 0 24 24" role="img" focusable="false">
+        <path d="M12 2.4c-.4 0-.7.2-.9.5-1.3 2.2-5.6 6.7-5.6 10.8 0 3.7 2.9 7.3 6.6 7.3 3.9 0 6.8-3.2 6.8-7.2 0-4.2-4.7-8.9-6-10.9-.2-.3-.5-.5-.9-.5z" />
+      </svg>
+    </span>
+  );
 }
 
 function paletteStyle(themeId, mode) {
@@ -463,7 +479,8 @@ export default function MarketSection({
                       </div>
 
                       <p className="market-price-row">
-                        <strong>{item.cost}</strong> Ink
+                        <strong>{item.cost}</strong>
+                        <InkIcon />
                       </p>
 
                       {item.type === "theme" ? (
