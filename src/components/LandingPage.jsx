@@ -27,7 +27,7 @@ const LANDING_SECTIONS = [
   },
   {
     eyebrow: "01",
-    title: ["Hỗ trợ làm việc", "năng suất"],
+    title: ["Hỗ trợ làm việc"],
     note: "Tích hợp đồng hồ bấm giờ và lịch để theo dõi các phiên làm việc của bạn.",
     images: [landing22Image, landing2Image],
     flipImagesOnScroll: true,
