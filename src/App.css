@@ -6728,10 +6728,7 @@ button:disabled {
 }
 
 .market-listing-head {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 0.6rem;
+  display: block;
 }
 
 .market-listing-head h3 {

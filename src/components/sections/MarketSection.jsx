@@ -54,19 +54,6 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
-function itemBadge(item) {
-  if (item.owned) {
-    return "Owned";
-  }
-  return item.affordable ? (
-    "Buy"
-  ) : (
-    <>
-      Need <InkIcon className="ink-inline-icon-small" />
-    </>
-  );
-}
-
 function InkIcon({ className = "" }) {
   return (
     <span className={`currency-icon ink-inline-icon ${className}`} aria-hidden>
@@ -475,7 +462,6 @@ export default function MarketSection({
 
                       <div className="market-listing-head">
                         <h3>{item.name}</h3>
-                        <span className="mode-pill">{itemBadge(item)}</span>
                       </div>
 
                       <p className="market-price-row">
@@ -555,15 +541,6 @@ export default function MarketSection({
                     />
                     <div className="market-listing-head">
                       <h3>{book.title}</h3>
-                      <span className="mode-pill">
-                        {book.added
-                          ? "Added"
-                          : book.owned
-                            ? "Owned"
-                            : book.cost === 0
-                              ? "Free"
-                              : "Locked"}
-                      </span>
                     </div>
                     <button
                       type="button"
