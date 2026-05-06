@@ -94,15 +94,7 @@ function LandingHeroPanel({
             onClick={onGoogleSignIn}
             disabled={isSigningIn}
           >
-            Continue
-          </button>
-          <button
-            type="button"
-            className="landing-store-secondary"
-            onClick={onGoogleSignIn}
-            disabled={isSigningIn}
-          >
-            Sign in
+            Đăng nhập
           </button>
         </div>
         {index === 0 && errorMessage ? (
@@ -314,16 +306,6 @@ export default function LandingPage({
           ))}
         </nav>
 
-        <div className="landing-store-actions">
-          <button
-            type="button"
-            className="landing-store-auth-btn"
-            onClick={onGoogleSignIn}
-            disabled={isSigningIn}
-          >
-            {isSigningIn ? "Signing in" : "Sign in"}
-          </button>
-        </div>
       </header>
 
       <section
