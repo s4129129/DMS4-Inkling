@@ -136,6 +136,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Sidebar quick actions": "Tác vụ nhanh thanh bên",
     "Open support": "Mở hỗ trợ",
     "Open settings": "Mở cài đặt",
+    "Log out": "Đăng xuất",
     "Resize sidebar": "Đổi kích thước thanh bên",
     "Daily streak": "Chuỗi ngày",
     "Switch to light mode": "Chuyển sang chế độ sáng",
@@ -154,6 +155,9 @@ const EXACT_TRANSLATIONS = new Map(
     View: "Chế độ xem",
     Panel: "Bảng",
     "Sessions today": "Phiên hôm nay",
+    "Sessions": "Phiên",
+    "Day": "Ngày",
+    "Mini": "Nhỏ",
     Today: "Hôm nay",
     Details: "Chi tiết",
     "No sessions logged yet": "Chưa ghi nhận phiên nào",
@@ -332,6 +336,13 @@ const EXACT_TRANSLATIONS = new Map(
     "Book unlock distribution pie chart":
       "Biểu đồ tròn phân bổ mở khóa sách",
     "Weekly pages chart": "Biểu đồ trang theo tuần",
+    "Mon": "Thứ 2",
+    "Tue": "Thứ 3",
+    "Wed": "Thứ 4",
+    "Thu": "Thứ 5",
+    "Fri": "Thứ 6",
+    "Sat": "Thứ 7",
+    "Sun": "CN",
     "24-hour activity chart": "Biểu đồ hoạt động 24 giờ",
     "Paused": "Đã tạm dừng",
     "Started": "Đã bắt đầu",
@@ -412,7 +423,164 @@ const EXACT_TRANSLATIONS = new Map(
   }),
 );
 
+const FULL_MONTHS = {
+  January: "1",
+  February: "2",
+  March: "3",
+  April: "4",
+  May: "5",
+  June: "6",
+  July: "7",
+  August: "8",
+  September: "9",
+  October: "10",
+  November: "11",
+  December: "12",
+};
+
+const SHORT_MONTHS = {
+  Jan: "1",
+  Feb: "2",
+  Mar: "3",
+  Apr: "4",
+  May: "5",
+  Jun: "6",
+  Jul: "7",
+  Aug: "8",
+  Sep: "9",
+  Oct: "10",
+  Nov: "11",
+  Dec: "12",
+};
+
+function monthNumber(monthName) {
+  const normalized = String(monthName || "").trim();
+  const titleCase =
+    normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
+  return FULL_MONTHS[titleCase] ?? SHORT_MONTHS[titleCase] ?? normalized;
+}
+
 const REGEX_TRANSLATIONS = [
+  [
+    /^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})$/i,
+    (_, month, day, year) => `${day} tháng ${monthNumber(month)}, ${year}`,
+  ],
+  [
+    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),\s+(\d{4})$/i,
+    (_, month, day, year) => `${day} tháng ${monthNumber(month)}, ${year}`,
+  ],
+  [
+    /^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})\s*[–-]\s*(\d{1,2}),\s+(\d{4})$/i,
+    (_, month, startDay, endDay, year) =>
+      `${startDay}-${endDay} tháng ${monthNumber(month)}, ${year}`,
+  ],
+  [
+    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\s*[–-]\s*(\d{1,2}),\s+(\d{4})$/i,
+    (_, month, startDay, endDay, year) =>
+      `${startDay}-${endDay} tháng ${monthNumber(month)}, ${year}`,
+  ],
+  [
+    /^(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})\s*[–-]\s*(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})$/i,
+    (_, startMonth, startDay, endMonth, endDay, year) =>
+      `${startDay} tháng ${monthNumber(startMonth)} - ${endDay} tháng ${monthNumber(endMonth)}, ${year}`,
+  ],
+  [
+    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\s*[–-]\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),\s+(\d{4})$/i,
+    (_, startMonth, startDay, endMonth, endDay, year) =>
+      `${startDay} tháng ${monthNumber(startMonth)} - ${endDay} tháng ${monthNumber(endMonth)}, ${year}`,
+  ],
+  [
+    /\bJanuary\b/g,
+    "Tháng 1",
+  ],
+  [
+    /\bFebruary\b/g,
+    "Tháng 2",
+  ],
+  [
+    /\bMarch\b/g,
+    "Tháng 3",
+  ],
+  [
+    /\bApril\b/g,
+    "Tháng 4",
+  ],
+  [
+    /\bMay\b/g,
+    "Tháng 5",
+  ],
+  [
+    /\bJune\b/g,
+    "Tháng 6",
+  ],
+  [
+    /\bJuly\b/g,
+    "Tháng 7",
+  ],
+  [
+    /\bAugust\b/g,
+    "Tháng 8",
+  ],
+  [
+    /\bSeptember\b/g,
+    "Tháng 9",
+  ],
+  [
+    /\bOctober\b/g,
+    "Tháng 10",
+  ],
+  [
+    /\bNovember\b/g,
+    "Tháng 11",
+  ],
+  [
+    /\bDecember\b/g,
+    "Tháng 12",
+  ],
+  [
+    /\bJan\b/g,
+    "Thg 1",
+  ],
+  [
+    /\bFeb\b/g,
+    "Thg 2",
+  ],
+  [
+    /\bMar\b/g,
+    "Thg 3",
+  ],
+  [
+    /\bApr\b/g,
+    "Thg 4",
+  ],
+  [
+    /\bJun\b/g,
+    "Thg 6",
+  ],
+  [
+    /\bJul\b/g,
+    "Thg 7",
+  ],
+  [
+    /\bAug\b/g,
+    "Thg 8",
+  ],
+  [
+    /\bSep\b/g,
+    "Thg 9",
+  ],
+  [
+    /\bOct\b/g,
+    "Thg 10",
+  ],
+  [
+    /\bNov\b/g,
+    "Thg 11",
+  ],
+  [
+    /\bDec\b/g,
+    "Thg 12",
+  ],
   [/^(\d+)\s+Streak$/i, "$1 ngày liên tiếp"],
   [/^Page\s+(\d+)$/i, "Trang $1"],
   [/^Loading\s+(\d+)%$/i, "Đang tải $1%"],
@@ -422,12 +590,15 @@ const REGEX_TRANSLATIONS = [
   [/^Timer:\s+Reading session$/i, "Bộ đếm giờ: Phiên đọc"],
   [/^Timer label:\s+Reading session$/i, "Nhãn bộ đếm giờ: Phiên đọc"],
   [/^Timer events$/i, "Sự kiện bộ đếm giờ"],
+  [/^(\d+)\s+today$/i, "$1 hôm nay"],
+  [/^(\d+)\s+session(s?)\s+ready to sync today\.$/i, "$1 phiên sẵn sàng đồng bộ hôm nay."],
+  [/^Synced\s+(\d+)\s+timer sessions to Google Calendar\.$/i, "Đã đồng bộ $1 phiên bộ đếm giờ lên Lịch Google."],
   [/^Section\s+(\d+)$/i, "Mục $1"],
   [/^Open\s+(.+)\s+in Google Calendar$/i, "Mở $1 trong Lịch Google"],
   [/^(.+)'s Overview$/i, "Tổng quan của $1"],
 ];
 
-const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "TEXTAREA", "INPUT", "OPTION"]);
+const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "TEXTAREA", "INPUT"]);
 const originalText = new WeakMap();
 const originalAttributes = new WeakMap();
 const translatedTextChanges = new WeakSet();

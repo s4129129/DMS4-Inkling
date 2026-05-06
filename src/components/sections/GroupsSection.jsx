@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { useMutation, useQuery } from "convex/react";
 import DashboardSection from "./DashboardSection";
 import * as logoCatalog from "../../themes/logoCatalog";
@@ -634,16 +635,6 @@ function WeeklyGroupProgress({ group, periodLabel }) {
   );
 }
 
-function AvatarMark({ profile }) {
-  return (
-    <img
-      src={profile?.image || getPresetLogo(profile?.iconPreset)}
-      alt={profile?.name || ""}
-      className="groups-read-avatar-image"
-    />
-  );
-}
-
 function MessageAuthorAvatar({ author, onOpenPersonMenu }) {
   const authorName = author?.name || "Member";
   const authorImage = author?.image || getPresetLogo(author?.iconPreset);
@@ -653,7 +644,7 @@ function MessageAuthorAvatar({ author, onOpenPersonMenu }) {
     <span>{author?.initials || initialsFromName(authorName)}</span>
   );
 
-  if (!author?.isYou && typeof onOpenPersonMenu === "function") {
+  if (typeof onOpenPersonMenu === "function") {
     return (
       <button
         type="button"
@@ -674,7 +665,28 @@ function MessageAuthorAvatar({ author, onOpenPersonMenu }) {
   );
 }
 
-function MessageStatus({ message }) {
+function ReadReceiptAvatar({ profile, onOpenPersonMenu }) {
+  const image = profile?.image || getPresetLogo(profile?.iconPreset);
+  const name = profile?.name || "Member";
+
+  if (typeof onOpenPersonMenu === "function") {
+    return (
+      <button
+        type="button"
+        className="groups-read-avatar groups-person-trigger"
+        onClick={(event) => onOpenPersonMenu(profile, event)}
+        aria-label={`Open ${name} options`}
+        title={name}
+      >
+        <img src={image} alt="" />
+      </button>
+    );
+  }
+
+  return <img src={image} alt={name} className="groups-read-avatar-image" />;
+}
+
+function MessageStatus({ message, onOpenPersonMenu }) {
   if (!message?.author?.isYou || message.isDeleted) {
     return null;
   }
@@ -685,9 +697,13 @@ function MessageStatus({ message }) {
       {readers.length ? (
         <>
           <DoubleCheckIcon />
-          <span className="groups-read-stack" aria-hidden="true">
+          <span className="groups-read-stack">
             {readers.slice(0, 4).map((profile) => (
-              <AvatarMark key={`${profile.userId}`} profile={profile} />
+              <ReadReceiptAvatar
+                key={`${profile.userId}`}
+                profile={profile}
+                onOpenPersonMenu={onOpenPersonMenu}
+              />
             ))}
           </span>
         </>
@@ -847,9 +863,20 @@ function MessageBubble({
         <span className="groups-message-time">
           {formatMessageTime(message?.createdAt)}
         </span>
-        <MessageStatus message={message} />
+        <MessageStatus
+          message={message}
+          onOpenPersonMenu={onOpenPersonMenu}
+        />
       </div>
     </article>
+  );
+}
+
+function clampMenuCoordinate(value, size, viewportSize) {
+  const viewportPadding = 12;
+  return Math.max(
+    viewportPadding,
+    Math.min(value, viewportSize - size - viewportPadding),
   );
 }
 
@@ -859,17 +886,96 @@ function MemberActionMenu({
   onMessage,
   onViewProfile,
 }) {
+  const menuRef = useRef(null);
+  const [position, setPosition] = useState({
+    x: menu?.x ?? 12,
+    y: menu?.y ?? 12,
+    ready: false,
+  });
+  const member = menu?.member ?? null;
+  const isSelf = Boolean(member?.isYou);
+
+  const updatePosition = useCallback(() => {
+    if (typeof window === "undefined" || !menu?.anchorRect || !menuRef.current) {
+      return;
+    }
+
+    const anchor = menu.anchorRect;
+    const menuRect = menuRef.current.getBoundingClientRect();
+    const width = Math.min(menuRect.width || 230, window.innerWidth - 24);
+    const height = Math.min(menuRect.height || 154, window.innerHeight - 24);
+    const viewportPadding = 12;
+    const gap = 10;
+    const spaceRight = window.innerWidth - anchor.right - viewportPadding;
+    const spaceLeft = anchor.left - viewportPadding;
+    const hasRoomRight = spaceRight >= width + gap;
+    const hasRoomLeft = spaceLeft >= width + gap;
+    const preferredX = hasRoomRight
+      ? anchor.right + gap
+      : hasRoomLeft
+        ? anchor.left - width - gap
+        : anchor.left + anchor.width / 2 - width / 2;
+    const preferredY =
+      anchor.top + anchor.height / 2 - height / 2;
+
+    setPosition({
+      x: clampMenuCoordinate(preferredX, width, window.innerWidth),
+      y: clampMenuCoordinate(preferredY, height, window.innerHeight),
+      ready: true,
+    });
+  }, [menu?.anchorRect]);
+
+  useLayoutEffect(() => {
+    setPosition({
+      x: menu?.x ?? 12,
+      y: menu?.y ?? 12,
+      ready: false,
+    });
+  }, [menu?.x, menu?.y, menu?.member]);
+
+  useLayoutEffect(() => {
+    updatePosition();
+  }, [updatePosition, member]);
+
+  useEffect(() => {
+    if (!menu?.member || typeof window === "undefined") {
+      return undefined;
+    }
+
+    let frameId = 0;
+    const scheduleUpdate = () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        updatePosition();
+      });
+    };
+
+    window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener("scroll", scheduleUpdate, true);
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+      window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("scroll", scheduleUpdate, true);
+    };
+  }, [menu?.member, updatePosition]);
+
   if (!menu?.member) {
     return null;
   }
 
-  const member = menu.member;
   const menuStyle = {
-    left: `${menu.x}px`,
-    top: `${menu.y}px`,
+    left: `${position.x}px`,
+    top: `${position.y}px`,
+    opacity: position.ready ? 1 : 0,
   };
 
-  return (
+  return createPortal(
     <>
       <button
         type="button"
@@ -877,8 +983,18 @@ function MemberActionMenu({
         aria-label="Close member menu"
         onClick={onClose}
       />
-      <div className="groups-person-menu" style={menuStyle} role="menu">
-        <button type="button" role="menuitem" onClick={() => onMessage(member)}>
+      <div
+        ref={menuRef}
+        className="groups-person-menu"
+        style={menuStyle}
+        role="menu"
+      >
+        <button
+          type="button"
+          role="menuitem"
+          disabled={isSelf}
+          onClick={() => onMessage(member)}
+        >
           <DmIcon />
           <span>Message</span>
         </button>
@@ -888,14 +1004,15 @@ function MemberActionMenu({
           onClick={() => onViewProfile(member)}
         >
           <ProfileIcon />
-          <span>View profile</span>
+          <span>{isSelf ? "View your profile" : "View profile"}</span>
         </button>
         <button type="button" role="menuitem" disabled>
           <ShieldIcon />
           <span>Block</span>
         </button>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
 
@@ -1776,18 +1893,22 @@ export default function GroupsSection({
   };
 
   const openPersonMenu = useCallback((member, event) => {
-    if (!member || member.isYou) {
+    if (!member || !event?.currentTarget) {
       return;
     }
 
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+
     const rect = event.currentTarget.getBoundingClientRect();
-    const menuWidth = 230;
-    const gap = 8;
-    const nextX = Math.max(
-      12,
-      Math.min(rect.left, window.innerWidth - menuWidth - 12),
-    );
-    const nextY = Math.max(12, Math.min(rect.bottom + gap, window.innerHeight - 190));
+    const anchorRect = {
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+    };
 
     setPersonMenu({
       member: {
@@ -1797,13 +1918,14 @@ export default function GroupsSection({
         role: member.role || roleLabel(member),
         initials: member.initials || initialsFromName(member.name),
       },
-      x: nextX,
-      y: nextY,
+      anchorRect,
+      x: rect.right + 10,
+      y: rect.top,
     });
   }, []);
 
   const startDirectMessage = useCallback((member) => {
-    if (!member?.userId) {
+    if (!member?.userId || member.isYou) {
       return;
     }
     const memberId = `${member.userId}`;
@@ -2023,21 +2145,29 @@ export default function GroupsSection({
                       {filteredDirectMessageEntries.map((member) => (
                         <article
                           key={member.id}
-                          className={`groups-room-item${member.id === selectedDirectMember?.id ? " active" : ""}`}
+                          className={`groups-room-item groups-room-item-with-avatar${member.id === selectedDirectMember?.id ? " active" : ""}`}
                         >
                           <button
                             type="button"
-                            className="groups-room-main"
-                            onClick={() => setSelectedDirectMemberId(member.id)}
+                            className="groups-member-avatar-button groups-room-person-button"
+                            onClick={(event) => openPersonMenu(member, event)}
+                            aria-label={`Open ${member.name} options`}
+                            title={member.name}
                           >
                             <img
                               src={
                                 member.image ||
                                 getPresetLogo(member.iconPreset)
                               }
-                              alt={member.name}
+                              alt=""
                               className="groups-member-avatar-image"
                             />
+                          </button>
+                          <button
+                            type="button"
+                            className="groups-room-main"
+                            onClick={() => setSelectedDirectMemberId(member.id)}
+                          >
                             <span className="groups-room-meta">
                               <strong>{member.name}</strong>
                               <span>{member.role}</span>
@@ -2342,14 +2472,26 @@ export default function GroupsSection({
               {isDirectConversation ? (
                 <>
                   <section className="groups-side-card groups-profile-card">
-                    <img
-                      src={
-                        selectedDirectMember?.image ||
-                        getPresetLogo(selectedDirectMember?.iconPreset)
+                    <button
+                      type="button"
+                      className="groups-profile-avatar-button groups-person-trigger"
+                      onClick={(event) =>
+                        selectedDirectMember
+                          ? openPersonMenu(selectedDirectMember, event)
+                          : undefined
                       }
-                      alt={selectedDirectMember?.name || "Messages"}
-                      className="groups-profile-avatar-image"
-                    />
+                      aria-label={`Open ${selectedDirectMember?.name || "Messages"} options`}
+                      title={selectedDirectMember?.name || "Messages"}
+                    >
+                      <img
+                        src={
+                          selectedDirectMember?.image ||
+                          getPresetLogo(selectedDirectMember?.iconPreset)
+                        }
+                        alt=""
+                        className="groups-profile-avatar-image"
+                      />
+                    </button>
                     <h3>{selectedDirectMember?.name || "Messages"}</h3>
                     <p className="status-text">
                       {selectedDirectMember?.role || "Member"}
@@ -2413,33 +2555,28 @@ export default function GroupsSection({
                           key={`${member.userId}`}
                           className="groups-member-item"
                         >
-                          {member.isYou ? (
-                            <img
+                          <button
+                            type="button"
+                            className="groups-member-avatar-button"
+                            onClick={(event) => openPersonMenu(member, event)}
+                            aria-label={`Open ${member.name} options`}
+                            title={member.name}
+                          >
+                            {member.image || getPresetLogo(member.iconPreset) ? (
+                              <img
                               src={
                                 member.image ||
                                 getPresetLogo(member.iconPreset)
                               }
-                              alt={member.name}
+                              alt=""
                               className="groups-member-avatar-image"
                             />
-                          ) : (
-                            <button
-                              type="button"
-                              className="groups-member-avatar-button"
-                              onClick={(event) => openPersonMenu(member, event)}
-                              aria-label={`Open ${member.name} options`}
-                              title={member.name}
-                            >
-                              <img
-                                src={
-                                  member.image ||
-                                  getPresetLogo(member.iconPreset)
-                                }
-                                alt=""
-                                className="groups-member-avatar-image"
-                              />
-                            </button>
-                          )}
+                            ) : (
+                              <span className="groups-member-avatar">
+                                {member.initials || initialsFromName(member.name)}
+                              </span>
+                            )}
+                          </button>
                           <span className="groups-member-copy">
                             <strong>{member.name}</strong>
                             <span>
