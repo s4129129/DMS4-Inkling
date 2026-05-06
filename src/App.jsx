@@ -171,47 +171,123 @@ const MAX_SESSION_MINUTES = 120;
 const LONG_SESSION_WARNING =
   "Any more than 2hours of work per session is not recommended by scientfic research";
 const FAQ_STORAGE_PREFIX = "inkling-dashboard-faq-complete:v1:";
+const DEFAULT_LANGUAGE = "vi";
 
-const DASHBOARD_TUTORIAL_STEPS = [
+const DASHBOARD_TUTORIAL_STEP_TARGETS = [
   {
     id: "library-upload",
     section: "library",
     targetSelector: '[data-tutorial-anchor="library-upload"]',
-    title: "Upload a book",
-    description:
-      "Upload a book from your device or select a free book in the Marketplace.",
   },
   {
     id: "timers-create",
     section: "timers",
     targetSelector: '[data-tutorial-anchor="timers-create"]',
-    title: "Create your timer",
-    description: "Create a timer and set it for how long you want to work.",
   },
   {
     id: "timers-ratio",
     section: "timers",
     targetSelector: '[data-tutorial-anchor="timers-ratio"]',
-    title: "Adjust unlock ratio",
-    description: "Set how much time it takes to unlock a page.",
   },
   {
     id: "timers-claim",
     section: "timers",
     targetSelector: '[data-tutorial-anchor="timers-claim"]',
-    title: "Claim unlock rewards",
-    description:
-      "When your session is complete, press Claim to unlock pages for your book.",
   },
   {
     id: "marketplace-hub",
     section: "market",
     targetSelector: '[data-tutorial-anchor="marketplace-hub"]',
-    title: "Explore the Marketplace",
-    description:
-      "Check out the Marketplace to customize your dashboard and buy books.",
   },
 ];
+
+const DASHBOARD_TUTORIAL_COPY = {
+  en: [
+    {
+      title: "Upload a book",
+      description:
+        "Upload a book from your device or select a free book in the Marketplace.",
+    },
+    {
+      title: "Create your timer",
+      description: "Create a timer and set it for how long you want to work.",
+    },
+    {
+      title: "Adjust unlock ratio",
+      description: "Set how much time it takes to unlock a page.",
+    },
+    {
+      title: "Claim unlock rewards",
+      description:
+        "When your session is complete, press Claim to unlock pages for your book.",
+    },
+    {
+      title: "Explore the Marketplace",
+      description:
+        "Check out the Marketplace to customize your dashboard and buy books.",
+    },
+  ],
+  vi: [
+    {
+      title: "Tải sách lên",
+      description:
+        "Tải sách từ thiết bị của bạn hoặc chọn một cuốn sách miễn phí tại Cửa hàng (Marketplace).",
+    },
+    {
+      title: "Thiết lập thời gian làm việc của bạn",
+      description:
+        "Hãy tạo một bộ đếm giờ và cài đặt thời lượng mà bạn muốn làm việc.",
+    },
+    {
+      title: "Điều chỉnh tỷ lệ mở khóa",
+      description:
+        "Thiết lập khoảng thời gian cần thiết (làm việc) để mở khóa được một trang sách.",
+    },
+    {
+      title: "Nhận thưởng",
+      description:
+        'Sau khi hoàn thành phiên làm việc, hãy nhấn "Nhận" để mở khóa các trang sách của bạn.',
+    },
+    {
+      title: "Khám phá Cửa hàng",
+      description:
+        "Ghé thăm Cửa hàng để tùy chỉnh bảng điều khiển của bạn và chọn mua những cuốn sách mới.",
+    },
+  ],
+};
+
+const TUTORIAL_UI_COPY = {
+  en: {
+    ariaLabel: "Dashboard tutorial",
+    progressLabel: "Step",
+    skip: "Skip Tutorial",
+    back: "Back",
+    next: "Next Step",
+    finish: "Finish Tutorial",
+  },
+  vi: {
+    ariaLabel: "Hướng dẫn bảng điều khiển",
+    progressLabel: "Bước",
+    skip: "Bỏ qua hướng dẫn",
+    back: "Quay lại",
+    next: "Bước tiếp theo",
+    finish: "Hoàn thành hướng dẫn",
+  },
+};
+
+function normalizeLanguagePreference(language) {
+  return language === "en" ? "en" : DEFAULT_LANGUAGE;
+}
+
+function getDashboardTutorialSteps(language) {
+  const normalizedLanguage = normalizeLanguagePreference(language);
+  const copy =
+    DASHBOARD_TUTORIAL_COPY[normalizedLanguage] ?? DASHBOARD_TUTORIAL_COPY.vi;
+  return DASHBOARD_TUTORIAL_STEP_TARGETS.map((step, index) => ({
+    ...step,
+    ...copy[index],
+  }));
+}
 
 function getFaqStorageKey(scopeId) {
   const safeScope = String(scopeId || "")
@@ -1089,6 +1165,13 @@ function ReaderWorkspace({ onThemeChange }) {
   const selectedAccentColorSecondary = normalizeAccentColor(
     profile?.accentColorSecondary,
   );
+  const selectedLanguage = normalizeLanguagePreference(profile?.language);
+  const dashboardTutorialSteps = useMemo(
+    () => getDashboardTutorialSteps(selectedLanguage),
+    [selectedLanguage],
+  );
+  const tutorialLabels =
+    TUTORIAL_UI_COPY[selectedLanguage] ?? TUTORIAL_UI_COPY.vi;
   const accentStyle = getAccentStyle(
     selectedAccentColor,
     selectedAccentColorSecondary,
@@ -1256,7 +1339,7 @@ function ReaderWorkspace({ onThemeChange }) {
       return;
     }
 
-    const step = DASHBOARD_TUTORIAL_STEPS[tutorialStepIndex];
+    const step = dashboardTutorialSteps[tutorialStepIndex];
     if (!step) {
       return;
     }
@@ -1264,7 +1347,7 @@ function ReaderWorkspace({ onThemeChange }) {
     if (step.section !== activeSection) {
       setActiveSection(step.section);
     }
-  }, [activeSection, isTutorialOpen, tutorialStepIndex]);
+  }, [activeSection, dashboardTutorialSteps, isTutorialOpen, tutorialStepIndex]);
 
   useEffect(() => {
     if (!isTutorialOpen) {
@@ -2670,6 +2753,25 @@ function ReaderWorkspace({ onThemeChange }) {
     }
   };
 
+  const onSelectLanguage = async (nextLanguage) => {
+    const language = normalizeLanguagePreference(nextLanguage);
+    setSettingsMessage("");
+    try {
+      await updatePreferences({ language });
+      setSettingsMessage(
+        language === "vi"
+          ? "Đã cập nhật ngôn ngữ."
+          : "Language updated.",
+      );
+    } catch {
+      setSettingsMessage(
+        language === "vi"
+          ? "Không thể cập nhật ngôn ngữ."
+          : "Could not update language.",
+      );
+    }
+  };
+
   const onPauseOrResume = async (timerId) => {
     try {
       await togglePauseTimer({ timerId });
@@ -3405,7 +3507,7 @@ function ReaderWorkspace({ onThemeChange }) {
 
   const onNextTutorialStep = () => {
     setTutorialStepIndex((prev) =>
-      Math.min(DASHBOARD_TUTORIAL_STEPS.length - 1, prev + 1),
+      Math.min(dashboardTutorialSteps.length - 1, prev + 1),
     );
   };
 
@@ -3827,6 +3929,8 @@ function ReaderWorkspace({ onThemeChange }) {
             }
             dailyQuotaInput={dailyQuotaInput}
             setDailyQuotaInput={setDailyQuotaInput}
+            selectedLanguage={selectedLanguage}
+            onSelectLanguage={(language) => void onSelectLanguage(language)}
             onSavePreferences={() => void onSavePreferences()}
             settingsMessage={settingsMessage}
             userIconUrl={userIconUrl}
@@ -3882,6 +3986,7 @@ function ReaderWorkspace({ onThemeChange }) {
 
         {isSupportOpen && (
           <SupportOverlay
+            language={selectedLanguage}
             onClose={() => setIsSupportOpen(false)}
             onStartTutorial={onStartTutorial}
           />
@@ -3912,8 +4017,9 @@ function ReaderWorkspace({ onThemeChange }) {
 
         {isTutorialOpen && (
           <TutorialOverlay
-            steps={DASHBOARD_TUTORIAL_STEPS}
+            steps={dashboardTutorialSteps}
             stepIndex={tutorialStepIndex}
+            labels={tutorialLabels}
             onBack={onBackTutorialStep}
             onNext={onNextTutorialStep}
             onComplete={onCompleteTutorial}

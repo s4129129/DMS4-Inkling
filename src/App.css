@@ -7287,14 +7287,18 @@ button:disabled {
   font-size: 0.78rem;
 }
 
-.settings-row input {
+.settings-row input,
+.settings-row select {
   min-height: 38px;
   border: 1px solid var(--input-border);
   border-radius: 10px;
   background: var(--surface-container-low);
   color: var(--on-surface);
-  text-align: right;
   padding: 0.45rem 0.58rem;
+}
+
+.settings-row input {
+  text-align: right;
 }
 
 .settings-icon-row {

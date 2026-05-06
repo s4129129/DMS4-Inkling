@@ -22,6 +22,7 @@ function normalizeSpotlightRect(rect) {
 export default function TutorialOverlay({
   steps,
   stepIndex,
+  labels = {},
   onBack,
   onNext,
   onComplete,
@@ -30,6 +31,15 @@ export default function TutorialOverlay({
   const step = steps[stepIndex] ?? null;
   const totalSteps = steps.length;
   const isLastStep = stepIndex >= totalSteps - 1;
+  const copy = {
+    ariaLabel: "Dashboard tutorial",
+    progressLabel: "Step",
+    skip: "Skip Tutorial",
+    back: "Back",
+    next: "Next Step",
+    finish: "Finish Tutorial",
+    ...labels,
+  };
   const [spotlightRect, setSpotlightRect] = useState(null);
 
   const onAdvanceStep = () => {
@@ -110,7 +120,7 @@ export default function TutorialOverlay({
       className="tutorial-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="Dashboard tutorial"
+      aria-label={copy.ariaLabel}
       onPointerDown={(event) => {
         if (event.target.closest(".tutorial-card")) {
           return;
@@ -155,14 +165,14 @@ export default function TutorialOverlay({
 
       <aside className="tutorial-card">
         <p className="tutorial-progress">
-          Step {stepIndex + 1} / {totalSteps}
+          {copy.progressLabel} {stepIndex + 1} / {totalSteps}
         </p>
         <h3>{step.title}</h3>
         <p>{step.description}</p>
 
         <div className="market-actions-row tutorial-card-actions">
           <button type="button" className="ghost" onClick={onSkip}>
-            Skip Tutorial
+            {copy.skip}
           </button>
           <button
             type="button"
@@ -170,14 +180,14 @@ export default function TutorialOverlay({
             onClick={onBack}
             disabled={stepIndex <= 0}
           >
-            Back
+            {copy.back}
           </button>
           <button
             type="button"
             className="action"
             onClick={onAdvanceStep}
           >
-            {isLastStep ? "Finish Tutorial" : "Next Step"}
+            {isLastStep ? copy.finish : copy.next}
           </button>
         </div>
       </aside>

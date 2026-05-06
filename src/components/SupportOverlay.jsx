@@ -1,16 +1,30 @@
 import { useEffect, useState } from "react";
 import { FAQ_ITEMS } from "./faqItems";
 
-const TUTORIAL_HINTS = [
-  "Upload a book from your device or select a free book in the Marketplace.",
-  "Create a timer and set it for how long you want to work.",
-  "Set how much time it takes to unlock a page.",
-  "When complete, press Claim to unlock pages for your book.",
-  "Check the Marketplace for dashboard customization and books.",
-];
+const TUTORIAL_HINTS = {
+  en: [
+    "Upload a book from your device or select a free book in the Marketplace.",
+    "Create a timer and set it for how long you want to work.",
+    "Set how much time it takes to unlock a page.",
+    "When complete, press Claim to unlock pages for your book.",
+    "Check the Marketplace for dashboard customization and books.",
+  ],
+  vi: [
+    "Tải sách từ thiết bị của bạn hoặc chọn một cuốn sách miễn phí tại Cửa hàng (Marketplace).",
+    "Hãy tạo một bộ đếm giờ và cài đặt thời lượng mà bạn muốn làm việc.",
+    "Thiết lập khoảng thời gian cần thiết (làm việc) để mở khóa được một trang sách.",
+    'Sau khi hoàn thành phiên làm việc, hãy nhấn "Nhận" để mở khóa các trang sách của bạn.',
+    "Ghé thăm Cửa hàng để tùy chỉnh bảng điều khiển của bạn và chọn mua những cuốn sách mới.",
+  ],
+};
 
-export default function SupportOverlay({ onClose, onStartTutorial }) {
+export default function SupportOverlay({
+  language = "vi",
+  onClose,
+  onStartTutorial,
+}) {
   const [activeTab, setActiveTab] = useState("tutorial");
+  const tutorialHints = TUTORIAL_HINTS[language] ?? TUTORIAL_HINTS.vi;
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -87,7 +101,7 @@ export default function SupportOverlay({ onClose, onStartTutorial }) {
             {activeTab === "tutorial" && (
               <div className="support-panel-grid">
                 <ol className="support-tutorial-steps">
-                  {TUTORIAL_HINTS.map((step) => (
+                  {tutorialHints.map((step) => (
                     <li key={step}>{step}</li>
                   ))}
                 </ol>

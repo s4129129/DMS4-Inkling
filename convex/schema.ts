@@ -15,6 +15,7 @@ export default defineSchema({
     selectedMode: v.optional(v.string()),
     accentColor: v.optional(v.string()),
     accentColorSecondary: v.optional(v.string()),
+    language: v.optional(v.string()),
     timeZone: v.optional(v.string()),
     interactionMode: v.optional(v.string()),
     ownedThemes: v.array(v.string()),

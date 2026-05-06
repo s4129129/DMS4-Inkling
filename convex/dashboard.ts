@@ -6,6 +6,7 @@ const DEFAULT_MINUTES_PER_PAGE = 20;
 const DEFAULT_DAILY_QUOTA_PAGES = 3;
 const DEFAULT_THEME = "default";
 const DEFAULT_MODE = "dark";
+const DEFAULT_LANGUAGE = "vi";
 const DEFAULT_TIME_ZONE = "UTC";
 const DEFAULT_INTERACTION_MODE = "classic";
 const DEFAULT_OWNED_THEMES = ["default"];
@@ -127,6 +128,10 @@ function normalizeInteractionMode(mode?: string | null) {
     return "sinkdown";
   }
   return DEFAULT_INTERACTION_MODE;
+}
+
+function normalizeLanguage(language?: string | null) {
+  return language === "en" ? "en" : DEFAULT_LANGUAGE;
 }
 
 function normalizeAccentColor(color?: string | null) {
@@ -442,6 +447,7 @@ async function getOrCreateProfile(ctx: any, userId: any) {
       selectedMode: DEFAULT_MODE,
       accentColor: "",
       accentColorSecondary: "",
+      language: DEFAULT_LANGUAGE,
       interactionMode: DEFAULT_INTERACTION_MODE,
       ownedThemes: DEFAULT_OWNED_THEMES,
       ownedFeatures: DEFAULT_OWNED_FEATURES,
@@ -469,6 +475,7 @@ async function getOrCreateProfile(ctx: any, userId: any) {
     selectedMode: DEFAULT_MODE,
     accentColor: "",
     accentColorSecondary: "",
+    language: DEFAULT_LANGUAGE,
     timeZone: DEFAULT_TIME_ZONE,
     interactionMode: DEFAULT_INTERACTION_MODE,
     ownedThemes: DEFAULT_OWNED_THEMES,
@@ -835,6 +842,7 @@ export const overview = query({
         selectedMode,
         accentColor,
         accentColorSecondary,
+        language: normalizeLanguage(profile.language),
         interactionMode,
         ownedThemes,
         ownedFeatures,
@@ -1022,6 +1030,7 @@ export const updatePreferences = mutation({
   args: {
     minutesPerPage: v.optional(v.number()),
     dailyQuotaPages: v.optional(v.number()),
+    language: v.optional(v.string()),
     timeZone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -1034,6 +1043,9 @@ export const updatePreferences = mutation({
     }
     if (typeof args.dailyQuotaPages === "number") {
       patch.dailyQuotaPages = Math.max(1, Math.floor(args.dailyQuotaPages));
+    }
+    if (typeof args.language === "string") {
+      patch.language = normalizeLanguage(args.language);
     }
     if (typeof args.timeZone === "string") {
       patch.timeZone = normalizeTimeZone(args.timeZone);

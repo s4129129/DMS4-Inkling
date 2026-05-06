@@ -8,6 +8,11 @@ const SETTINGS_TAB_LABELS = {
   banner: "Banner",
 };
 
+const LANGUAGE_OPTIONS = [
+  { id: "vi", label: "Tiếng Việt" },
+  { id: "en", label: "English" },
+];
+
 const MONO_ASSET_THEME_OPTIONS = [
   { id: "default", label: "Default" },
   { id: "vintage", label: "Vintage" },
@@ -78,6 +83,8 @@ export default function SettingsSection({
   onApplyAccentColors,
   dailyQuotaInput,
   setDailyQuotaInput,
+  selectedLanguage = "vi",
+  onSelectLanguage,
   onSavePreferences,
   settingsMessage,
   hasMechanicalInteractionFeature,
@@ -338,6 +345,25 @@ export default function SettingsSection({
                       onBlur={commitDailyQuota}
                       onKeyDown={onDailyQuotaKeyDown}
                     />
+                  </div>
+
+                  <div className="settings-row">
+                    <span className="settings-row-copy">
+                      <strong>Language</strong>
+                      <span>Tutorial language</span>
+                    </span>
+                    <select
+                      value={selectedLanguage}
+                      onChange={(event) =>
+                        onSelectLanguage?.(event.target.value)
+                      }
+                    >
+                      {LANGUAGE_OPTIONS.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </section>
 
