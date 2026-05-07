@@ -54,9 +54,7 @@ export default function LibrarySection({
     selectedBookFileType === "mobi" ||
     selectedBookFileType === "azw3" ||
     selectedBookFileType === "cbr";
-  const shouldShowCompatibilityViewer =
-    isUnsupportedInline ||
-    (selectedBookFileType === "pdf" && renderError && selectedBookFileUrl);
+  const shouldShowCompatibilityViewer = isUnsupportedInline;
 
   const isActiveBookTabOpen = Boolean(
     selectedBook?._id &&

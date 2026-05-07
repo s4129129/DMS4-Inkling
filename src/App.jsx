@@ -153,6 +153,15 @@ function resolveBookFileUrl(book) {
   return officialAsset?.pdfUrl ?? book.pdfUrl ?? book.sourceUrl ?? null;
 }
 
+function createPdfLoadingTask(pdfUrl, options = {}) {
+  return getDocument({
+    url: pdfUrl,
+    withCredentials: false,
+    useSystemFonts: true,
+    ...options,
+  });
+}
+
 function resolveBookCoverUrl(book) {
   if (!book) {
     return "";
@@ -1999,7 +2008,7 @@ function ReaderWorkspace({ onThemeChange }) {
       const existing = pdfDocCacheRef.current.get(bookId);
       if (
         existing?.url === pdfUrl &&
-        (existing.doc || existing.loadingTask || existing.error)
+        (existing.doc || existing.loadingTask)
       ) {
         continue;
       }
@@ -2018,14 +2027,6 @@ function ReaderWorkspace({ onThemeChange }) {
         progress: 0,
         error: "",
       };
-      const loadingTask = getDocument({
-        url: pdfUrl,
-        rangeChunkSize: 1 << 16,
-        disableAutoFetch: true,
-        disableStream: true,
-        disableRange: false,
-      });
-      entry.loadingTask = loadingTask;
       pdfDocCacheRef.current.set(bookId, entry);
 
       setPdfLoadStates((prev) => ({
@@ -2033,7 +2034,7 @@ function ReaderWorkspace({ onThemeChange }) {
         [bookId]: { loading: true, progress: 0, error: "" },
       }));
 
-      loadingTask.onProgress = ({ loaded, total }) => {
+      const handleLoadProgress = ({ loaded, total }) => {
         const currentEntry = pdfDocCacheRef.current.get(bookId);
         if (currentEntry !== entry || entry.doc || entry.error) {
           return;
@@ -2054,7 +2055,53 @@ function ReaderWorkspace({ onThemeChange }) {
         }));
       };
 
-      loadingTask.promise
+      const startLoadingTask = (options) => {
+        const loadingTask = createPdfLoadingTask(pdfUrl, options);
+        loadingTask.onProgress = handleLoadProgress;
+        entry.loadingTask = loadingTask;
+        return loadingTask;
+      };
+
+      const loadPdfDocument = async () => {
+        const rangedTask = startLoadingTask({
+          rangeChunkSize: 1 << 16,
+          disableAutoFetch: false,
+          disableStream: false,
+          disableRange: false,
+        });
+
+        try {
+          return await rangedTask.promise;
+        } catch (error) {
+          const currentEntry = pdfDocCacheRef.current.get(bookId);
+          if (currentEntry !== entry) {
+            throw error;
+          }
+          try {
+            await rangedTask.destroy?.();
+          } catch {
+            // The fallback below is the important cleanup path.
+          }
+          entry.progress = Math.max(entry.progress, 8);
+          setPdfLoadStates((prev) => ({
+            ...prev,
+            [bookId]: {
+              ...(prev[bookId] || {}),
+              loading: true,
+              progress: entry.progress,
+              error: "",
+            },
+          }));
+          const fullFileTask = startLoadingTask({
+            disableRange: true,
+            disableStream: true,
+            disableAutoFetch: false,
+          });
+          return await fullFileTask.promise;
+        }
+      };
+
+      loadPdfDocument()
         .then((doc) => {
           const currentEntry = pdfDocCacheRef.current.get(bookId);
           if (currentEntry !== entry) {
