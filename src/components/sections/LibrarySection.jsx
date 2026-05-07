@@ -54,6 +54,8 @@ export default function LibrarySection({
     selectedBookFileType === "mobi" ||
     selectedBookFileType === "azw3" ||
     selectedBookFileType === "cbr";
+  const shouldShowPdfFallback =
+    selectedBookFileType === "pdf" && Boolean(renderError && selectedBookFileUrl);
   const shouldShowCompatibilityViewer = isUnsupportedInline;
 
   const isActiveBookTabOpen = Boolean(
@@ -495,7 +497,9 @@ export default function LibrarySection({
               {!readerOnlyMode && (isRendering || altViewerLoading) && (
                 <p className="status-text">Rendering page...</p>
               )}
-              {renderError && <p className="error-text">{renderError}</p>}
+              {renderError && !shouldShowPdfFallback && (
+                <p className="error-text">{renderError}</p>
+              )}
               {altViewerError && <p className="error-text">{altViewerError}</p>}
               <div
                 className={`page-frame${isReaderExpanded ? " fullscreen" : ""}${isReaderExpanded && isLandscapePage ? " landscape-page" : ""}${readerOnlyMode ? " reader-only-frame" : ""}`}
@@ -569,8 +573,16 @@ export default function LibrarySection({
                     </button>
                   </div>
                 )}
-                {selectedBookFileType === "pdf" && (
+                {selectedBookFileType === "pdf" && !shouldShowPdfFallback && (
                   <canvas ref={canvasRef} aria-label={`Page ${currentPage}`} />
+                )}
+
+                {shouldShowPdfFallback && (
+                  <iframe
+                    src={selectedBookFileUrl}
+                    title={`${selectedBook?.title || "Book"} preview`}
+                    className="generic-file-preview pdf-fallback-preview"
+                  />
                 )}
 
                 {selectedBookFileType === "epub" && (

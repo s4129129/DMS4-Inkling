@@ -2122,11 +2122,16 @@ function ReaderWorkspace({ onThemeChange }) {
             setReaderDocumentLoadingProgress(100);
           }
         })
-        .catch(() => {
+        .catch((error) => {
           const currentEntry = pdfDocCacheRef.current.get(bookId);
           if (currentEntry !== entry) {
             return;
           }
+          console.error("PDF.js failed to load", {
+            bookId,
+            pdfUrl,
+            error,
+          });
           entry.loadingTask = null;
           entry.error = "Could not load this PDF from storage.";
           setPdfLoadStates((prev) => ({
