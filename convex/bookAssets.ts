@@ -214,56 +214,70 @@ export const generateUploadTarget = action({
     contentHash: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireUserId(ctx);
-    const config = getObjectStorageConfig();
+    try {
+      const userId = await requireUserId(ctx);
+      const config = getObjectStorageConfig();
 
-    if (!config.configured) {
-      return config;
+      if (!config.configured) {
+        return config;
+      }
+
+      const contentType =
+        String(args.contentType || "").trim() || "application/octet-stream";
+      const extension = safeExtension(
+        String(args.fileName || "")
+          .split(".")
+          .pop()
+          ?.toLowerCase(),
+        String(args.fileType || "bin").toLowerCase(),
+      );
+      const contentHash = normalizeSha256(args.contentHash);
+      const objectKey = contentHash
+        ? [
+            "user-books",
+            `${userId}`,
+            "sha256",
+            `${contentHash}.${extension}`,
+          ].join("/")
+        : [
+            "user-books",
+            `${userId}`,
+            `${Date.now()}-${randomUUID()}`,
+            `${safeFileName(args.fileName)}.${extension}`,
+          ].join("/");
+
+      const signedTarget = createSignedPutTarget({
+        bucket: config.bucket,
+        endpoint: config.endpoint,
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
+        publicBaseUrl: config.publicBaseUrl,
+        region: config.region,
+        objectKey,
+        contentType,
+      });
+
+      return {
+        configured: true,
+        provider: config.provider,
+        assetKey: objectKey,
+        assetHash: contentHash ?? undefined,
+        assetUrl: signedTarget.publicUrl,
+        uploadUrl: signedTarget.uploadUrl,
+        method: signedTarget.method,
+        headers: signedTarget.headers,
+        expiresAt: signedTarget.expiresAt,
+      };
+    } catch (error) {
+      console.error("generateUploadTarget failed", error);
+      return {
+        configured: false as const,
+        reason:
+          error instanceof Error
+            ? error.message
+            : "Book object storage upload target failed.",
+      };
     }
-
-    const contentType =
-      String(args.contentType || "").trim() || "application/octet-stream";
-    const extension = safeExtension(
-      String(args.fileName || "")
-        .split(".")
-        .pop()
-        ?.toLowerCase(),
-      String(args.fileType || "bin").toLowerCase(),
-    );
-    const contentHash = normalizeSha256(args.contentHash);
-    const objectKey = contentHash
-      ? ["user-books", `${userId}`, "sha256", `${contentHash}.${extension}`].join(
-          "/",
-        )
-      : [
-          "user-books",
-          `${userId}`,
-          `${Date.now()}-${randomUUID()}`,
-          `${safeFileName(args.fileName)}.${extension}`,
-        ].join("/");
-
-    const signedTarget = createSignedPutTarget({
-      bucket: config.bucket,
-      endpoint: config.endpoint,
-      accessKeyId: config.accessKeyId,
-      secretAccessKey: config.secretAccessKey,
-      publicBaseUrl: config.publicBaseUrl,
-      region: config.region,
-      objectKey,
-      contentType,
-    });
-
-    return {
-      configured: true,
-      provider: config.provider,
-      assetKey: objectKey,
-      assetHash: contentHash ?? undefined,
-      assetUrl: signedTarget.publicUrl,
-      uploadUrl: signedTarget.uploadUrl,
-      method: signedTarget.method,
-      headers: signedTarget.headers,
-      expiresAt: signedTarget.expiresAt,
-    };
   },
 });
 
