@@ -153,13 +153,65 @@ function resolveBookFileUrl(book) {
   return officialAsset?.pdfUrl ?? book.pdfUrl ?? book.sourceUrl ?? null;
 }
 
-function createPdfLoadingTask(pdfUrl, options = {}) {
+function createPdfLoadingTask(source, options = {}) {
+  const sourceOptions =
+    typeof source === "string" ? { url: source } : { ...(source || {}) };
   return getDocument({
-    url: pdfUrl,
+    ...sourceOptions,
     withCredentials: false,
     useSystemFonts: true,
     ...options,
   });
+}
+
+function withTimeout(promise, timeoutMs, message) {
+  let timeoutId;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      reject(new Error(message));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    window.clearTimeout(timeoutId);
+  });
+}
+
+async function fetchPdfAsArrayBuffer(pdfUrl, { signal, onProgress } = {}) {
+  const response = await fetch(pdfUrl, { signal });
+  if (!response.ok) {
+    throw new Error(`PDF fetch failed with ${response.status}`);
+  }
+
+  const total = Number(response.headers.get("content-length") || 0);
+  if (!response.body?.getReader) {
+    const data = await response.arrayBuffer();
+    onProgress?.({ loaded: data.byteLength, total: data.byteLength });
+    return data;
+  }
+
+  const reader = response.body.getReader();
+  const chunks = [];
+  let loaded = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    chunks.push(value);
+    loaded += value.byteLength;
+    onProgress?.({ loaded, total });
+  }
+
+  const output = new Uint8Array(loaded);
+  let offset = 0;
+  for (const chunk of chunks) {
+    output.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+
+  return output.buffer;
 }
 
 function resolveBookCoverUrl(book) {
@@ -184,6 +236,7 @@ const PATCH_NOTES_VERSION = "v0.1.1";
 const PATCH_NOTES_STORAGE_PREFIX = "inkling-dashboard-patch-notes-seen:v1:";
 const AD_POPUP_DURATION_SECONDS = 30;
 const MAX_SESSION_MINUTES = 120;
+const PDF_RANGE_READY_TIMEOUT_MS = 12000;
 const LONG_SESSION_WARNING =
   "Any more than 2hours of work per session is not recommended by scientfic research";
 const FAQ_STORAGE_PREFIX = "inkling-dashboard-faq-complete:v1:";
@@ -1941,6 +1994,7 @@ function ReaderWorkspace({ onThemeChange }) {
         epubBookRef.current = null;
       }
       for (const entry of pdfDocCache.values()) {
+        entry.abortController?.abort();
         entry.loadingTask?.destroy?.();
         if (entry.doc) {
           void entry.doc.destroy();
@@ -2014,6 +2068,7 @@ function ReaderWorkspace({ onThemeChange }) {
       }
 
       if (existing?.url !== pdfUrl) {
+        existing?.abortController?.abort();
         existing?.loadingTask?.destroy?.();
         if (existing?.doc) {
           void existing.doc.destroy();
@@ -2024,6 +2079,7 @@ function ReaderWorkspace({ onThemeChange }) {
         url: pdfUrl,
         doc: null,
         loadingTask: null,
+        abortController: null,
         progress: 0,
         error: "",
       };
@@ -2062,6 +2118,27 @@ function ReaderWorkspace({ onThemeChange }) {
         return loadingTask;
       };
 
+      const updateFullFetchProgress = ({ loaded, total }) => {
+        const currentEntry = pdfDocCacheRef.current.get(bookId);
+        if (currentEntry !== entry || entry.doc || entry.error) {
+          return;
+        }
+        const progress =
+          Number.isFinite(total) && total > 0
+            ? Math.max(10, Math.min(92, Math.round((loaded / total) * 82) + 10))
+            : Math.max(entry.progress, 18);
+        entry.progress = Math.max(entry.progress, progress);
+        setPdfLoadStates((prev) => ({
+          ...prev,
+          [bookId]: {
+            ...(prev[bookId] || {}),
+            loading: true,
+            progress: entry.progress,
+            error: "",
+          },
+        }));
+      };
+
       const loadPdfDocument = async () => {
         const rangedTask = startLoadingTask({
           rangeChunkSize: 1 << 16,
@@ -2071,7 +2148,11 @@ function ReaderWorkspace({ onThemeChange }) {
         });
 
         try {
-          return await rangedTask.promise;
+          return await withTimeout(
+            rangedTask.promise,
+            PDF_RANGE_READY_TIMEOUT_MS,
+            "PDF range load timed out",
+          );
         } catch (error) {
           const currentEntry = pdfDocCacheRef.current.get(bookId);
           if (currentEntry !== entry) {
@@ -2092,11 +2173,19 @@ function ReaderWorkspace({ onThemeChange }) {
               error: "",
             },
           }));
-          const fullFileTask = startLoadingTask({
-            disableRange: true,
-            disableStream: true,
-            disableAutoFetch: false,
+          const abortController = new AbortController();
+          entry.abortController = abortController;
+          const pdfData = await fetchPdfAsArrayBuffer(pdfUrl, {
+            signal: abortController.signal,
+            onProgress: updateFullFetchProgress,
           });
+          if (pdfDocCacheRef.current.get(bookId) !== entry) {
+            throw error;
+          }
+          entry.abortController = null;
+          const fullFileTask = createPdfLoadingTask({ data: pdfData });
+          fullFileTask.onProgress = handleLoadProgress;
+          entry.loadingTask = fullFileTask;
           return await fullFileTask.promise;
         }
       };
@@ -2151,6 +2240,7 @@ function ReaderWorkspace({ onThemeChange }) {
         continue;
       }
       entry.loadingTask?.destroy?.();
+      entry.abortController?.abort();
       if (entry.doc) {
         void entry.doc.destroy();
       }
