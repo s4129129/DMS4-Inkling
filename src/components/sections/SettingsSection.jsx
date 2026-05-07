@@ -13,6 +13,15 @@ const LANGUAGE_OPTIONS = [
   { id: "en", label: "English" },
 ];
 
+const DASHBOARD_SECTION_DESCRIPTIONS = {
+  dashboard: "Summary cards, charts, calendar preview, and timeline.",
+  timers: "Timer setup, active sessions, and work-session rewards.",
+  library: "Local books, official books, and the reader panel.",
+  calendar: "Full work-session calendar and daily session list.",
+  market: "Themes, books, interaction packs, and banner unlocks.",
+  groups: "Group chats, direct messages, members, and shared files.",
+};
+
 const MONO_ASSET_THEME_OPTIONS = [
   { id: "default", label: "Default" },
   { id: "vintage", label: "Vintage" },
@@ -85,6 +94,9 @@ export default function SettingsSection({
   setDailyQuotaInput,
   selectedLanguage = "vi",
   onSelectLanguage,
+  dashboardSectionOptions = [],
+  visibleDashboardSectionIds = [],
+  onToggleDashboardSectionVisibility,
   onSavePreferences,
   settingsMessage,
   hasMechanicalInteractionFeature,
@@ -117,6 +129,10 @@ export default function SettingsSection({
   const activeTabLabel = SETTINGS_TAB_LABELS[activeTab] ?? "Settings";
   const isMonochromeTheme = selectedThemeId === "command";
   const normalizedThemeMode = selectedThemeMode || "dark";
+  const visibleDashboardSectionSet = useMemo(
+    () => new Set(visibleDashboardSectionIds),
+    [visibleDashboardSectionIds],
+  );
 
   const themeSaturatedColors = useMemo(() => {
     const colors = getThemeSaturatedColors(
@@ -244,6 +260,14 @@ export default function SettingsSection({
     event.currentTarget.blur();
   };
 
+  const adjustDailyQuotaDraft = (delta) => {
+    const currentValue = normalizePositiveInteger(dailyQuotaDraft, 1);
+    const nextValue = Math.max(1, currentValue + delta);
+    setDailyQuotaDraft(String(nextValue));
+    setDailyQuotaInput?.(nextValue);
+    window.setTimeout(() => onSavePreferences?.(nextValue), 0);
+  };
+
   const renderInteractionCard = ({
     id,
     title,
@@ -334,17 +358,37 @@ export default function SettingsSection({
                       <strong>Daily quota</strong>
                       <span>Pages for streak</span>
                     </span>
-                    <input
-                      type="number"
-                      min={1}
-                      inputMode="numeric"
-                      value={dailyQuotaDraft}
-                      onChange={(event) =>
-                        setDailyQuotaDraft(event.target.value)
-                      }
-                      onBlur={commitDailyQuota}
-                      onKeyDown={onDailyQuotaKeyDown}
-                    />
+                    <span className="settings-number-stepper">
+                      <button
+                        type="button"
+                        className="settings-stepper-button"
+                        onClick={() => adjustDailyQuotaDraft(-1)}
+                        aria-label="Decrease daily quota"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={dailyQuotaDraft}
+                        onChange={(event) =>
+                          setDailyQuotaDraft(
+                            event.target.value.replace(/\D/g, ""),
+                          )
+                        }
+                        onBlur={commitDailyQuota}
+                        onKeyDown={onDailyQuotaKeyDown}
+                      />
+                      <button
+                        type="button"
+                        className="settings-stepper-button"
+                        onClick={() => adjustDailyQuotaDraft(1)}
+                        aria-label="Increase daily quota"
+                      >
+                        +
+                      </button>
+                    </span>
                   </div>
 
                   <div className="settings-row">
@@ -364,6 +408,56 @@ export default function SettingsSection({
                         </option>
                       ))}
                     </select>
+                  </div>
+                </section>
+
+                <section className="settings-dashboard-section-panel">
+                  <div className="settings-dashboard-section-head">
+                    <h3>Section visibility</h3>
+                  </div>
+
+                  <div className="settings-dashboard-section-list">
+                    {dashboardSectionOptions.map((section) => {
+                      const isVisible = visibleDashboardSectionSet.has(
+                        section.key,
+                      );
+                      const isOnlyVisible =
+                        isVisible && visibleDashboardSectionSet.size <= 1;
+
+                      return (
+                        <article
+                          key={section.key}
+                          className="settings-dashboard-section-item"
+                        >
+                          <div className="settings-dashboard-section-copy">
+                            <strong>{section.label}</strong>
+                            <span>
+                              {DASHBOARD_SECTION_DESCRIPTIONS[section.key] ||
+                                "Dashboard section."}
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            className={`settings-dashboard-section-toggle${
+                              isVisible ? " active" : ""
+                            }`}
+                            role="switch"
+                            aria-checked={isVisible}
+                            disabled={isOnlyVisible}
+                            onClick={() =>
+                              onToggleDashboardSectionVisibility?.(
+                                section.key,
+                                !isVisible,
+                              )
+                            }
+                          >
+                            <span>{isVisible ? "Shown" : "Hidden"}</span>
+                            <i aria-hidden="true" />
+                          </button>
+                        </article>
+                      );
+                    })}
                   </div>
                 </section>
 

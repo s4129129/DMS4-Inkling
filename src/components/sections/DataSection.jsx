@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import DataDashboardPanel from "./DataDashboardPanel";
 import { buildMinuteTimeline, MINUTES_PER_DAY } from "./activityTimeline";
 import { chartPalette, ensureChartJs } from "./chartUtils";
+import { translateUiText } from "../../i18n";
 
 const EMPTY_WEEKLY = [
   { day: "Mon", pages: 0 },
@@ -53,27 +54,6 @@ function formatWindowLabel(windowMinutes) {
   return `${windowMinutes}m`;
 }
 
-function translateDataChartText(value, language) {
-  if (language !== "vi") {
-    return value;
-  }
-
-  const translations = {
-    Completed: "Đã hoàn thành",
-    Pages: "Trang",
-    "Pages unlocked": "Trang đã mở khóa",
-    Paused: "Đã tạm dừng",
-    "Reading session": "Phiên đọc",
-    Removed: "Đã xóa",
-    Started: "Đã bắt đầu",
-    Time: "Thời gian",
-    Timer: "Bộ đếm giờ",
-    "Timer events": "Sự kiện bộ đếm giờ",
-  };
-
-  return translations[value] ?? value;
-}
-
 export default function DataSection({
   progressBooks,
   weekly,
@@ -108,16 +88,16 @@ export default function DataSection({
   const weeklyPoints = weekly?.length ? weekly : EMPTY_WEEKLY;
   const chartText = useMemo(
     () => ({
-      completed: translateDataChartText("Completed", language),
-      pages: translateDataChartText("Pages", language),
-      pagesUnlocked: translateDataChartText("Pages unlocked", language),
-      paused: translateDataChartText("Paused", language),
-      readingSession: translateDataChartText("Reading session", language),
-      removed: translateDataChartText("Removed", language),
-      started: translateDataChartText("Started", language),
-      time: translateDataChartText("Time", language),
-      timer: translateDataChartText("Timer", language),
-      timerEvents: translateDataChartText("Timer events", language),
+      completed: translateUiText("Completed", language),
+      pages: translateUiText("Pages", language),
+      pagesUnlocked: translateUiText("Pages unlocked", language),
+      paused: translateUiText("Paused", language),
+      readingSession: translateUiText("Reading session", language),
+      removed: translateUiText("Removed", language),
+      started: translateUiText("Started", language),
+      time: translateUiText("Time", language),
+      timer: translateUiText("Timer", language),
+      timerEvents: translateUiText("Timer events", language),
     }),
     [language],
   );

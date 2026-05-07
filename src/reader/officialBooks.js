@@ -64,3 +64,7 @@ export function getOfficialBookAsset(book) {
     ] ?? null
   );
 }
+
+export function isOfficialBookAsset(book) {
+  return Boolean(getOfficialBookAsset(book));
+}

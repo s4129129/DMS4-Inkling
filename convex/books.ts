@@ -54,9 +54,12 @@ export const createBook = mutation({
     storageId: v.optional(v.id("_storage")),
     sourceUrl: v.optional(v.string()),
     assetKey: v.optional(v.string()),
+    assetHash: v.optional(v.string()),
     assetProvider: v.optional(v.string()),
     assetContentType: v.optional(v.string()),
     assetSize: v.optional(v.number()),
+    coverUrl: v.optional(v.string()),
+    coverAssetKey: v.optional(v.string()),
     fileType: v.optional(v.string()),
     pageCount: v.number(),
   },
@@ -69,11 +72,27 @@ export const createBook = mutation({
       throw new Error("Book source is required");
     }
 
+    const userBooks = await ctx.db
+      .query("books")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    if (args.assetKey) {
+      const existingBook = userBooks.find(
+        (book) => book.assetKey === args.assetKey,
+      );
+      if (existingBook) {
+        if (args.coverUrl && !existingBook.coverUrl) {
+          await ctx.db.patch(existingBook._id, {
+            coverUrl: args.coverUrl,
+            coverAssetKey: args.coverAssetKey,
+          });
+        }
+        return existingBook._id;
+      }
+    }
+
     if (args.storageId) {
-      const userBooks = await ctx.db
-        .query("books")
-        .withIndex("by_user", (q) => q.eq("userId", userId))
-        .collect();
       const localBookCount = userBooks.filter((book) => book.storageId).length;
       if (localBookCount >= LOCAL_BOOK_LIMIT) {
         throw new Error("Local file limit reached");
@@ -86,9 +105,12 @@ export const createBook = mutation({
       storageId: args.storageId,
       sourceUrl: args.sourceUrl,
       assetKey: args.assetKey,
+      assetHash: args.assetHash,
       assetProvider: args.assetProvider,
       assetContentType: args.assetContentType,
       assetSize: args.assetSize,
+      coverUrl: args.coverUrl,
+      coverAssetKey: args.coverAssetKey,
       fileType: args.fileType,
       pageCount,
       unlockedPages: 1,

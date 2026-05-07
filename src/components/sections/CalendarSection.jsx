@@ -5,6 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import HintPopover from "../common/HintPopover";
+import { translateUiText } from "../../i18n";
 import {
   buildDayEventCounts,
   formatDateKey,
@@ -85,6 +86,7 @@ export default function CalendarSection({
   timerSessions24h,
   calendarLocked = false,
   focusRequest = null,
+  language = "vi",
 }) {
   const calendarRef = useRef(null);
   const miniCalendarRef = useRef(null);
@@ -106,6 +108,7 @@ export default function CalendarSection({
     [timerSessions24h],
   );
   const dayEventCounts = useMemo(() => buildDayEventCounts(events), [events]);
+  const noEventsText = translateUiText("No events to display", language);
 
   const visibleEvent = eventPopover?.event || null;
   const renderCenteredDayCell = (info) => {
@@ -340,6 +343,7 @@ export default function CalendarSection({
               dayMaxEvents={0}
               eventDisplay="none"
               events={events}
+              noEventsText={noEventsText}
               dayCellClassNames={(info) =>
                 dayEventCounts[formatDateKey(info.date)] ? ["has-events"] : []
               }
@@ -470,6 +474,7 @@ export default function CalendarSection({
                 timeZone="local"
                 dayMaxEvents={3}
                 events={events}
+                noEventsText={noEventsText}
                 dayCellClassNames={
                   activeView === "dayGridMonth"
                     ? (info) =>

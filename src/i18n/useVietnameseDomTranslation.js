@@ -135,6 +135,21 @@ const EXACT_TRANSLATIONS = new Map(
     "Select dashboard section": "Chọn mục bảng điều khiển",
     "Dashboard section picker": "Bộ chọn mục bảng điều khiển",
     "Dashboard sections": "Các mục bảng điều khiển",
+    "Section visibility": "Hiển thị mục",
+    "Summary cards, charts, calendar preview, and timeline.":
+      "Thẻ tóm tắt, biểu đồ, lịch xem trước và dòng thời gian.",
+    "Timer setup, active sessions, and work-session rewards.":
+      "Thiết lập bộ đếm giờ, phiên đang chạy và phần thưởng phiên làm việc.",
+    "Local books, official books, and the reader panel.":
+      "Sách trong máy, sách chính thức và khung đọc.",
+    "Full work-session calendar and daily session list.":
+      "Lịch phiên làm việc đầy đủ và danh sách phiên trong ngày.",
+    "Themes, books, interaction packs, and banner unlocks.":
+      "Giao diện, sách, gói tương tác và mở khóa ảnh bìa.",
+    "Group chats, direct messages, members, and shared files.":
+      "Đoạn chat nhóm, tin nhắn riêng, thành viên và tệp chia sẻ.",
+    Shown: "Hiện",
+    Hidden: "Ẩn",
     "Sidebar quick actions": "Tác vụ nhanh thanh bên",
     "Open support": "Mở hỗ trợ",
     "Open settings": "Mở cài đặt",
@@ -167,6 +182,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Mini": "Nhỏ",
     Today: "Hôm nay",
     Details: "Chi tiết",
+    "No events to display": "Không có sự kiện để hiển thị",
     "No sessions logged yet": "Chưa ghi nhận phiên nào",
     "Calendar info": "Thông tin lịch",
     "Calendar nav": "Điều hướng lịch",
@@ -299,6 +315,15 @@ const EXACT_TRANSLATIONS = new Map(
     "External upload failed": "Tải lên bên ngoài thất bại",
     "Book upload failed. Confirm the file is a supported format and your Convex setup is healthy.":
       "Tải sách thất bại. Hãy kiểm tra định dạng tệp được hỗ trợ và cấu hình Convex.",
+    "Book upload failed. Confirm R2 object storage is configured.":
+      "Tải sách thất bại. Hãy kiểm tra cấu hình lưu trữ R2.",
+    "Book object storage is not configured. Set Convex BOOK_ASSET_* environment variables.":
+      "Kho lưu trữ sách chưa được cấu hình. Hãy đặt các biến môi trường Convex BOOK_ASSET_*.",
+    "Book object storage is unavailable.":
+      "Kho lưu trữ sách hiện không khả dụng.",
+    "R2 book upload failed.": "Tải sách lên R2 thất bại.",
+    "R2 upload was blocked. Check R2 CORS for this site origin.":
+      "Tải lên R2 đã bị chặn. Hãy kiểm tra CORS R2 cho nguồn trang web này.",
     "Canvas context unavailable": "Không thể dùng canvas",
     "Unsupported image type": "Định dạng ảnh không được hỗ trợ",
     "Image conversion failed": "Chuyển đổi ảnh thất bại",
@@ -321,6 +346,13 @@ const EXACT_TRANSLATIONS = new Map(
     "Importing official book...": "Đang nhập sách chính thức...",
     "Could not remove book.": "Không thể xóa sách.",
     "Could not load this PDF from storage.": "Không thể tải PDF này từ kho lưu trữ.",
+    "Could not save landing page.": "Không thể lưu trang bắt đầu.",
+    "Could not save thumbnail page.": "Không thể lưu ảnh bìa.",
+    "Unlock Mechanical Interaction in Marketplace first.":
+      "Hãy mở khóa Tương tác cơ trong Cửa hàng trước.",
+    "Tutorial complete. You are ready to unlock pages.":
+      "Hướng dẫn đã hoàn tất. Bạn đã sẵn sàng mở khóa trang.",
+    "Premium required.": "Cần gói cao cấp.",
     "Could not render this EPUB file.": "Không thể hiển thị tệp EPUB này.",
     "Could not render this CBZ archive.": "Không thể hiển thị tệp CBZ này.",
     "Could not claim reward yet.": "Chưa thể nhận thưởng.",
@@ -336,6 +368,8 @@ const EXACT_TRANSLATIONS = new Map(
     "Could not mute member.": "Không thể tắt tiếng thành viên.",
     "Could not remove member.": "Không thể xóa thành viên.",
     "Could not upload attachment.": "Không thể tải tệp đính kèm.",
+    "Attachment must be 25MB or smaller.":
+      "Tệp đính kèm phải có dung lượng từ 25MB trở xuống.",
     "Could not join public group.": "Không thể tham gia nhóm công khai.",
     "You are already a member of this public group.":
       "Bạn đã là thành viên của nhóm công khai này.",
@@ -362,6 +396,8 @@ const EXACT_TRANSLATIONS = new Map(
     "Minutes": "Phút",
     "Minutes needed per page unlock": "Số phút cần để mở khóa mỗi trang",
     "Daily quota": "Chỉ tiêu hằng ngày",
+    "Decrease daily quota": "Giảm chỉ tiêu hằng ngày",
+    "Increase daily quota": "Tăng chỉ tiêu hằng ngày",
     "Default Interaction is always available. Unlock Mechanical Interaction to use Pop Up and Sink Down.":
       "Tương tác mặc định luôn có sẵn. Mở khóa Tương tác cơ để dùng Pop Up và Sink Down.",
     "Light Mode": "Chế độ sáng",
@@ -494,10 +530,12 @@ const EXACT_TRANSLATIONS = new Map(
       "Điều khiển nổi lên khỏi bề mặt và nén lại khi di chuột hoặc nhấn.",
     "Shows a dark pocket above controls so actions look pressed into the UI.":
       "Hiển thị một vùng tối phía trên điều khiển để thao tác trông như được nhấn vào giao diện.",
+    "Reading pages available":
+      "Số lượng trang dùng để đọc sách",
     "Marketplace currency used to buy and unlock themes.":
-      "Tiền tệ trong Cửa hàng dùng để mua và mở khóa giao diện.",
+      "Dùng Ink để mua giao diện trong Cửa Hàng",
     "Quills are premium currency earned from weekly group reading milestones.":
-      "Quills là tiền cao cấp nhận được từ các cột mốc đọc hằng tuần của nhóm.",
+      "Quills là tiền tệ cao cấp khi đạt được cột mốc tuần trong Nhóm",
     "Export": "Xuất",
     "Support tabs": "Tab hỗ trợ",
     "Close member menu": "Đóng menu thành viên",
@@ -763,7 +801,6 @@ const REGEX_TRANSLATIONS = [
   [/^(.+)\s+and\s+(.+)\s+are typing\.\.\.$/i, "$1 và $2 đang nhập..."],
   [/^(.+)\s+and\s+(\d+)\s+others are typing\.\.\.$/i, "$1 và $2 người khác đang nhập..."],
   [/^Shared by\s+(.+)$/i, "Được chia sẻ bởi $1"],
-  [/^(.+)\s+uploaded via\s+(.+)\s+and ready to read\.$/i, "$1 đã được tải lên qua $2 và sẵn sàng đọc."],
   [/^(.+)\s+is ready to claim\.$/i, "$1 đã sẵn sàng nhận thưởng."],
   [/^Added official book:\s+(.+)$/i, "Đã thêm sách chính thức: $1"],
   [/^Timer:\s+Reading session$/i, "Bộ đếm giờ: Phiên đọc"],
@@ -812,6 +849,19 @@ function translateValue(value) {
   }
 
   return null;
+}
+
+export function isVietnameseLanguage(language) {
+  return String(language || "").toLowerCase() === "vi";
+}
+
+export function translateUiText(value, language) {
+  if (!isVietnameseLanguage(language)) {
+    return value;
+  }
+
+  const translated = translateValue(value);
+  return translated ?? value;
 }
 
 function getOriginalAttributeMap(element) {

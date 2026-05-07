@@ -17,6 +17,7 @@ import "./App.css";
 import AppHeader from "./components/AppHeader";
 import LandingPage from "./components/LandingPage";
 import DashboardSidebar from "./components/DashboardSidebar";
+import { DASHBOARD_SECTIONS } from "./dashboardSections";
 import DashboardTopbar, {
   DASHBOARD_READING_TAB_ID,
   DashboardMetaStrip,
@@ -39,11 +40,10 @@ import FaqOverlay from "./components/FaqOverlay";
 import PatchNotesOverlay from "./components/PatchNotesOverlay";
 import { getThemeSaturatedColors } from "./themes";
 import {
-  OFFICIAL_BOOKS,
-  OFFICIAL_BOOK_BY_ID,
   getOfficialBookAsset,
 } from "./reader/officialBooks";
-import { useVietnameseDomTranslation } from "./i18n/useVietnameseDomTranslation";
+import { useOfficialBookLibrary } from "./hooks/useOfficialBookLibrary";
+import { useVietnameseDomTranslation } from "./i18n";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -70,6 +70,8 @@ const LEGACY_THEME_ID_MAP = {
   comic: "default",
 };
 const DASHBOARD_SIDEBAR_WIDTH_STORAGE_KEY = "inkling:dashboard-sidebar-width:v1";
+const DASHBOARD_SECTION_VISIBILITY_STORAGE_KEY =
+  "inkling:dashboard-section-visibility:v1";
 const DEFAULT_DASHBOARD_SIDEBAR_WIDTH = 300;
 const MIN_DASHBOARD_SIDEBAR_WIDTH = 220;
 const MAX_DASHBOARD_SIDEBAR_WIDTH = 430;
@@ -102,6 +104,7 @@ const SUPPORTED_UPLOAD_ACCEPT = [
   "application/vnd.comicbook-rar",
 ].join(",");
 const LOCAL_BOOK_UPLOAD_LIMIT = 3;
+const MAX_GROUP_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 
 function normalizeThemePreference(value) {
   const themeIdRaw =
@@ -168,7 +171,7 @@ const DASHBOARD_SECTION_KEYS = new Set([
 ]);
 
 const TUTORIAL_STORAGE_PREFIX = "inkling-dashboard-tutorial-complete:v1:";
-const PATCH_NOTES_VERSION = "v0.1";
+const PATCH_NOTES_VERSION = "v0.1.1";
 const PATCH_NOTES_STORAGE_PREFIX = "inkling-dashboard-patch-notes-seen:v1:";
 const AD_POPUP_DURATION_SECONDS = 30;
 const MAX_SESSION_MINUTES = 120;
@@ -420,6 +423,17 @@ function normalizeBookFileType(value) {
     return "azw3";
   }
   return SUPPORTED_BOOK_FILE_TYPES.has(lowered) ? lowered : "pdf";
+}
+
+async function sha256Hex(data) {
+  if (!globalThis.crypto?.subtle) {
+    return null;
+  }
+
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function detectBookFileType({ fileName = "", mimeType = "", hintedType = "" }) {
@@ -718,6 +732,46 @@ function convertImageFileToPng(file) {
   });
 }
 
+function canvasToBlob(canvas, type, quality) {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), type, quality);
+  });
+}
+
+async function renderPdfFirstPageCoverBlob(pdf) {
+  const page = await pdf.getPage(1);
+  const baseViewport = page.getViewport({ scale: 1 });
+  const targetWidth = 260;
+  const scale = Math.min(1, targetWidth / Math.max(1, baseViewport.width));
+  const viewport = page.getViewport({ scale });
+  const pixelRatio = Math.min(2, window.devicePixelRatio || 1);
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d", { alpha: false });
+
+  if (!context) {
+    throw new Error("Canvas context unavailable");
+  }
+
+  canvas.width = Math.max(1, Math.round(viewport.width * pixelRatio));
+  canvas.height = Math.max(1, Math.round(viewport.height * pixelRatio));
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  await page.render({
+    canvasContext: context,
+    viewport,
+    transform:
+      pixelRatio === 1 ? undefined : [pixelRatio, 0, 0, pixelRatio, 0, 0],
+  }).promise;
+
+  const blob = await canvasToBlob(canvas, "image/webp", 0.72);
+  if (!blob) {
+    throw new Error("Cover thumbnail generation failed");
+  }
+
+  return blob;
+}
+
 function getBookThumbnailRequest(book) {
   if (!book) {
     return null;
@@ -770,6 +824,49 @@ function getDashboardSectionFromLocation() {
   const hashValue = hash.startsWith("section=") ? hash.slice(8) : hash;
   const queryValue = url.searchParams.get("section");
   return normalizeDashboardSection(hashValue || queryValue || "dashboard");
+}
+
+function normalizeDashboardSectionVisibility(value) {
+  const fallback = DASHBOARD_SECTIONS.map((section) => section.key);
+  const sectionKeys = new Set(fallback);
+  const source = Array.isArray(value) ? value : fallback;
+  const visibleSections = source
+    .map((sectionId) => normalizeDashboardSection(sectionId))
+    .filter((sectionId) => sectionKeys.has(sectionId));
+  const uniqueVisibleSections = [...new Set(visibleSections)];
+  return uniqueVisibleSections.length ? uniqueVisibleSections : fallback;
+}
+
+function readDashboardSectionVisibility() {
+  if (typeof window === "undefined") {
+    return normalizeDashboardSectionVisibility();
+  }
+
+  try {
+    return normalizeDashboardSectionVisibility(
+      JSON.parse(
+        window.localStorage.getItem(DASHBOARD_SECTION_VISIBILITY_STORAGE_KEY) ||
+          "null",
+      ),
+    );
+  } catch {
+    return normalizeDashboardSectionVisibility();
+  }
+}
+
+function writeDashboardSectionVisibility(sectionIds) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      DASHBOARD_SECTION_VISIBILITY_STORAGE_KEY,
+      JSON.stringify(normalizeDashboardSectionVisibility(sectionIds)),
+    );
+  } catch {
+    // Sidebar visibility remains available in memory if storage is blocked.
+  }
 }
 
 function formatRemaining(ms) {
@@ -985,9 +1082,11 @@ function ReaderWorkspace({ onThemeChange }) {
   const timers = useQuery("timers:listTimers");
   const overview = useQuery("dashboard:overview");
   const groupsOverview = useQuery("groups:overview");
-  const createUploadUrl = useMutation("books:generateUploadUrl");
   const createExternalBookUploadTarget = useAction(
     "bookAssets:generateUploadTarget",
+  );
+  const createExternalBookCoverUploadTarget = useAction(
+    "bookAssets:generateCoverUploadTarget",
   );
   const createBook = useMutation("books:createBook");
   const removeBook = useMutation("books:removeBook");
@@ -1048,6 +1147,7 @@ function ReaderWorkspace({ onThemeChange }) {
   const lastReadPageTimeoutRef = useRef(null);
   const readerInitializedBookRef = useRef(null);
   const readerScrollPendingIdsRef = useRef(new Set());
+  const dashboardShellRef = useRef(null);
   const notificationRegistrationRef = useRef(null);
   const selectedBookIdRef = useRef(null);
   const lastNotifiedTimerIdRef = useRef("");
@@ -1115,6 +1215,9 @@ function ReaderWorkspace({ onThemeChange }) {
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [activeSection, setActiveSection] = useState(() =>
     getDashboardSectionFromLocation(),
+  );
+  const [visibleDashboardSectionIds, setVisibleDashboardSectionIds] = useState(
+    readDashboardSectionVisibility,
   );
   const [calendarFocusRequest, setCalendarFocusRequest] = useState(null);
   const [minutesPerPageInput, setMinutesPerPageInput] = useState(20);
@@ -1421,44 +1524,19 @@ function ReaderWorkspace({ onThemeChange }) {
     [onThemeChange],
   );
 
-  const ownedTitles = useMemo(
-    () => new Set(bookList.map((book) => book.title.trim().toLowerCase())),
-    [bookList],
-  );
-
-  const officialBooksWithState = useMemo(
-    () => {
-      const sourceBooks = officialBookMarket.length
-        ? officialBookMarket
-        : OFFICIAL_BOOKS;
-
-      return sourceBooks.map((book) => {
-        const fallbackBook =
-          OFFICIAL_BOOK_BY_ID[book.id] ?? getOfficialBookAsset(book) ?? {};
-        const title = book.title ?? fallbackBook.title ?? "Official Book";
-        const cost = book.cost ?? fallbackBook.cost ?? 0;
-
-        return {
-          ...fallbackBook,
-          ...book,
-          title,
-          cost,
-          affordable: book.affordable ?? cost === 0,
-          fileType: book.fileType ?? fallbackBook.fileType ?? "pdf",
-          pageCount: book.pageCount ?? fallbackBook.pageCount ?? 1,
-          pdfUrl: book.pdfUrl ?? fallbackBook.pdfUrl ?? null,
-          coverUrl: book.coverUrl ?? fallbackBook.coverUrl ?? "",
-          added: ownedTitles.has(title.trim().toLowerCase()),
-        };
-      });
-    },
-    [officialBookMarket, ownedTitles],
-  );
-
-  const officialBooksInLibrary = useMemo(
-    () => officialBooksWithState.filter((book) => book.added),
-    [officialBooksWithState],
-  );
+  const {
+    officialBooksWithState,
+    officialBooksInLibrary,
+    onBuyOfficialBook,
+    onAddOfficialBook,
+  } = useOfficialBookLibrary({
+    bookList,
+    officialBookMarket,
+    createBook,
+    buyOfficialBook,
+    setUploadState,
+    setMarketMessage,
+  });
 
   useEffect(() => {
     if (!bookList.length) {
@@ -1712,6 +1790,17 @@ function ReaderWorkspace({ onThemeChange }) {
   }, [bookList, selectedBookId]);
 
   useEffect(() => {
+    if (visibleDashboardSectionIds.includes(activeSection)) {
+      return;
+    }
+
+    setActiveSection(visibleDashboardSectionIds[0] || "dashboard");
+    if (activeReadingTabId !== DASHBOARD_READING_TAB_ID) {
+      setActiveReadingTabId(DASHBOARD_READING_TAB_ID);
+    }
+  }, [activeReadingTabId, activeSection, visibleDashboardSectionIds]);
+
+  useEffect(() => {
     const validBookIds = new Set(bookList.map((book) => book._id));
     setOpenReadingTabIds((prev) =>
       prev.filter((bookId) => validBookIds.has(bookId)),
@@ -1761,9 +1850,11 @@ function ReaderWorkspace({ onThemeChange }) {
     }
 
     const frameId = window.requestAnimationFrame(() => {
-      document
-        .querySelector('[data-reader-stage="true"]')
-        ?.scrollIntoView({ block: "start" });
+      const scrollTarget =
+        dashboardShellRef.current?.classList.contains("reader-tab-shell")
+          ? dashboardShellRef.current
+          : window;
+      scrollTarget.scrollTo({ top: 0, behavior: "auto" });
       readerScrollPendingIdsRef.current.delete(selectedBookId);
     });
 
@@ -1882,14 +1973,12 @@ function ReaderWorkspace({ onThemeChange }) {
     selectedBook?.thumbnailPage,
   ]);
 
-  // Load full PDFs only for the active reader tab. Convex file bandwidth gets
-  // expensive quickly when large documents are fetched for background tabs.
+  // Keep every open PDF reading tab loading in the background. This lets users
+  // leave the reader and return to an already prepared document without forcing
+  // PDF.js to restart the fetch/parse work.
   useEffect(() => {
     const pdfBooksToLoad = new Map();
-    const candidateIds = new Set();
-    if (isReaderTabView && selectedBookId) {
-      candidateIds.add(selectedBookId);
-    }
+    const candidateIds = new Set(openReadingTabIds);
 
     for (const bookId of candidateIds) {
       const book = bookList.find((entry) => entry._id === bookId);
@@ -2024,7 +2113,7 @@ function ReaderWorkspace({ onThemeChange }) {
         return next;
       });
     }
-  }, [bookList, isReaderTabView, selectedBookId]);
+  }, [bookList, openReadingTabIds]);
 
   useEffect(() => {
     if (!selectedBookId || !isPdfBook) {
@@ -2613,12 +2702,19 @@ function ReaderWorkspace({ onThemeChange }) {
         mimeType: file.type,
       });
       const data = await file.arrayBuffer();
+      const contentHash = await sha256Hex(data);
       let detectedPageCount = 1;
+      let generatedCoverBlob = null;
 
       if (fileType === "pdf") {
         const loadingTask = getDocument({ data });
         const pdf = await loadingTask.promise;
         detectedPageCount = Math.max(1, pdf.numPages);
+        try {
+          generatedCoverBlob = await renderPdfFirstPageCoverBlob(pdf);
+        } catch {
+          generatedCoverBlob = null;
+        }
         await loadingTask.destroy();
       } else if (fileType === "epub") {
         try {
@@ -2647,7 +2743,6 @@ function ReaderWorkspace({ onThemeChange }) {
 
       const title = file.name.replace(/\.(pdf|epub|mobi|azw3|cbz|cbr)$/i, "");
       const contentType = file.type || "application/octet-stream";
-      let uploadedVia = "convex";
       let externalTarget = null;
 
       try {
@@ -2656,70 +2751,134 @@ function ReaderWorkspace({ onThemeChange }) {
           contentType,
           fileType,
           byteSize: file.size || 0,
+          contentHash: contentHash || undefined,
         });
-      } catch {
-        externalTarget = null;
+      } catch (error) {
+        throw new Error(
+          error instanceof Error
+            ? error.message
+            : "Book object storage is unavailable.",
+        );
       }
 
-      if (externalTarget?.configured && externalTarget.uploadUrl) {
-        const uploadResponse = await fetch(externalTarget.uploadUrl, {
-          method: externalTarget.method || "PUT",
-          headers: externalTarget.headers || { "Content-Type": contentType },
-          body: file,
-        });
+      if (!externalTarget?.configured || !externalTarget.uploadUrl) {
+        throw new Error(
+          externalTarget?.reason ||
+            "Book object storage is not configured. Set Convex BOOK_ASSET_* environment variables.",
+        );
+      }
 
-        if (!uploadResponse.ok) {
-          throw new Error("External upload failed");
+      let shouldUploadToStorage = true;
+      try {
+        const existingAssetResponse = await fetch(externalTarget.assetUrl, {
+          method: "HEAD",
+          cache: "no-store",
+        });
+        shouldUploadToStorage = !existingAssetResponse.ok;
+      } catch {
+        shouldUploadToStorage = true;
+      }
+
+      if (shouldUploadToStorage) {
+        let uploadResponse;
+        try {
+          uploadResponse = await fetch(externalTarget.uploadUrl, {
+            method: externalTarget.method || "PUT",
+            headers: externalTarget.headers || { "Content-Type": contentType },
+            body: file,
+          });
+        } catch {
+          throw new Error(
+            "R2 upload was blocked. Check R2 CORS for this site origin.",
+          );
         }
 
-        uploadedVia = externalTarget.provider || "object-storage";
-        await createBook({
-          title,
-          sourceUrl: externalTarget.assetUrl,
-          assetKey: externalTarget.assetKey,
-          assetProvider: uploadedVia,
-          assetContentType: contentType,
-          assetSize: file.size || 0,
-          pageCount: detectedPageCount,
-          fileType,
-        });
-      } else {
-        const uploadUrl = await createUploadUrl();
-        const uploadResponse = await fetch(uploadUrl, {
-          method: "POST",
-          headers: { "Content-Type": contentType },
-          body: file,
-        });
-
         if (!uploadResponse.ok) {
-          throw new Error("Upload failed");
+          throw new Error("R2 book upload failed.");
         }
+      }
 
-        const { storageId } = await uploadResponse.json();
-        await createBook({
-          title,
-          storageId,
-          assetProvider: "convex",
-          assetContentType: contentType,
-          assetSize: file.size || 0,
-          pageCount: detectedPageCount,
-          fileType,
-        });
+      let coverUploadTarget = null;
+      if (generatedCoverBlob && externalTarget.assetKey) {
+        try {
+          coverUploadTarget = await createExternalBookCoverUploadTarget({
+            bookAssetKey: externalTarget.assetKey,
+            contentHash: externalTarget.assetHash || contentHash || undefined,
+          });
+
+          if (coverUploadTarget?.configured && coverUploadTarget.uploadUrl) {
+            let shouldUploadCover = true;
+            try {
+              const existingCoverResponse = await fetch(
+                coverUploadTarget.coverUrl,
+                {
+                  method: "HEAD",
+                  cache: "no-store",
+                },
+              );
+              shouldUploadCover = !existingCoverResponse.ok;
+            } catch {
+              shouldUploadCover = true;
+            }
+
+            if (shouldUploadCover) {
+              const coverResponse = await fetch(coverUploadTarget.uploadUrl, {
+                method: coverUploadTarget.method || "PUT",
+                headers: coverUploadTarget.headers || {
+                  "Content-Type": "image/webp",
+                },
+                body: generatedCoverBlob,
+              });
+
+              if (!coverResponse.ok) {
+                coverUploadTarget = null;
+              }
+            }
+          }
+        } catch {
+          coverUploadTarget = null;
+        }
+      }
+
+      const createdBookId = await createBook({
+        title,
+        sourceUrl: externalTarget.assetUrl,
+        assetKey: externalTarget.assetKey,
+        assetHash: externalTarget.assetHash || contentHash || undefined,
+        assetProvider: externalTarget.provider || "object-storage",
+        assetContentType: contentType,
+        assetSize: file.size || 0,
+        coverUrl: coverUploadTarget?.coverUrl,
+        coverAssetKey: coverUploadTarget?.coverAssetKey,
+        pageCount: detectedPageCount,
+        fileType,
+      });
+
+      if (createdBookId && coverUploadTarget?.coverUrl) {
+        setBookThumbnailMap((prev) => ({
+          ...prev,
+          [createdBookId]: {
+            src: coverUploadTarget.coverUrl,
+            cacheKey: `${createdBookId}:${fileType}:1:${coverUploadTarget.coverUrl}`,
+            page: 1,
+            fileType,
+            error: false,
+          },
+        }));
       }
 
       event.target.value = "";
       setUploadState({
         busy: false,
-        message:
-          fileType === "mobi" || fileType === "azw3" || fileType === "cbr"
-            ? `${fileType.toUpperCase()} uploaded via ${uploadedVia}. Use the reader panel links to open it if your browser cannot preview it.`
-            : `${fileType.toUpperCase()} uploaded via ${uploadedVia} and ready to read.`,
+        message: "",
       });
-    } catch {
+    } catch (error) {
       setUploadState({
         busy: false,
         message:
-          "Book upload failed. Confirm the file is a supported format and your Convex setup is healthy.",
+          error instanceof Error
+            ? error.message
+            : "Book upload failed. Confirm R2 object storage is configured.",
       });
     }
   };
@@ -2956,16 +3115,6 @@ function ReaderWorkspace({ onThemeChange }) {
     }
   };
 
-  const onBuyOfficialBook = async (officialBook) => {
-    setMarketMessage("");
-    try {
-      const result = await buyOfficialBook({ bookId: officialBook.id });
-      setMarketMessage(result?.owned ? "Already owned." : "Book purchased.");
-    } catch {
-      setMarketMessage("Purchase failed. Not enough Quills.");
-    }
-  };
-
   const onSelectTheme = async (themeId, mode = selectedThemeMode) => {
     setMarketMessage("");
     try {
@@ -3071,49 +3220,6 @@ function ReaderWorkspace({ onThemeChange }) {
       });
     } catch {
       setTimerState({ busy: false, message: "Could not claim reward yet." });
-    }
-  };
-
-  const onAddOfficialBook = async (officialBook) => {
-    if (!officialBook.owned) {
-      setUploadState({
-        busy: false,
-        message: "Buy first.",
-      });
-      return;
-    }
-
-    if (ownedTitles.has(officialBook.title.trim().toLowerCase())) {
-      setUploadState({
-        busy: false,
-        message: "Official book already in your library.",
-      });
-      return;
-    }
-
-    setUploadState({ busy: true, message: "Importing official book..." });
-
-    try {
-      const officialAsset = getOfficialBookAsset(officialBook);
-      const sourceUrl = officialAsset?.pdfUrl ?? officialBook.pdfUrl;
-      const pageCount = Math.max(
-        1,
-        Math.floor(officialAsset?.pageCount ?? officialBook.pageCount ?? 1),
-      );
-
-      await createBook({
-        title: officialBook.title,
-        sourceUrl,
-        pageCount,
-        fileType: officialAsset?.fileType ?? officialBook.fileType ?? "pdf",
-      });
-
-      setUploadState({
-        busy: false,
-        message: `Added official book: ${officialBook.title}`,
-      });
-    } catch {
-      setUploadState({ busy: false, message: "Could not add official book." });
     }
   };
 
@@ -3270,8 +3376,19 @@ function ReaderWorkspace({ onThemeChange }) {
   };
 
   const onUploadGroupAttachment = async (groupId, file) => {
+    if ((file?.size || 0) > MAX_GROUP_ATTACHMENT_BYTES) {
+      setGroupState({
+        busy: false,
+        message: "Attachment must be 25MB or smaller.",
+      });
+      return null;
+    }
+
     try {
-      const uploadUrl = await generateGroupAttachmentUploadUrl({ groupId });
+      const uploadUrl = await generateGroupAttachmentUploadUrl({
+        groupId,
+        byteSize: file.size || 0,
+      });
       const uploadResponse = await fetch(uploadUrl, {
         method: "POST",
         headers: {
@@ -3666,6 +3783,26 @@ function ReaderWorkspace({ onThemeChange }) {
     writeDashboardSidebarWidth(clampedWidth);
   };
 
+  const onToggleDashboardSectionVisibility = (sectionId, shouldShow) => {
+    const normalizedSectionId = normalizeDashboardSection(sectionId);
+    const sectionKeys = new Set(DASHBOARD_SECTIONS.map((section) => section.key));
+    if (!sectionKeys.has(normalizedSectionId)) {
+      return;
+    }
+
+    setVisibleDashboardSectionIds((prev) => {
+      const current = normalizeDashboardSectionVisibility(prev);
+      const next = shouldShow
+        ? [...new Set([...current, normalizedSectionId])]
+        : current.filter((id) => id !== normalizedSectionId);
+      const normalizedNext = normalizeDashboardSectionVisibility(
+        next.length ? next : current,
+      );
+      writeDashboardSectionVisibility(normalizedNext);
+      return normalizedNext;
+    });
+  };
+
   const onOpenCalendarDate = (date) => {
     const targetDate = date instanceof Date ? date : new Date(date);
     if (Number.isNaN(targetDate.getTime())) {
@@ -3696,6 +3833,7 @@ function ReaderWorkspace({ onThemeChange }) {
 
   return (
     <main
+      ref={dashboardShellRef}
       className={`dashboard-shell theme-${selectedThemeId} mode-${selectedThemeMode}${readerMechanicalClassName}${isReaderTabView ? " reader-tab-shell" : ""}`}
       style={{
         ...accentStyle,
@@ -3764,6 +3902,7 @@ function ReaderWorkspace({ onThemeChange }) {
               setActiveReadingTabId(DASHBOARD_READING_TAB_ID);
             }
           }}
+          visibleSections={visibleDashboardSectionIds}
           onOpenSupport={() => {
             setIsSettingsOpen(false);
             setIsAvatarPickerOpen(false);
@@ -3920,6 +4059,7 @@ function ReaderWorkspace({ onThemeChange }) {
             timerSessions={timerSessionsEver}
             timerSessions24h={timerSessions24h}
             focusRequest={calendarFocusRequest}
+            language={selectedLanguage}
           />
         )}
 
@@ -3991,6 +4131,11 @@ function ReaderWorkspace({ onThemeChange }) {
             setDailyQuotaInput={setDailyQuotaInput}
             selectedLanguage={selectedLanguage}
             onSelectLanguage={(language) => void onSelectLanguage(language)}
+            dashboardSectionOptions={DASHBOARD_SECTIONS}
+            visibleDashboardSectionIds={visibleDashboardSectionIds}
+            onToggleDashboardSectionVisibility={
+              onToggleDashboardSectionVisibility
+            }
             onSavePreferences={() => void onSavePreferences()}
             settingsMessage={settingsMessage}
             userIconUrl={userIconUrl}

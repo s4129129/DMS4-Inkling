@@ -15,6 +15,7 @@
     "ship:namecheap": "npm run build:prod && npm run package:namecheap",
     "ship:namecheap:split": "npm run build:prod && npm run package:namecheap:app && npm run package:namecheap:books",
     "lint": "eslint .",
+    "i18n:audit": "node scripts/audit-i18n.mjs",
     "preview": "vite preview",
     "convex:dev": "npx convex dev",
     "convex:deploy": "npx convex deploy"

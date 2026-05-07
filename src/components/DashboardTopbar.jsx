@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ICON_SIZE_CONTROLS, sizeControlRem } from "../controls/sizeControls";
 import * as logoCatalog from "../themes/logoCatalog";
+import InstantTooltip from "./common/InstantTooltip";
 
 export const DASHBOARD_READING_TAB_ID = "dashboard";
 
@@ -50,80 +51,91 @@ function DashboardActionRow({
 
   return (
     <div className={className}>
-      <div
-        className="streak-chip"
-        style={streakStyle}
-        title="Daily streak"
-      >
-        <span
-          className="streak-flame"
-          style={{
-            "--streak-icon-size": sizeControlRem(
-              ICON_SIZE_CONTROLS.topbarStreakIcon,
-            ),
-          }}
-          aria-hidden="true"
+      <InstantTooltip label="Daily streak" side="bottom" as="div">
+        <div
+          className="streak-chip"
+          style={streakStyle}
         >
-          <svg viewBox="0 0 24 24" role="img" focusable="false">
-            <path d="M12.9 2.2c.4 2-1.3 3.7-2.5 5.1-1.3 1.5-2.2 2.7-2.2 4.4 0 1.7 1.2 3.1 2.8 3.1 1.6 0 2.9-1.2 2.9-2.9 0-.8-.3-1.6-.8-2.2 2.7 1.2 4.9 3.9 4.9 7 0 4.2-3.4 7.4-7.8 7.4-4.2 0-7.3-3.2-7.3-7.1 0-4.7 3.5-7.3 6-10.2.9-1.1 1.9-2.5 2.1-4.6.1-.5 1-.5 1.1 0z" />
-          </svg>
-        </span>
-        <span>{streakDays} Streak</span>
-      </div>
+          <span
+            className="streak-flame"
+            style={{
+              "--streak-icon-size": sizeControlRem(
+                ICON_SIZE_CONTROLS.topbarStreakIcon,
+              ),
+            }}
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path d="M12.9 2.2c.4 2-1.3 3.7-2.5 5.1-1.3 1.5-2.2 2.7-2.2 4.4 0 1.7 1.2 3.1 2.8 3.1 1.6 0 2.9-1.2 2.9-2.9 0-.8-.3-1.6-.8-2.2 2.7 1.2 4.9 3.9 4.9 7 0 4.2-3.4 7.4-7.8 7.4-4.2 0-7.3-3.2-7.3-7.1 0-4.7 3.5-7.3 6-10.2.9-1.1 1.9-2.5 2.1-4.6.1-.5 1-.5 1.1 0z" />
+            </svg>
+          </span>
+          <span>{streakDays} Streak</span>
+        </div>
+      </InstantTooltip>
 
-      <div className="currency-chip page-credit-chip" title="Pages">
-        <span
-          className="currency-icon"
-          style={{
-            "--chip-icon-size": sizeControlRem(ICON_SIZE_CONTROLS.topbarInkIcon),
-          }}
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 24 24" role="img" focusable="false">
-            <path d="M6.8 2.5h7.4l4 4v14.1a.9.9 0 0 1-.9.9H6.8a.9.9 0 0 1-.9-.9V3.4a.9.9 0 0 1 .9-.9Zm7 1.8v3h3l-3-3ZM8.3 11h7.4v1.7H8.3V11Zm0 3.5h7.4v1.7H8.3v-1.7Z" />
-          </svg>
-        </span>
-        <span>{Math.max(0, Math.floor(pageCredits ?? 0))}</span>
-      </div>
+      <InstantTooltip label="Reading pages available" side="bottom" as="div">
+        <div className="currency-chip page-credit-chip">
+          <span
+            className="currency-icon"
+            style={{
+              "--chip-icon-size": sizeControlRem(ICON_SIZE_CONTROLS.topbarInkIcon),
+            }}
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path d="M6.8 2.5h7.4l4 4v14.1a.9.9 0 0 1-.9.9H6.8a.9.9 0 0 1-.9-.9V3.4a.9.9 0 0 1 .9-.9Zm7 1.8v3h3l-3-3ZM8.3 11h7.4v1.7H8.3V11Zm0 3.5h7.4v1.7H8.3v-1.7Z" />
+            </svg>
+          </span>
+          <span>{Math.max(0, Math.floor(pageCredits ?? 0))}</span>
+        </div>
+      </InstantTooltip>
 
-      <div
-        className="currency-chip ink-total-chip"
-        data-ink-target="true"
-        title="Marketplace currency used to buy and unlock themes."
+      <InstantTooltip
+        label="Marketplace currency used to buy and unlock themes."
+        side="bottom"
+        as="div"
       >
-        <span
-          className="currency-icon"
-          style={{
-            "--chip-icon-size": sizeControlRem(ICON_SIZE_CONTROLS.topbarInkIcon),
-          }}
-          aria-hidden="true"
+        <div
+          className="currency-chip ink-total-chip"
+          data-ink-target="true"
         >
-          <svg viewBox="0 0 24 24" role="img" focusable="false">
-            <path d="M12 2.4c-.4 0-.7.2-.9.5-1.3 2.2-5.6 6.7-5.6 10.8 0 3.7 2.9 7.3 6.6 7.3 3.9 0 6.8-3.2 6.8-7.2 0-4.2-4.7-8.9-6-10.9-.2-.3-.5-.5-.9-.5z" />
-          </svg>
-        </span>
-        <span>{inkBalance}</span>
-      </div>
+          <span
+            className="currency-icon"
+            style={{
+              "--chip-icon-size": sizeControlRem(ICON_SIZE_CONTROLS.topbarInkIcon),
+            }}
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path d="M12 2.4c-.4 0-.7.2-.9.5-1.3 2.2-5.6 6.7-5.6 10.8 0 3.7 2.9 7.3 6.6 7.3 3.9 0 6.8-3.2 6.8-7.2 0-4.2-4.7-8.9-6-10.9-.2-.3-.5-.5-.9-.5z" />
+            </svg>
+          </span>
+          <span>{inkBalance}</span>
+        </div>
+      </InstantTooltip>
 
-      <div
-        className="currency-chip quills-chip"
-        title="Quills are premium currency earned from weekly group reading milestones."
+      <InstantTooltip
+        label="Quills are premium currency earned from weekly group reading milestones."
+        side="bottom"
+        as="div"
       >
-        <span
-          className="currency-icon"
-          style={{
-            "--chip-icon-size": sizeControlRem(
-              ICON_SIZE_CONTROLS.topbarQuillIcon,
-            ),
-          }}
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 24 24" role="img" focusable="false">
-            <path d="M19.6 3.3a1 1 0 0 0-1.4 0l-9.9 9.9-2.5 6.2a1 1 0 0 0 1.3 1.3l6.2-2.5 9.9-9.9a1 1 0 0 0 0-1.4l-3.6-3.6zM12.9 17l-3.7 1.5L10.7 15l7.2-7.2 2.2 2.2L12.9 17z" />
-          </svg>
-        </span>
-        <span>{Math.max(0, Math.floor(quillsBalance ?? 0))}</span>
-      </div>
+        <div className="currency-chip quills-chip">
+          <span
+            className="currency-icon"
+            style={{
+              "--chip-icon-size": sizeControlRem(
+                ICON_SIZE_CONTROLS.topbarQuillIcon,
+              ),
+            }}
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path d="M19.6 3.3a1 1 0 0 0-1.4 0l-9.9 9.9-2.5 6.2a1 1 0 0 0 1.3 1.3l6.2-2.5 9.9-9.9a1 1 0 0 0 0-1.4l-3.6-3.6zM12.9 17l-3.7 1.5L10.7 15l7.2-7.2 2.2 2.2L12.9 17z" />
+            </svg>
+          </span>
+          <span>{Math.max(0, Math.floor(quillsBalance ?? 0))}</span>
+        </div>
+      </InstantTooltip>
 
       <button
         type="button"

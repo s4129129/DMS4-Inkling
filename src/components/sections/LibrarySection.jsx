@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import HintPopover from "../common/HintPopover";
+import { isOfficialBookAsset } from "../../reader/officialBooks";
 
 export default function LibrarySection({
   uploadState,
@@ -53,6 +54,9 @@ export default function LibrarySection({
     selectedBookFileType === "mobi" ||
     selectedBookFileType === "azw3" ||
     selectedBookFileType === "cbr";
+  const shouldShowCompatibilityViewer =
+    isUnsupportedInline ||
+    (selectedBookFileType === "pdf" && renderError && selectedBookFileUrl);
 
   const isActiveBookTabOpen = Boolean(
     selectedBook?._id &&
@@ -60,8 +64,8 @@ export default function LibrarySection({
     isReaderExpanded,
   );
   const hasReachedLocalLimit = localBookCount >= localBookLimit;
-  const localBooks = bookList.filter((book) => book.storageId);
-  const officialBooks = bookList.filter((book) => !book.storageId);
+  const localBooks = bookList.filter((book) => !isOfficialBookAsset(book));
+  const officialBooks = bookList.filter(isOfficialBookAsset);
   const normalizedReaderLoadingProgress = Math.max(
     0,
     Math.min(100, Math.round(Number(readerLoadingProgress || 0))),
@@ -591,7 +595,7 @@ export default function LibrarySection({
                   </div>
                 )}
 
-                {isUnsupportedInline && (
+                {shouldShowCompatibilityViewer && (
                   <div className="compatibility-viewer">
                     <p className="status-text">
                       {String(selectedBookFileType || "").toUpperCase()} files

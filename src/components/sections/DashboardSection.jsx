@@ -10,6 +10,7 @@ import {
   normalizeDate,
   toSessionEvents,
 } from "./calendarSessionEvents";
+import { translateUiText } from "../../i18n";
 
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Math.round(Number(value || 0))));
@@ -58,19 +59,6 @@ function formatMonthTitle(date) {
 
 function firstTwoLetters(value) {
   return String(value || "IK").trim().slice(0, 2).toUpperCase() || "IK";
-}
-
-function translateDashboardText(value, language) {
-  if (language !== "vi") {
-    return value;
-  }
-
-  const translations = {
-    "Pages unlocked": "Trang đã mở khóa",
-    "Reading session": "Phiên đọc",
-  };
-
-  return translations[value] ?? value;
 }
 
 function buildDashboardSessions(timerSessions24h) {
@@ -197,6 +185,7 @@ export default function DashboardSection({
     () => buildDayEventCounts(calendarEvents),
     [calendarEvents],
   );
+  const noEventsText = translateUiText("No events to display", language);
   const totalSessionTimeLabel = formatTotalDuration(
     totalSessionSecondsEver ||
       sessions.reduce(
@@ -248,7 +237,7 @@ export default function DashboardSection({
     [themeId, themeMode],
   );
   const weeklyBarColor = accentColor || palette.bar;
-  const pagesUnlockedLabel = translateDashboardText("Pages unlocked", language);
+  const pagesUnlockedLabel = translateUiText("Pages unlocked", language);
 
   useEffect(() => {
     let isCancelled = false;
@@ -525,6 +514,7 @@ export default function DashboardSection({
                   slotMaxTime="22:00:00"
                   slotDuration="00:30:00"
                   events={calendarEvents}
+                  noEventsText={noEventsText}
                 />
               </div>
               <div className="dashboard-session-list">
@@ -537,7 +527,7 @@ export default function DashboardSection({
                       <span>{session.initials}</span>
                       <div>
                         <strong>
-                          {translateDashboardText(session.title, language)}
+                          {translateUiText(session.title, language)}
                         </strong>
                         <small>{session.time}</small>
                       </div>

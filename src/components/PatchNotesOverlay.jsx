@@ -1,32 +1,70 @@
 import { useEffect } from "react";
 
+const PATCH_NOTES_DISPLAY_VERSION = "v0.1.1";
+
 const PATCH_NOTES_COPY = {
   en: {
     ariaLabel: "Patch notes",
-    title: "Inkling v0.1 patch notes",
-    body: "This update tightens the first public version of Inkling with clearer onboarding, cleaner marketplace cards, better Vietnamese coverage, and a few dashboard fixes.",
-    items: [
-      "New users now see onboarding in order: tutorial, FAQ, then patch notes.",
-      "Marketplace cards use less space by removing extra status badges.",
-      "Ink currency now appears as an icon in the main UI.",
-      "Group weekly progress now clearly says how many members are required to activate it.",
-      "Vietnamese labels were expanded across charts, settings, groups, and reader controls.",
-      "The dashboard timeline no longer shows a fake reading session when there are no sessions.",
+    title: "Inkling v0.1.1 patch notes",
+    sections: [
+      {
+        heading: "New stuff",
+        entries: [
+          "added a changelog in the help section",
+          "limit user attachment in groups to 25mb",
+        ],
+      },
+      {
+        heading: "UI fixes",
+        entries: [
+          "Added designed popups for the currency to better explain what it actually does",
+          "Actually generates a thumbnail for local PDFs now",
+          "Opening a book shows the top bar now and scrolling now goes to the perfect reading spot so less confusing on if theres a go back button",
+        ],
+      },
+      {
+        heading: "Bug fixes and optimizations",
+        entries: [
+          "Code reorganization",
+          "fixed not being able to read books from the marketplace",
+          "Re-added loading multiple PDFs at once",
+          "Fixed the cramped Groups UI bug",
+          "User book and marketplace books now correctly linked with Cloudflare's R2 bucket so faster load times and more storage",
+        ],
+      },
     ],
     footer: "Patch notes only appear once for this version.",
     button: "Continue",
   },
   vi: {
     ariaLabel: "Ghi chú cập nhật",
-    title: "Ghi chú cập nhật Inkling v0.1",
-    body: "Bản cập nhật này chỉnh lại phiên bản công khai đầu tiên của Inkling với hướng dẫn rõ hơn, thẻ Cửa hàng gọn hơn, hỗ trợ tiếng Việt tốt hơn và một vài sửa lỗi bảng điều khiển.",
-    items: [
-      "Người dùng mới sẽ thấy đúng thứ tự: hướng dẫn, FAQ, rồi ghi chú cập nhật.",
-      "Thẻ trong Cửa hàng gọn hơn nhờ bỏ các nhãn trạng thái thừa.",
-      "Tiền tệ Ink trong giao diện chính được hiển thị bằng biểu tượng.",
-      "Tiến độ tuần của nhóm nói rõ cần bao nhiêu thành viên để kích hoạt.",
-      "Nhãn tiếng Việt được bổ sung cho biểu đồ, cài đặt, nhóm và điều khiển đọc.",
-      "Bảng thời gian không còn hiện phiên đọc giả khi chưa có phiên nào.",
+    title: "Ghi chú cập nhật Inkling v0.1.1",
+    sections: [
+      {
+        heading: "Mới",
+        entries: [
+          "thêm phân chi tiết cập nhật trong mục Trợ Giúp",
+          "Giới hạn tệp đặng trên Group dưới 25MB",
+        ],
+      },
+      {
+        heading: "UI fixes",
+        entries: [
+          "Khi hơ chuột ở mấy cái tiền tệ thì nó sẽ giải thích",
+          "Khi tải PDF lên thì sẽ có thumbnail",
+          "Khi mở một cuốn sách thì nó sẽ hiện cái thanh trên và nếu kéo xuống thì nó sẽ ở vị trí mà nhìn được hết cuốn sách nên bớt hoang mang là có nút trở về bảng điều khiển không",
+        ],
+      },
+      {
+        heading: "Bug fixes and optimizations",
+        entries: [
+          "Dọn code",
+          "Sửa bug không đọc được sách trong marketplace",
+          "Load được nhiều sách cùng 1 lúc",
+          "sửa bug chat bị chồng lên nhau trong Groups",
+          "Sách local giờ dùng chung R2 bucket của Cloudflare nên load nhanh hơn",
+        ],
+      },
     ],
     footer: "Ghi chú cập nhật chỉ hiện một lần cho phiên bản này.",
     button: "Tiếp tục",
@@ -67,17 +105,22 @@ export default function PatchNotesOverlay({ language = "vi", onClose }) {
     >
       <section className="panel patch-notes-card">
         <header className="patch-notes-header">
-          <p className="dash-kicker">v0.1</p>
+          <p className="dash-kicker">{PATCH_NOTES_DISPLAY_VERSION}</p>
           <h2>{copy.title}</h2>
         </header>
 
-        <p className="patch-notes-body">{copy.body}</p>
-
-        <ul className="patch-notes-list">
-          {copy.items.map((item) => (
-            <li key={item}>{item}</li>
+        <div className="patch-notes-list">
+          {copy.sections.map((section) => (
+            <section key={section.heading} className="patch-notes-section">
+              <h3>{section.heading}</h3>
+              <ul>
+                {section.entries.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
 
         <footer className="patch-notes-actions">
           <p>{copy.footer}</p>

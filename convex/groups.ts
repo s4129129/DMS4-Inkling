@@ -22,6 +22,7 @@ const INVITE_CODE_LENGTH = 8;
 const MAX_CHAT_MESSAGE_LENGTH = 1200;
 const ROOM_MESSAGE_LIMIT = 120;
 const MAX_ATTACHMENTS_PER_MESSAGE = 6;
+const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 const MAX_ATTACHMENT_NAME_LENGTH = 160;
 const MAX_ATTACHMENT_MIME_LENGTH = 120;
 const TYPING_VISIBLE_MS = 15_000;
@@ -228,6 +229,9 @@ function normalizeAttachments(value: Array<any> | undefined) {
       .trim()
       .slice(0, MAX_ATTACHMENT_MIME_LENGTH);
     const size = Math.max(0, Math.floor(attachment.size || 0));
+    if (size > MAX_ATTACHMENT_BYTES) {
+      throw new Error("Attachment must be 25MB or smaller.");
+    }
 
     return {
       storageId: attachment.storageId,
@@ -1141,12 +1145,17 @@ export const setTyping = mutation({
 export const generateAttachmentUploadUrl = mutation({
   args: {
     groupId: v.id("groups"),
+    byteSize: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const state = await requireGroupMembership(ctx, args.groupId, userId);
     if (state.isMuted) {
       throw new Error("You are muted in this group.");
+    }
+    const byteSize = Math.max(0, Math.floor(args.byteSize || 0));
+    if (byteSize > MAX_ATTACHMENT_BYTES) {
+      throw new Error("Attachment must be 25MB or smaller.");
     }
     return await ctx.storage.generateUploadUrl();
   },

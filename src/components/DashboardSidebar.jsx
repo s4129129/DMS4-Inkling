@@ -1,51 +1,7 @@
 import { ICON_SIZE_CONTROLS, sizeControlRem } from "../controls/sizeControls";
-import timerIcon from "../assets/Icons/Timer_fill.svg";
-import libraryIcon from "../assets/Icons/Library_fill.svg";
-import dataIcon from "../assets/Icons/Chart_fill.svg";
-import calendarIcon from "../assets/Icons/Calendar_fill.svg";
-import marketIcon from "../assets/Icons/Marketplace.svg";
-import groupsIcon from "../assets/Icons/Group_fill.svg";
 import helpIcon from "../assets/Icons/Help_fill.svg";
 import settingsIcon from "../assets/Icons/Setting_fill.svg";
-
-const SECTIONS = [
-  {
-    key: "dashboard",
-    label: "Overview",
-    icon: dataIcon,
-    sizeKey: "sidebarDataIcon",
-  },
-  {
-    key: "timers",
-    label: "Timers",
-    icon: timerIcon,
-    sizeKey: "sidebarTimerIcon",
-  },
-  {
-    key: "library",
-    label: "Library",
-    icon: libraryIcon,
-    sizeKey: "sidebarLibraryIcon",
-  },
-  {
-    key: "calendar",
-    label: "Calendar",
-    icon: calendarIcon,
-    sizeKey: "sidebarDataIcon",
-  },
-  {
-    key: "market",
-    label: "Marketplace",
-    icon: marketIcon,
-    sizeKey: "sidebarMarketIcon",
-  },
-  {
-    key: "groups",
-    label: "Groups",
-    icon: groupsIcon,
-    sizeKey: "sidebarGroupsIcon",
-  },
-];
+import { DASHBOARD_SECTIONS } from "../dashboardSections";
 
 export default function DashboardSidebar({
   activeSection,
@@ -57,10 +13,20 @@ export default function DashboardSidebar({
   disabledSections = [],
   disabledSectionReasons = {},
   onBlockedSectionSelect,
+  visibleSections,
   sidebarWidth,
   onResizeSidebar,
 }) {
   const sizeVars = {};
+  const visibleSectionSet = new Set(
+    Array.isArray(visibleSections) ? visibleSections : [],
+  );
+  const renderedSections =
+    visibleSectionSet.size > 0
+      ? DASHBOARD_SECTIONS.filter((section) =>
+          visibleSectionSet.has(section.key),
+        )
+      : DASHBOARD_SECTIONS;
   const disabledSectionSet = new Set(
     Array.isArray(disabledSections) ? disabledSections : [],
   );
@@ -123,7 +89,7 @@ export default function DashboardSidebar({
           value={activeSection}
           onChange={(event) => onSectionSelect(event.target.value)}
         >
-          {SECTIONS.map((section) => (
+          {renderedSections.map((section) => (
             <option
               key={section.key}
               value={section.key}
@@ -138,7 +104,7 @@ export default function DashboardSidebar({
         </select>
       </div>
       <nav className="dash-nav" aria-label="Dashboard sections">
-        {SECTIONS.map((section) => {
+        {renderedSections.map((section) => {
           const isDisabled = disabledSectionSet.has(section.key);
           const disabledReason = getDisabledReason(section.key);
 
