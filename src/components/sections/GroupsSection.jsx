@@ -255,6 +255,24 @@ function formatFileSize(value) {
   return `${bytes} B`;
 }
 
+function formatAttachmentBadge(value) {
+  const normalized = String(value || "file")
+    .trim()
+    .toLowerCase();
+  const labels = {
+    document: "DOC",
+    image: "IMG",
+    video: "VID",
+    spreadsheet: "XLS",
+    presentation: "PPT",
+    archive: "ZIP",
+    text: "TXT",
+  };
+  return (labels[normalized] || normalized || "file")
+    .slice(0, 3)
+    .toUpperCase();
+}
+
 function extractMessageLinks(messages) {
   const items = [];
   const seen = new Set();
@@ -289,7 +307,7 @@ function extractMessageAttachments(messages) {
     for (const attachment of message?.attachments || []) {
       items.push({
         id: `${message._id}:${attachment.storageId}`,
-        ext: attachment.kind || "file",
+        ext: formatAttachmentBadge(attachment.kind),
         name: attachment.name,
         meta: `${formatFileSize(attachment.size)} - ${message?.author?.name || "member"}`,
         url: attachment.url,
@@ -751,7 +769,9 @@ function AttachmentPreview({ attachment }) {
 
   const content = (
     <>
-      <span className="groups-attachment-icon">{kind}</span>
+      <span className="groups-attachment-icon">
+        {formatAttachmentBadge(kind)}
+      </span>
       <span className="groups-attachment-copy">
         <strong>{attachment.name}</strong>
         <span>{formatFileSize(attachment.size)}</span>

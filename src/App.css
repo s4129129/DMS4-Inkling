@@ -2851,9 +2851,9 @@ body,
 .groups-social-shell {
   display: grid;
   grid-template-columns:
-    48px minmax(250px, 320px) minmax(420px, 1fr)
-    minmax(300px, 360px);
-  gap: 0.85rem;
+    46px minmax(210px, 285px) minmax(0, 1fr)
+    minmax(230px, 300px);
+  gap: 0.68rem;
   width: 100%;
   max-width: 100%;
   height: 100%;
@@ -2863,17 +2863,17 @@ body,
 }
 
 .groups-social-shell.info-panel-closed {
-  grid-template-columns: 48px minmax(250px, 320px) minmax(420px, 1fr);
+  grid-template-columns: 46px minmax(210px, 285px) minmax(0, 1fr);
 }
 
 .groups-social-shell.list-rail-collapsed {
   grid-template-columns:
-    48px 64px minmax(420px, 1fr)
-    minmax(300px, 360px);
+    46px 60px minmax(0, 1fr)
+    minmax(230px, 300px);
 }
 
 .groups-social-shell.list-rail-collapsed.info-panel-closed {
-  grid-template-columns: 48px 64px minmax(420px, 1fr);
+  grid-template-columns: 46px 60px minmax(0, 1fr);
 }
 
 .groups-mode-rail,
@@ -2911,7 +2911,7 @@ body,
   align-content: start;
   align-items: start;
   gap: 0.62rem;
-  padding: 0.72rem;
+  padding: 0.62rem;
   min-height: 0;
 }
 
@@ -3115,8 +3115,8 @@ button.groups-room-avatar {
 .groups-chat-column {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 0.68rem;
-  padding: 0.82rem;
+  gap: 0.58rem;
+  padding: 0.66rem;
   min-height: 0;
   width: 100%;
   max-width: 100%;
@@ -3141,7 +3141,7 @@ button.groups-room-avatar {
 .groups-chat-column .groups-chat-header h2 {
   margin: 0.12rem 0 0;
   max-width: 100%;
-  font-size: clamp(1.12rem, 1.7vw, 1.5rem);
+  font-size: clamp(1rem, 1.45vw, 1.34rem);
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3156,7 +3156,7 @@ button.groups-room-avatar {
 .groups-chat-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.42rem;
+  gap: 0.34rem;
   flex-wrap: nowrap;
   justify-content: flex-end;
   min-width: max-content;
@@ -3177,9 +3177,9 @@ button.groups-room-avatar {
 
 .groups-message {
   width: fit-content;
-  max-width: min(88%, 560px);
+  max-width: min(82%, 540px);
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   padding: 0.52rem 0.64rem;
   border-radius: 8px;
   border: 1px solid var(--ghost-border);
@@ -3193,6 +3193,10 @@ button.groups-room-avatar {
   background: var(--theme-saturated-primary, var(--primary));
   color: var(--on-theme-saturated-primary, var(--on-primary));
   border-color: transparent;
+}
+
+.groups-message:has(.groups-file-card) {
+  width: min(420px, 82%);
 }
 
 .groups-message.deleted {
@@ -3354,6 +3358,8 @@ button.groups-message-author-avatar {
 .groups-message-attachments {
   display: grid;
   gap: 0.4rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .groups-message-media {
@@ -3379,7 +3385,8 @@ button.groups-message-author-avatar {
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 0.46rem;
   align-items: center;
-  max-width: 320px;
+  width: min(320px, 100%);
+  max-width: 100%;
   min-width: 0;
   padding: 0.42rem;
   border-radius: 8px;
@@ -3393,6 +3400,8 @@ button.groups-message-author-avatar {
 .groups-file-card .groups-attachment-copy strong,
 .groups-file-card .groups-attachment-copy span {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .groups-message-footer {
@@ -3745,14 +3754,14 @@ button.groups-message-author-avatar {
 
 .groups-member-item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.45rem;
 }
 
 .groups-member-actions {
-  grid-column: 2;
-  justify-self: start;
+  grid-column: 3;
+  justify-self: end;
   flex-wrap: wrap;
   max-width: 100%;
 }
@@ -10161,30 +10170,30 @@ button:disabled {
   }
 }
 
-@media (min-width: 1129px) and (max-width: 1360px) {
+@media (min-width: 1129px) and (max-width: 1600px) {
   .groups-layout .groups-social-panel {
     padding: 0.62rem;
   }
 
   .groups-social-shell {
     grid-template-columns:
-      46px minmax(220px, 280px) minmax(360px, 1fr)
-      minmax(280px, 320px);
-    gap: 0.62rem;
+      44px minmax(190px, 260px) minmax(0, 1fr)
+      minmax(210px, 270px);
+    gap: 0.56rem;
   }
 
   .groups-social-shell.info-panel-closed {
-    grid-template-columns: 46px minmax(220px, 280px) minmax(360px, 1fr);
+    grid-template-columns: 44px minmax(190px, 260px) minmax(0, 1fr);
   }
 
   .groups-social-shell.list-rail-collapsed {
     grid-template-columns:
-      46px 60px minmax(360px, 1fr)
-      minmax(280px, 320px);
+      44px 58px minmax(0, 1fr)
+      minmax(210px, 270px);
   }
 
   .groups-social-shell.list-rail-collapsed.info-panel-closed {
-    grid-template-columns: 46px 60px minmax(360px, 1fr);
+    grid-template-columns: 44px 58px minmax(0, 1fr);
   }
 
   .groups-left-column,
@@ -10194,11 +10203,24 @@ button:disabled {
   }
 
   .groups-chat-column .groups-chat-header h2 {
-    font-size: clamp(1.05rem, 1.55vw, 1.35rem);
+    font-size: clamp(0.96rem, 1.35vw, 1.22rem);
   }
 
   .groups-side-card {
     padding: 0.52rem;
+  }
+
+  .groups-chat-header-actions .ghost,
+  .groups-chat-header-actions .groups-icon-button {
+    min-width: 0;
+  }
+
+  .groups-message {
+    max-width: min(84%, 500px);
+  }
+
+  .groups-message:has(.groups-file-card) {
+    width: min(390px, 84%);
   }
 }
 
