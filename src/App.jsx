@@ -1163,6 +1163,7 @@ function ReaderWorkspace({ onThemeChange }) {
   const claimTimerReward = useMutation("timers:claimTimerReward");
   const updatePreferences = useMutation("dashboard:updatePreferences");
   const applyEconomyReset = useMutation("dashboard:applyEconomyReset");
+  const grantLocalDevCurrency = useMutation("dashboard:grantLocalDevCurrency");
   const buyTheme = useMutation("dashboard:buyTheme");
   const buyOfficialBook = useMutation("dashboard:buyOfficialBook");
   const selectTheme = useMutation("dashboard:selectTheme");
@@ -1347,6 +1348,9 @@ function ReaderWorkspace({ onThemeChange }) {
   const inkBalance = profile?.ink ?? 0;
   const pageCredits = profile?.pageCredits ?? 0;
   const quillsBalance = profile?.quills ?? 0;
+  const showLocalDevTools =
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname);
   const myGroups = useMemo(
     () => groupsOverview?.myGroups ?? [],
     [groupsOverview?.myGroups],
@@ -3257,6 +3261,20 @@ function ReaderWorkspace({ onThemeChange }) {
     }
   };
 
+  const onGrantLocalDevCurrency = async () => {
+    if (!showLocalDevTools) {
+      return;
+    }
+
+    setMarketMessage("");
+    try {
+      await grantLocalDevCurrency();
+      setMarketMessage("Local dev currency granted.");
+    } catch {
+      setMarketMessage("Could not grant local dev currency.");
+    }
+  };
+
   const onSelectTheme = async (themeId, mode = selectedThemeMode) => {
     setMarketMessage("");
     try {
@@ -4224,6 +4242,8 @@ function ReaderWorkspace({ onThemeChange }) {
             officialBookThumbnailMap={officialBookThumbnailMap}
             uploadState={uploadState}
             onAddOfficialBook={(book) => void onAddOfficialBook(book)}
+            onGrantLocalDevCurrency={() => void onGrantLocalDevCurrency()}
+            showLocalDevTools={showLocalDevTools}
             initialView={marketInitialView}
           />
         )}

@@ -12,6 +12,9 @@
   var HEARTBEAT_MS = 15000;
   var MAX_SESSIONS = 1200;
   var SEND_GAP_MS = 3000;
+  var isLocalDevHost = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(
+    window.location.hostname,
+  );
 
   function nowMs() {
     return Date.now();
@@ -56,6 +59,13 @@
 
   var convexUrl =
     runtimeConvexUrl || toSiteUrl(localStorage.getItem(CONVEX_URL_KEY));
+
+  if (isLocalDevHost) {
+    window.__dms4AnalyticsSetAccount = function () {};
+    window.dispatchEvent(new Event("dms4-analytics-ready"));
+    return;
+  }
+
   var lastSentAt = 0;
   var accountInfo = {
     appUserId: null,

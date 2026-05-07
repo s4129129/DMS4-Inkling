@@ -40,6 +40,7 @@ const MAX_BANNER_SCALE = 320;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const ONE_MINUTE_MS = 60 * 1000;
+const DEV_CURRENCY_GRANT_AMOUNT = 50000;
 
 const LEGACY_THEME_MAP: Record<string, string> = {
   comic: "default",
@@ -1095,6 +1096,34 @@ export const applyEconomyReset = mutation({
     });
 
     return { reset: true };
+  },
+});
+
+export const grantLocalDevCurrency = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const siteUrl = String(process.env.SITE_URL || "").toLowerCase();
+    const isLocalSite =
+      siteUrl.includes("localhost") || siteUrl.includes("127.0.0.1");
+    if (!isLocalSite) {
+      throw new Error("Local dev only.");
+    }
+
+    const userId = await requireUserId(ctx);
+    const profile = await getOrCreateProfile(ctx, userId);
+    const ink = Math.max(0, Math.floor(profile.ink ?? 0));
+    const quills = Math.max(0, Math.floor(profile.quills ?? 0));
+
+    await ctx.db.patch(profile._id, {
+      ink: ink + DEV_CURRENCY_GRANT_AMOUNT,
+      quills: quills + DEV_CURRENCY_GRANT_AMOUNT,
+      updatedAt: Date.now(),
+    });
+
+    return {
+      ink: ink + DEV_CURRENCY_GRANT_AMOUNT,
+      quills: quills + DEV_CURRENCY_GRANT_AMOUNT,
+    };
   },
 });
 

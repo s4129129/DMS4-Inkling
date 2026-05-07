@@ -27,6 +27,8 @@ const MAX_ATTACHMENT_NAME_LENGTH = 160;
 const MAX_ATTACHMENT_MIME_LENGTH = 120;
 const TYPING_VISIBLE_MS = 15_000;
 const DEFAULT_TIME_ZONE = "UTC";
+const READ_RECEIPT_PROFILE_LIMIT = 4;
+const PUBLIC_GROUP_DISCOVERY_LIMIT = 60;
 
 const GROUP_ATTACHMENT_VALIDATOR = v.object({
   storageId: v.id("_storage"),
@@ -416,10 +418,31 @@ async function collectRoomMembers(
   });
 }
 
-async function toReadProfiles(ctx: any, readByUserIds: Array<any>, viewerId: any) {
+function selectReadReceiptProfileIds(readByUserIds: Array<any>, viewerId: any) {
   const uniqueIds = uniqueIdList(readByUserIds);
+  const selectedIds = [];
+  const viewerEntry = uniqueIds.find((id) => `${id}` === `${viewerId}`);
+  if (viewerEntry) {
+    selectedIds.push(viewerEntry);
+  }
+
+  for (const id of uniqueIds) {
+    if (`${id}` === `${viewerId}`) {
+      continue;
+    }
+    if (selectedIds.length >= READ_RECEIPT_PROFILE_LIMIT) {
+      break;
+    }
+    selectedIds.push(id);
+  }
+
+  return { selectedIds, count: uniqueIds.length };
+}
+
+async function toReadProfiles(ctx: any, readByUserIds: Array<any>, viewerId: any) {
+  const { selectedIds } = selectReadReceiptProfileIds(readByUserIds, viewerId);
   const profiles = await Promise.all(
-    uniqueIds.map(async (userId: any) => {
+    selectedIds.map(async (userId: any) => {
       const user = await ctx.db.get(userId);
       const name = user?.name ?? "";
       const email = user?.email ?? "";
@@ -474,21 +497,21 @@ async function collectRoomMessages(
   viewerId: any,
   viewerRole: string,
 ) {
-  const allMessages = await ctx.db
+  const latestMessagesDesc = await ctx.db
     .query("groupMessages")
     .withIndex("by_group_created", (q: any) => q.eq("groupId", groupId))
-    .collect();
+    .order("desc")
+    .take(ROOM_MESSAGE_LIMIT);
+  const latestMessages = latestMessagesDesc.reverse();
 
   const replyCountByParent = new Map<string, number>();
-  for (const message of allMessages) {
+  for (const message of latestMessages) {
     if (!message.parentMessageId || message.deletedAt) {
       continue;
     }
     const parentKey = `${message.parentMessageId}`;
     replyCountByParent.set(parentKey, (replyCountByParent.get(parentKey) ?? 0) + 1);
   }
-
-  const latestMessages = allMessages.slice(-ROOM_MESSAGE_LIMIT);
 
   const messages = await Promise.all(
     latestMessages.map(async (message: any) => {
@@ -499,10 +522,10 @@ async function collectRoomMessages(
       const icon = await getUserIconPayload(ctx, message.userId);
       const isAuthor = `${message.userId}` === `${viewerId}`;
       const isDeleted = Boolean(message.deletedAt);
-      const readByProfiles = await toReadProfiles(
-        ctx,
-        message.readByUserIds ?? [message.userId],
-        viewerId,
+      const readByUserIds = uniqueIdList(message.readByUserIds ?? [message.userId]);
+      const readByProfiles = await toReadProfiles(ctx, readByUserIds, viewerId);
+      const readBySomeoneElse = readByUserIds.some(
+        (readByUserId: any) => `${readByUserId}` !== `${viewerId}`,
       );
 
       return {
@@ -515,10 +538,8 @@ async function collectRoomMessages(
           ? []
           : await toAttachmentPayload(ctx, message.attachments ?? []),
         readBy: readByProfiles,
-        readByCount: readByProfiles.length,
-        status: readByProfiles.some((profile) => !profile.isYou)
-          ? "read"
-          : "sent",
+        readByCount: readByUserIds.length,
+        status: readBySomeoneElse ? "read" : "sent",
         createdAt: message.createdAt,
         editedAt: message.editedAt ?? null,
         deletedAt: message.deletedAt ?? null,
@@ -584,13 +605,14 @@ async function requireDirectAccess(ctx: any, viewerId: any, targetUserId: any) {
 
 async function collectDirectMessages(ctx: any, targetUserId: any, viewerId: any) {
   const conversationKey = directConversationKey(viewerId, targetUserId);
-  const rows = await ctx.db
+  const latestMessagesDesc = await ctx.db
     .query("directMessages")
     .withIndex("by_conversation_created", (q: any) =>
       q.eq("conversationKey", conversationKey),
     )
-    .collect();
-  const latestMessages = rows.slice(-ROOM_MESSAGE_LIMIT);
+    .order("desc")
+    .take(ROOM_MESSAGE_LIMIT);
+  const latestMessages = latestMessagesDesc.reverse();
 
   const messages = await Promise.all(
     latestMessages.map(async (message: any) => {
@@ -601,10 +623,10 @@ async function collectDirectMessages(ctx: any, targetUserId: any, viewerId: any)
       const icon = await getUserIconPayload(ctx, message.senderId);
       const isAuthor = `${message.senderId}` === `${viewerId}`;
       const isDeleted = Boolean(message.deletedAt);
-      const readByProfiles = await toReadProfiles(
-        ctx,
-        message.readByUserIds ?? [message.senderId],
-        viewerId,
+      const readByUserIds = uniqueIdList(message.readByUserIds ?? [message.senderId]);
+      const readByProfiles = await toReadProfiles(ctx, readByUserIds, viewerId);
+      const readBySomeoneElse = readByUserIds.some(
+        (readByUserId: any) => `${readByUserId}` !== `${viewerId}`,
       );
 
       return {
@@ -615,10 +637,8 @@ async function collectDirectMessages(ctx: any, targetUserId: any, viewerId: any)
         replyCount: 0,
         attachments: [],
         readBy: readByProfiles,
-        readByCount: readByProfiles.length,
-        status: readByProfiles.some((profile) => !profile.isYou)
-          ? "read"
-          : "sent",
+        readByCount: readByUserIds.length,
+        status: readBySomeoneElse ? "read" : "sent",
         createdAt: message.createdAt,
         editedAt: message.editedAt ?? null,
         deletedAt: message.deletedAt ?? null,
@@ -846,7 +866,7 @@ export const overview = query({
     const publicGroupsRaw = await ctx.db
       .query("groups")
       .withIndex("by_visibility", (q) => q.eq("visibility", "public"))
-      .collect();
+      .take(PUBLIC_GROUP_DISCOVERY_LIMIT);
     const publicGroupsVisible = [];
     for (const group of publicGroupsRaw) {
       const ban = await getGroupBan(ctx, group._id, userId);
@@ -951,12 +971,12 @@ export const markMessagesRead = mutation({
     const requestedIds = new Set(
       (args.messageIds ?? []).map((messageId) => `${messageId}`),
     );
-    const messages = await ctx.db
+    const latestMessages = await ctx.db
       .query("groupMessages")
       .withIndex("by_group_created", (q: any) => q.eq("groupId", args.groupId))
-      .collect();
+      .order("desc")
+      .take(ROOM_MESSAGE_LIMIT);
 
-    const latestMessages = messages.slice(-ROOM_MESSAGE_LIMIT);
     for (const message of latestMessages) {
       if (requestedIds.size && !requestedIds.has(`${message._id}`)) {
         continue;

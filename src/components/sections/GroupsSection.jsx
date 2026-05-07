@@ -540,8 +540,6 @@ function QuillIcon() {
 
 function GroupListItem({ group, selected, busy, onSelect, onJoin }) {
   const canJoin = group.source === "discover" && !group.isMember;
-  const targetHours = Math.max(0, Math.floor(group.weeklyHourTarget ?? 0));
-  const progressHours = formatProgressHours(group.weeklyProgressHours ?? 0);
 
   return (
     <article className={`groups-room-item${selected ? " active" : ""}`}>
@@ -552,14 +550,6 @@ function GroupListItem({ group, selected, busy, onSelect, onJoin }) {
         <span className="groups-room-meta">
           <strong>{group.name}</strong>
           <span>{Math.max(1, Math.floor(group.memberCount ?? 1))} members</span>
-          <span className="groups-room-material">
-            {group.isWeeklyEligible
-              ? `${progressHours}/${targetHours}h`
-              : activationRequirementText(
-                  group.memberCount,
-                  group.weeklyRequiredMembers,
-                )}
-          </span>
         </span>
       </button>
 

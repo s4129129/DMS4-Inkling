@@ -230,6 +230,8 @@ export default function MarketSection({
   officialBookThumbnailMap = {},
   uploadState,
   onAddOfficialBook,
+  onGrantLocalDevCurrency,
+  showLocalDevTools = false,
   interactionLocked = false,
   interactionLockReason = "",
   initialView = "store",
@@ -429,6 +431,17 @@ export default function MarketSection({
               <div>
                 <h2>Marketplace</h2>
               </div>
+              {showLocalDevTools ? (
+                <div className="market-headline-actions">
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => onGrantLocalDevCurrency?.()}
+                  >
+                    +50000 Ink / Quills
+                  </button>
+                </div>
+              ) : null}
             </div>
 
             {marketMessage ? (

@@ -793,6 +793,7 @@ const REGEX_TRANSLATIONS = [
   [/^(\d+)\s+members$/i, "$1 thành viên"],
   [/^(\d+)\/(\d+)\s+members$/i, "$1/$2 thành viên"],
   [/^Requires\s+(\d+)\/(\d+)\s+members\s+to\s+activate$/i, "Cần $1/$2 thành viên để kích hoạt"],
+  [/^(\d+)\/(\d+)\s+to\s+activate$/i, "$1/$2 để kích hoạt"],
   [/^(\d+)\s+members\s+-\s+Public\s+room$/i, "$1 thành viên - Phòng công khai"],
   [/^(\d+)\s+members\s+-\s+Private\s+room$/i, "$1 thành viên - Phòng riêng tư"],
   [/^(\d+)\s+replies$/i, "$1 trả lời"],
