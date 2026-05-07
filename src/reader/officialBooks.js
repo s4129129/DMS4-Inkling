@@ -8,9 +8,14 @@ function normalizeAssetBase(value) {
 const officialAssetBase = normalizeAssetBase(
   import.meta.env.VITE_BOOK_ASSET_BASE_URL,
 );
+const OFFICIAL_ASSET_VERSION = "reader-cors-20260507";
 
 function assetUrl(path) {
   return `${officialAssetBase}/${String(path || "").replace(/^\/+/, "")}`;
+}
+
+function versionedAssetUrl(path) {
+  return `${assetUrl(path)}?v=${OFFICIAL_ASSET_VERSION}`;
 }
 
 export const OFFICIAL_BOOKS = [
@@ -20,7 +25,7 @@ export const OFFICIAL_BOOKS = [
     cost: 0,
     fileType: "pdf",
     pageCount: 213,
-    pdfUrl: assetUrl("enbj01.pdf"),
+    pdfUrl: versionedAssetUrl("enbj01.pdf"),
     coverUrl: assetUrl("covers/enbj01.webp"),
     delivery: "static-cdn",
     byteSize: 179991550,
@@ -31,7 +36,7 @@ export const OFFICIAL_BOOKS = [
     cost: 1500,
     fileType: "pdf",
     pageCount: 199,
-    pdfUrl: assetUrl("enbj002.pdf"),
+    pdfUrl: versionedAssetUrl("enbj002.pdf"),
     coverUrl: assetUrl("covers/enbj002.webp"),
     delivery: "static-cdn",
     byteSize: 395294646,
