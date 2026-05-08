@@ -652,6 +652,23 @@ function readableTextForHex(hexColor) {
 function getAccentStyle(accentColor, accentColorSecondary, themeId, mode) {
   const safeAccentColor = normalizeAccentColor(accentColor);
   const safeAccentColorSecondary = normalizeAccentColor(accentColorSecondary);
+
+  if (themeId === "alpine") {
+    const alpineAccent = safeAccentColorSecondary
+      ? "#ff3b12"
+      : safeAccentColor || "#ff3b12";
+    const alpineAccentText = readableTextForHex(alpineAccent);
+    return {
+      "--dashboard-accent": alpineAccent,
+      "--theme-asset-accent": alpineAccent,
+      "--theme-saturated-primary": alpineAccent,
+      "--theme-saturated-secondary": alpineAccent,
+      "--on-theme-saturated-primary": alpineAccentText,
+      "--on-theme-saturated-secondary": alpineAccentText,
+      "--theme-saturated-gradient": `linear-gradient(135deg, ${alpineAccent} 0%, ${alpineAccent} 100%)`,
+    };
+  }
+
   if (!safeAccentColor && !safeAccentColorSecondary) {
     return undefined;
   }
@@ -1150,6 +1167,15 @@ function ReaderWorkspace({ onThemeChange }) {
   const createExternalBookCoverUploadTarget = useAction(
     "bookAssets:generateCoverUploadTarget",
   );
+  const createExternalGroupAttachmentUploadTarget = useAction(
+    "bookAssets:generateGroupAttachmentUploadTarget",
+  );
+  const createExternalUserIconUploadTarget = useAction(
+    "bookAssets:generateUserIconUploadTarget",
+  );
+  const createExternalBannerUploadTarget = useAction(
+    "bookAssets:generateBannerUploadTarget",
+  );
   const createBook = useMutation("books:createBook");
   const removeBook = useMutation("books:removeBook");
   const setBookLandingPage = useMutation("books:setLandingPage");
@@ -1169,14 +1195,8 @@ function ReaderWorkspace({ onThemeChange }) {
   const selectTheme = useMutation("dashboard:selectTheme");
   const updateInteractionMode = useMutation("dashboard:updateInteractionMode");
   const updateAccentColor = useMutation("dashboard:updateAccentColor");
-  const generateUserIconUploadUrl = useMutation(
-    "dashboard:generateUserIconUploadUrl",
-  );
   const setUserIcon = useMutation("dashboard:setUserIcon");
   const selectUserIconPreset = useMutation("dashboard:selectUserIconPreset");
-  const generateBannerUploadUrl = useMutation(
-    "dashboard:generateBannerUploadUrl",
-  );
   const setCustomBanner = useMutation("dashboard:setCustomBanner");
   const updateBannerSettings = useMutation("dashboard:updateBannerSettings");
   const createGroup = useMutation("groups:createGroup");
@@ -1188,9 +1208,6 @@ function ReaderWorkspace({ onThemeChange }) {
   const deleteGroupMessage = useMutation("groups:deleteMessage");
   const markGroupMessagesRead = useMutation("groups:markMessagesRead");
   const setGroupTyping = useMutation("groups:setTyping");
-  const generateGroupAttachmentUploadUrl = useMutation(
-    "groups:generateAttachmentUploadUrl",
-  );
   const updateGroupMetadata = useMutation("groups:updateGroupMetadata");
   const setGroupMemberRole = useMutation("groups:setMemberRole");
   const muteGroupMember = useMutation("groups:muteMember");
@@ -1269,6 +1286,7 @@ function ReaderWorkspace({ onThemeChange }) {
   const [isCurrentPageLandscape, setIsCurrentPageLandscape] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState("general");
   const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isFaqOpen, setIsFaqOpen] = useState(false);
@@ -1359,12 +1377,22 @@ function ReaderWorkspace({ onThemeChange }) {
     () => groupsOverview?.publicGroups ?? [],
     [groupsOverview?.publicGroups],
   );
+  const shouldSubscribeToSelectedGroupRoom =
+    activeSection === "groups" && Boolean(selectedGroupId);
   const selectedGroupRoom = useQuery(
     "groups:room",
-    selectedGroupId ? { groupId: selectedGroupId } : {},
+    shouldSubscribeToSelectedGroupRoom
+      ? { groupId: selectedGroupId }
+      : "skip",
+  );
+  const selectedGroupTypingMembers = useQuery(
+    "groups:roomTyping",
+    shouldSubscribeToSelectedGroupRoom
+      ? { groupId: selectedGroupId }
+      : "skip",
   );
   const isGroupRoomLoading =
-    Boolean(selectedGroupId) && selectedGroupRoom === undefined;
+    shouldSubscribeToSelectedGroupRoom && selectedGroupRoom === undefined;
   const groupsMonthLabel =
     groupsOverview?.monthLabel ??
     new Date().toLocaleDateString("en-US", {
@@ -1377,6 +1405,10 @@ function ReaderWorkspace({ onThemeChange }) {
   const selectedAccentColorSecondary = normalizeAccentColor(
     profile?.accentColorSecondary,
   );
+  const selectedThemeAccentColor =
+    selectedThemeId === "alpine" && selectedAccentColorSecondary
+      ? ""
+      : selectedAccentColor;
   const selectedLanguage = normalizeLanguagePreference(profile?.language);
   useVietnameseDomTranslation(selectedLanguage);
   const dashboardTutorialSteps = useMemo(
@@ -1412,7 +1444,8 @@ function ReaderWorkspace({ onThemeChange }) {
   );
   const userIconPreset =
     profile?.userIconPreset ?? me?.iconPreset ?? "default-light";
-  const userIconStorageId = profile?.userIconStorageId ?? "";
+  const userIconStorageId =
+    profile?.userIconStorageId ?? profile?.userIconAssetKey ?? "";
   const customBannerPositionX = normalizeBannerPosition(
     profile?.customBannerPositionX,
     DEFAULT_BANNER_POSITION_X,
@@ -3545,15 +3578,28 @@ function ReaderWorkspace({ onThemeChange }) {
     }
 
     try {
-      const uploadUrl = await generateGroupAttachmentUploadUrl({
-        groupId,
+      const mimeType = file.type || "application/octet-stream";
+      const fileType =
+        file.name?.split(".").pop()?.toLowerCase() ||
+        mimeType.split("/").pop() ||
+        "bin";
+      const uploadTarget = await createExternalGroupAttachmentUploadTarget({
+        groupId: `${groupId}`,
+        fileName: file.name || "attachment",
+        contentType: mimeType,
+        fileType,
         byteSize: file.size || 0,
       });
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": file.type || "application/octet-stream",
-        },
+
+      if (!uploadTarget?.configured || !uploadTarget.uploadUrl) {
+        throw new Error(
+          uploadTarget?.reason || "Attachment object storage is unavailable.",
+        );
+      }
+
+      const uploadResponse = await fetch(uploadTarget.uploadUrl, {
+        method: uploadTarget.method || "PUT",
+        headers: uploadTarget.headers || { "Content-Type": mimeType },
         body: file,
       });
 
@@ -3561,10 +3607,10 @@ function ReaderWorkspace({ onThemeChange }) {
         throw new Error("Upload failed");
       }
 
-      const { storageId } = await uploadResponse.json();
-      const mimeType = file.type || "application/octet-stream";
       return {
-        storageId,
+        assetUrl: uploadTarget.assetUrl,
+        assetKey: uploadTarget.assetKey,
+        assetProvider: uploadTarget.provider,
         name: file.name || "attachment",
         mimeType,
         size: file.size || 0,
@@ -3677,10 +3723,22 @@ function ReaderWorkspace({ onThemeChange }) {
     setBannerUploadState({ busy: true, message: "" });
 
     try {
-      const uploadUrl = await generateBannerUploadUrl();
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": "image/png" },
+      const uploadTarget = await createExternalBannerUploadTarget({
+        fileName: file.name || `custom-banner-${Date.now()}.png`,
+        contentType: "image/png",
+        fileType: "png",
+        byteSize: file.size || 0,
+      });
+
+      if (!uploadTarget?.configured || !uploadTarget.uploadUrl) {
+        throw new Error(
+          uploadTarget?.reason || "Banner object storage is unavailable.",
+        );
+      }
+
+      const uploadResponse = await fetch(uploadTarget.uploadUrl, {
+        method: uploadTarget.method || "PUT",
+        headers: uploadTarget.headers || { "Content-Type": "image/png" },
         body: file,
       });
 
@@ -3688,8 +3746,11 @@ function ReaderWorkspace({ onThemeChange }) {
         throw new Error("Upload failed");
       }
 
-      const { storageId } = await uploadResponse.json();
-      await setCustomBanner({ storageId });
+      await setCustomBanner({
+        assetUrl: uploadTarget.assetUrl,
+        assetKey: uploadTarget.assetKey,
+        assetProvider: uploadTarget.provider,
+      });
       setBannerUploadState({
         busy: false,
         message: "Custom banner updated.",
@@ -3756,10 +3817,22 @@ function ReaderWorkspace({ onThemeChange }) {
 
     try {
       const file = await convertImageFileToPng(sourceFile);
-      const uploadUrl = await generateUserIconUploadUrl();
-      const uploadResponse = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": "image/png" },
+      const uploadTarget = await createExternalUserIconUploadTarget({
+        fileName: file.name || `avatar-${Date.now()}.png`,
+        contentType: "image/png",
+        fileType: "png",
+        byteSize: file.size || 0,
+      });
+
+      if (!uploadTarget?.configured || !uploadTarget.uploadUrl) {
+        throw new Error(
+          uploadTarget?.reason || "Profile image object storage is unavailable.",
+        );
+      }
+
+      const uploadResponse = await fetch(uploadTarget.uploadUrl, {
+        method: uploadTarget.method || "PUT",
+        headers: uploadTarget.headers || { "Content-Type": "image/png" },
         body: file,
       });
 
@@ -3767,8 +3840,11 @@ function ReaderWorkspace({ onThemeChange }) {
         throw new Error("Upload failed");
       }
 
-      const { storageId } = await uploadResponse.json();
-      await setUserIcon({ storageId });
+      await setUserIcon({
+        assetUrl: uploadTarget.assetUrl,
+        assetKey: uploadTarget.assetKey,
+        assetProvider: uploadTarget.provider,
+      });
       setUserIconState({ busy: false, message: "Icon updated." });
     } catch {
       setUserIconState({ busy: false, message: "Upload failed." });
@@ -4036,6 +4112,7 @@ function ReaderWorkspace({ onThemeChange }) {
           setIsAvatarPickerOpen(false);
           setIsProfileOpen(false);
           setIsSupportOpen(false);
+          setSettingsInitialTab("general");
           setIsSettingsOpen(true);
         }}
         onOpenProfile={() => {
@@ -4053,33 +4130,30 @@ function ReaderWorkspace({ onThemeChange }) {
         onSignOut={() => void signOut()}
       />
 
-      {!isReaderTabView && (
-        <DashboardSidebar
-          activeSection={activeSection}
-          onSelectSection={(nextSection) => {
-            setActiveSection(nextSection);
-            if (nextSection !== "library") {
-              setActiveReadingTabId(DASHBOARD_READING_TAB_ID);
-            }
-          }}
-          visibleSections={visibleDashboardSectionIds}
-          onOpenSupport={() => {
-            setIsSettingsOpen(false);
-            setIsAvatarPickerOpen(false);
-            setIsProfileOpen(false);
-            setIsSupportOpen(true);
-          }}
-          onOpenSettings={() => {
-            setIsAvatarPickerOpen(false);
-            setIsProfileOpen(false);
-            setIsSupportOpen(false);
-            setIsSettingsOpen(true);
-          }}
-          onSignOut={() => void signOut()}
-          sidebarWidth={dashboardSidebarWidth}
-          onResizeSidebar={onResizeDashboardSidebar}
-        />
-      )}
+      <DashboardSidebar
+        activeSection={activeSection}
+        onSelectSection={(nextSection) => {
+          setActiveSection(nextSection);
+          setActiveReadingTabId(DASHBOARD_READING_TAB_ID);
+        }}
+        visibleSections={visibleDashboardSectionIds}
+        onOpenSupport={() => {
+          setIsSettingsOpen(false);
+          setIsAvatarPickerOpen(false);
+          setIsProfileOpen(false);
+          setIsSupportOpen(true);
+        }}
+        onOpenSettings={() => {
+          setIsAvatarPickerOpen(false);
+          setIsProfileOpen(false);
+          setIsSupportOpen(false);
+          setSettingsInitialTab("general");
+          setIsSettingsOpen(true);
+        }}
+        onSignOut={() => void signOut()}
+        sidebarWidth={dashboardSidebarWidth}
+        onResizeSidebar={onResizeDashboardSidebar}
+      />
 
       <section
         className={`dash-main${isReaderTabView ? " reader-tab-main" : ""}`}
@@ -4146,7 +4220,7 @@ function ReaderWorkspace({ onThemeChange }) {
             onOpenCalendarDate={onOpenCalendarDate}
             themeId={selectedThemeId}
             themeMode={selectedThemeMode}
-            accentColor={selectedAccentColor}
+            accentColor={selectedThemeAccentColor}
             language={selectedLanguage}
           />
         )}
@@ -4233,9 +4307,10 @@ function ReaderWorkspace({ onThemeChange }) {
               void onBuyMarketItem(itemId, itemType)
             }
             onBuyOfficialBook={(book) => void onBuyOfficialBook(book)}
-            onOpenSettings={() => {
+            onOpenSettings={(tab = "themes") => {
               setIsProfileOpen(false);
               setIsSupportOpen(false);
+              setSettingsInitialTab(tab);
               setIsSettingsOpen(true);
             }}
             officialBooksWithState={officialBooksWithState}
@@ -4262,6 +4337,7 @@ function ReaderWorkspace({ onThemeChange }) {
             selectedGroupId={selectedGroupId}
             onSelectGroupId={setSelectedGroupId}
             selectedGroupRoom={selectedGroupRoom ?? null}
+            selectedGroupTypingMembers={selectedGroupTypingMembers ?? []}
             isGroupRoomLoading={isGroupRoomLoading}
             onSendGroupMessage={onSendGroupChatMessage}
             onEditGroupMessage={onEditGroupChatMessage}
@@ -4275,7 +4351,7 @@ function ReaderWorkspace({ onThemeChange }) {
             onBanGroupMember={onBanGroupMember}
             themeId={selectedThemeId}
             themeMode={selectedThemeMode}
-            accentColor={selectedAccentColor}
+            accentColor={selectedThemeAccentColor}
           />
         )}
 
@@ -4286,6 +4362,7 @@ function ReaderWorkspace({ onThemeChange }) {
             selectedThemeMode={selectedThemeMode}
             selectedAccentColor={selectedAccentColor}
             selectedAccentColorSecondary={selectedAccentColorSecondary}
+            initialTab={settingsInitialTab}
             onApplyAccentColors={(color, colorSecondary) =>
               void onSelectAccentColors(color, colorSecondary)
             }

@@ -9,6 +9,8 @@ const DEFAULT_EXPIRES_SECONDS = 10 * 60;
 const DEFAULT_REGION = "auto";
 const DEFAULT_PROVIDER = "s3";
 const COVER_CONTENT_TYPE = "image/webp";
+const MAX_GROUP_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+const MAX_USER_ICON_BYTES = 10 * 1024 * 1024;
 
 function getEnv(name: string) {
   return String(process.env[name] || "").trim();
@@ -205,6 +207,112 @@ function coverKeyForBookAsset(bookAssetKey: string, contentHash?: string) {
   return [...parts, "covers", coverName].join("/");
 }
 
+function objectKeyForUserAsset({
+  userId,
+  folder,
+  fileName,
+  fileType,
+  contentHash,
+}: {
+  userId: unknown;
+  folder: string;
+  fileName: string;
+  fileType?: string;
+  contentHash?: string;
+}) {
+  const extension = safeExtension(
+    String(fileName || "")
+      .split(".")
+      .pop()
+      ?.toLowerCase(),
+    String(fileType || "bin").toLowerCase(),
+  );
+  const hash = normalizeSha256(contentHash);
+  const safeFolder = String(folder || "uploads")
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/[^a-z0-9/_-]/gi, "-")
+    .replace(/\/{2,}/g, "/");
+
+  if (hash) {
+    return ["user-assets", `${userId}`, safeFolder, "sha256", `${hash}.${extension}`].join("/");
+  }
+
+  return [
+    "user-assets",
+    `${userId}`,
+    safeFolder,
+    `${Date.now()}-${randomUUID()}`,
+    `${safeFileName(fileName)}.${extension}`,
+  ].join("/");
+}
+
+function assertMaxBytes(byteSize: number | undefined, maxBytes: number, message: string) {
+  const normalizedSize = Math.max(0, Math.floor(byteSize || 0));
+  if (normalizedSize > maxBytes) {
+    throw new Error(message);
+  }
+}
+
+function createUserAssetTarget({
+  userId,
+  folder,
+  fileName,
+  contentType,
+  fileType,
+  byteSize,
+  contentHash,
+  maxBytes,
+}: {
+  userId: unknown;
+  folder: string;
+  fileName: string;
+  contentType?: string;
+  fileType?: string;
+  byteSize?: number;
+  contentHash?: string;
+  maxBytes?: number;
+}) {
+  if (maxBytes) {
+    assertMaxBytes(byteSize, maxBytes, "File is too large.");
+  }
+
+  const config = getObjectStorageConfig();
+  if (!config.configured) {
+    return config;
+  }
+
+  const safeContentType =
+    String(contentType || "").trim() || "application/octet-stream";
+  const objectKey = objectKeyForUserAsset({
+    userId,
+    folder,
+    fileName,
+    fileType,
+    contentHash,
+  });
+  const signedTarget = createSignedPutTarget({
+    bucket: config.bucket,
+    endpoint: config.endpoint,
+    accessKeyId: config.accessKeyId,
+    secretAccessKey: config.secretAccessKey,
+    publicBaseUrl: config.publicBaseUrl,
+    region: config.region,
+    objectKey,
+    contentType: safeContentType,
+  });
+
+  return {
+    configured: true,
+    provider: config.provider,
+    assetKey: objectKey,
+    assetUrl: signedTarget.publicUrl,
+    uploadUrl: signedTarget.uploadUrl,
+    method: signedTarget.method,
+    headers: signedTarget.headers,
+    expiresAt: signedTarget.expiresAt,
+  };
+}
+
 export const generateUploadTarget = action({
   args: {
     fileName: v.string(),
@@ -327,5 +435,76 @@ export const generateCoverUploadTarget = action({
       headers: signedTarget.headers,
       expiresAt: signedTarget.expiresAt,
     };
+  },
+});
+
+export const generateGroupAttachmentUploadTarget = action({
+  args: {
+    groupId: v.string(),
+    fileName: v.string(),
+    contentType: v.optional(v.string()),
+    fileType: v.optional(v.string()),
+    byteSize: v.optional(v.number()),
+    contentHash: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx);
+    assertMaxBytes(
+      args.byteSize,
+      MAX_GROUP_ATTACHMENT_BYTES,
+      "Attachment must be 25MB or smaller.",
+    );
+
+    return createUserAssetTarget({
+      userId,
+      folder: `group-attachments/${String(args.groupId || "group")}`,
+      fileName: args.fileName,
+      contentType: args.contentType,
+      fileType: args.fileType,
+      byteSize: args.byteSize,
+      contentHash: args.contentHash,
+      maxBytes: MAX_GROUP_ATTACHMENT_BYTES,
+    });
+  },
+});
+
+export const generateUserIconUploadTarget = action({
+  args: {
+    fileName: v.string(),
+    contentType: v.optional(v.string()),
+    fileType: v.optional(v.string()),
+    byteSize: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx);
+    return createUserAssetTarget({
+      userId,
+      folder: "profile-icons",
+      fileName: args.fileName,
+      contentType: args.contentType,
+      fileType: args.fileType,
+      byteSize: args.byteSize,
+      maxBytes: MAX_USER_ICON_BYTES,
+    });
+  },
+});
+
+export const generateBannerUploadTarget = action({
+  args: {
+    fileName: v.string(),
+    contentType: v.optional(v.string()),
+    fileType: v.optional(v.string()),
+    byteSize: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx);
+    return createUserAssetTarget({
+      userId,
+      folder: "custom-banners",
+      fileName: args.fileName,
+      contentType: args.contentType,
+      fileType: args.fileType,
+      byteSize: args.byteSize,
+    });
   },
 });

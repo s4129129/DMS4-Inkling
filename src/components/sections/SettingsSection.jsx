@@ -8,6 +8,12 @@ const SETTINGS_TAB_LABELS = {
   banner: "Banner",
 };
 
+function normalizeSettingsTab(tabId) {
+  return Object.prototype.hasOwnProperty.call(SETTINGS_TAB_LABELS, tabId)
+    ? tabId
+    : "general";
+}
+
 const LANGUAGE_OPTIONS = [
   { id: "vi", label: "Tiếng Việt" },
   { id: "en", label: "English" },
@@ -80,6 +86,13 @@ function replaceAccentSwatches(swatches, accentPrimaryColor, accentSecondaryColo
   });
 }
 
+function replaceSingleAccentSwatch(swatches, accentColor) {
+  if (!Array.isArray(swatches) || !accentColor) {
+    return swatches;
+  }
+  return swatches.map((color, index) => (index === 3 ? accentColor : color));
+}
+
 export default function SettingsSection({
   themeOptions,
   selectedThemeId,
@@ -116,18 +129,22 @@ export default function SettingsSection({
   onUploadCustomBanner,
   onClearCustomBanner,
   onOpenMarketplace,
+  initialTab = "general",
   onClose,
 }) {
   const opacityPercent = Math.round((bannerOpacity ?? 0.24) * 100);
   const zoomPercent = Math.round(bannerScale ?? 100);
   const [bannerAspect, setBannerAspect] = useState(5.4);
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState(() =>
+    normalizeSettingsTab(initialTab),
+  );
   const [dailyQuotaDraft, setDailyQuotaDraft] = useState(
     String(dailyQuotaInput ?? 3),
   );
   const canUseMechanicalModes = Boolean(hasMechanicalInteractionFeature);
   const activeTabLabel = SETTINGS_TAB_LABELS[activeTab] ?? "Settings";
   const isMonochromeTheme = selectedThemeId === "command";
+  const isSingleAccentTheme = selectedThemeId === "alpine";
   const normalizedThemeMode = selectedThemeMode || "dark";
   const visibleDashboardSectionSet = useMemo(
     () => new Set(visibleDashboardSectionIds),
@@ -173,12 +190,21 @@ export default function SettingsSection({
   }, []);
 
   useEffect(() => {
+    setActiveTab(normalizeSettingsTab(initialTab));
+  }, [initialTab]);
+
+  useEffect(() => {
     setDailyQuotaDraft(String(dailyQuotaInput ?? 3));
   }, [dailyQuotaInput]);
 
   useEffect(() => {
     setAccentPrimaryDraft(
-      normalizeColorInput(selectedAccentColor, themeSaturatedColors.primary),
+      normalizeColorInput(
+        isSingleAccentTheme && selectedAccentColorSecondary
+          ? ""
+          : selectedAccentColor,
+        themeSaturatedColors.primary,
+      ),
     );
     setAccentSecondaryDraft(
       normalizeColorInput(
@@ -186,10 +212,17 @@ export default function SettingsSection({
         themeSaturatedColors.secondary,
       ),
     );
-  }, [selectedAccentColor, selectedAccentColorSecondary, themeSaturatedColors]);
-
-  const displayedAccentPrimaryColor = normalizeColorInput(
+  }, [
+    isSingleAccentTheme,
     selectedAccentColor,
+    selectedAccentColorSecondary,
+    themeSaturatedColors,
+  ]);
+
+  const shouldUseStoredSingleAccent =
+    !isSingleAccentTheme || !selectedAccentColorSecondary;
+  const displayedAccentPrimaryColor = normalizeColorInput(
+    shouldUseStoredSingleAccent ? selectedAccentColor : "",
     themeSaturatedColors.primary,
   );
   const displayedAccentSecondaryColor = normalizeColorInput(
@@ -211,6 +244,12 @@ export default function SettingsSection({
     const modeSwatches = swatches?.[mode];
     if (themeId !== selectedThemeId || isMonochromeTheme) {
       return modeSwatches;
+    }
+    if (isSingleAccentTheme) {
+      return replaceSingleAccentSwatch(
+        modeSwatches,
+        shouldUseStoredSingleAccent ? selectedAccentColor : "",
+      );
     }
     return replaceAccentSwatches(
       modeSwatches,
@@ -537,22 +576,24 @@ export default function SettingsSection({
                             title="Primary saturated color"
                           />
                         </label>
-                        <label>
-                          <input
-                            type="color"
-                            value={accentSecondaryDraft}
-                            onChange={(event) =>
-                              setAccentSecondaryDraft(
-                                normalizeColorInput(
-                                  event.target.value,
-                                  themeSaturatedColors.secondary,
-                                ),
-                              )
-                            }
-                            aria-label="Secondary saturated color"
-                            title="Secondary saturated color"
-                          />
-                        </label>
+                        {!isSingleAccentTheme && (
+                          <label>
+                            <input
+                              type="color"
+                              value={accentSecondaryDraft}
+                              onChange={(event) =>
+                                setAccentSecondaryDraft(
+                                  normalizeColorInput(
+                                    event.target.value,
+                                    themeSaturatedColors.secondary,
+                                  ),
+                                )
+                              }
+                              aria-label="Secondary saturated color"
+                              title="Secondary saturated color"
+                            />
+                          </label>
+                        )}
                       </div>
                       <button
                         type="button"
@@ -560,7 +601,7 @@ export default function SettingsSection({
                         onClick={() =>
                           onApplyAccentColors?.(
                             accentPrimaryDraft,
-                            accentSecondaryDraft,
+                            isSingleAccentTheme ? "" : accentSecondaryDraft,
                           )
                         }
                       >

@@ -305,8 +305,10 @@ function extractMessageAttachments(messages) {
   const items = [];
   for (const message of messages || []) {
     for (const attachment of message?.attachments || []) {
+      const attachmentId =
+        attachment.storageId || attachment.assetKey || attachment.url || attachment.name;
       items.push({
-        id: `${message._id}:${attachment.storageId}`,
+        id: `${message._id}:${attachmentId}`,
         ext: formatAttachmentBadge(attachment.kind),
         name: attachment.name,
         meta: `${formatFileSize(attachment.size)} - ${message?.author?.name || "member"}`,
@@ -712,20 +714,23 @@ function MessageStatus({ message, onOpenPersonMenu }) {
   }
 
   const readers = (message.readBy || []).filter((profile) => !profile.isYou);
+  const isRead = message.status === "read" || Number(message.readByCount || 0) > 1;
   return (
     <span className="groups-message-status" title={message.status}>
-      {readers.length ? (
+      {isRead ? (
         <>
           <DoubleCheckIcon />
-          <span className="groups-read-stack">
-            {readers.slice(0, 4).map((profile) => (
-              <ReadReceiptAvatar
-                key={`${profile.userId}`}
-                profile={profile}
-                onOpenPersonMenu={onOpenPersonMenu}
-              />
-            ))}
-          </span>
+          {readers.length ? (
+            <span className="groups-read-stack">
+              {readers.slice(0, 4).map((profile) => (
+                <ReadReceiptAvatar
+                  key={`${profile.userId}`}
+                  profile={profile}
+                  onOpenPersonMenu={onOpenPersonMenu}
+                />
+              ))}
+            </span>
+          ) : null}
         </>
       ) : (
         <CheckIcon />
@@ -866,7 +871,7 @@ function MessageBubble({
         <div className="groups-message-attachments">
           {message.attachments.map((attachment) => (
             <AttachmentPreview
-              key={`${message._id}:${attachment.storageId}`}
+              key={`${message._id}:${attachment.storageId || attachment.assetKey || attachment.url || attachment.name}`}
               attachment={attachment}
             />
           ))}
@@ -1125,6 +1130,7 @@ export default function GroupsSection({
   selectedGroupId,
   onSelectGroupId,
   selectedGroupRoom,
+  selectedGroupTypingMembers = [],
   isGroupRoomLoading,
   onSendGroupMessage,
   onEditGroupMessage,
@@ -1177,6 +1183,7 @@ export default function GroupsSection({
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [isMobileConversationOpen, setIsMobileConversationOpen] = useState(false);
   const [typingNow, setTypingNow] = useState(Date.now());
   const [groupEditName, setGroupEditName] = useState("");
   const [groupEditVisibility, setGroupEditVisibility] = useState("public");
@@ -1330,6 +1337,25 @@ export default function GroupsSection({
   const canUseDirectRoom =
     Boolean(selectedDirectMember) && directRoom !== undefined && directRoom !== null;
 
+  const openGroupsList = useCallback(() => {
+    setIsMobileConversationOpen(false);
+  }, []);
+
+  const selectGroupConversation = useCallback(
+    (groupId) => {
+      setConversationMode("groups");
+      selectGroupId(groupId);
+      setIsMobileConversationOpen(true);
+    },
+    [selectGroupId],
+  );
+
+  const selectDirectConversation = useCallback((memberId) => {
+    setSelectedDirectMemberId(memberId);
+    setConversationMode("dms");
+    setIsMobileConversationOpen(true);
+  }, []);
+
   const filteredDirectMessageEntries = useMemo(
     () =>
       directMessageEntries.filter((member) =>
@@ -1356,10 +1382,10 @@ export default function GroupsSection({
 
   const visibleTypingMembers = useMemo(
     () =>
-      (activeRoom?.typingMembers ?? []).filter(
+      (selectedGroupTypingMembers ?? []).filter(
         (member) => typingNow - member.updatedAt <= TYPING_STALE_MS,
       ),
-    [activeRoom?.typingMembers, typingNow],
+    [selectedGroupTypingMembers, typingNow],
   );
 
   const selectedAttachments = useMemo(() => {
@@ -1673,7 +1699,7 @@ export default function GroupsSection({
     }
 
     const now = Date.now();
-    if (now - typingThrottleRef.current > 1400) {
+    if (now - typingThrottleRef.current > 3000) {
       typingThrottleRef.current = now;
       void onSetGroupTyping(selectedGroup._id, true);
     }
@@ -1683,7 +1709,7 @@ export default function GroupsSection({
     }
     typingTimeoutRef.current = window.setTimeout(() => {
       void onSetGroupTyping(selectedGroup._id, false);
-    }, 2200);
+    }, 4200);
   };
 
   const onChatInputChange = (event) => {
@@ -1748,6 +1774,9 @@ export default function GroupsSection({
               parentMessageId: replyTarget?._id,
               attachments: pendingAttachments.map((attachment) => ({
                 storageId: attachment.storageId,
+                assetUrl: attachment.assetUrl,
+                assetKey: attachment.assetKey,
+                assetProvider: attachment.assetProvider,
                 name: attachment.name,
                 mimeType: attachment.mimeType,
                 size: attachment.size,
@@ -1954,11 +1983,10 @@ export default function GroupsSection({
     setStartedDirectMemberIds((prev) =>
       prev.includes(memberId) ? prev : [...prev, memberId],
     );
-    setSelectedDirectMemberId(memberId);
-    setConversationMode("dms");
+    selectDirectConversation(memberId);
     setIsInfoPanelOpen(true);
     setPersonMenu(null);
-  }, []);
+  }, [selectDirectConversation]);
 
   const openPublicProfile = useCallback((member) => {
     if (!member?.userId) {
@@ -1984,6 +2012,7 @@ export default function GroupsSection({
     interactionLocked ? "section-preview-locked" : "",
     isListRailCollapsed ? "list-rail-collapsed" : "",
     isInfoPanelOpen ? "info-panel-open" : "info-panel-closed",
+    isMobileConversationOpen ? "mobile-conversation-open" : "mobile-list-open",
   ]
     .filter(Boolean)
     .join(" ");
@@ -2005,7 +2034,10 @@ export default function GroupsSection({
             <button
               type="button"
               className={`groups-icon-button${conversationMode === "groups" ? " active" : ""}`}
-              onClick={() => setConversationMode("groups")}
+              onClick={() => {
+                setConversationMode("groups");
+                openGroupsList();
+              }}
               aria-label="Groups"
               title="Groups"
             >
@@ -2014,7 +2046,10 @@ export default function GroupsSection({
             <button
               type="button"
               className={`groups-icon-button${conversationMode === "dms" ? " active" : ""}`}
-              onClick={() => setConversationMode("dms")}
+              onClick={() => {
+                setConversationMode("dms");
+                openGroupsList();
+              }}
               aria-label="DMs"
               title="DMs"
             >
@@ -2075,10 +2110,10 @@ export default function GroupsSection({
                     className="groups-room-avatar"
                     onClick={() => {
                       if (conversationMode === "dms") {
-                        setSelectedDirectMemberId(item.id);
+                        selectDirectConversation(item.id);
                         return;
                       }
-                      selectGroupId(item._id);
+                      selectGroupConversation(item._id);
                     }}
                     aria-label={item.name}
                     title={item.name}
@@ -2115,7 +2150,7 @@ export default function GroupsSection({
                           group={group}
                           selected={group._id === effectiveSelectedGroupId}
                           busy={busy}
-                          onSelect={() => selectGroupId(group._id)}
+                          onSelect={() => selectGroupConversation(group._id)}
                           onJoin={onJoinGroup}
                         />
                       ))}
@@ -2135,7 +2170,7 @@ export default function GroupsSection({
                           group={group}
                           selected={group._id === effectiveSelectedGroupId}
                           busy={busy}
-                          onSelect={() => selectGroupId(group._id)}
+                          onSelect={() => selectGroupConversation(group._id)}
                           onJoin={onJoinGroup}
                         />
                       ))}
@@ -2188,7 +2223,7 @@ export default function GroupsSection({
                           <button
                             type="button"
                             className="groups-room-main"
-                            onClick={() => setSelectedDirectMemberId(member.id)}
+                            onClick={() => selectDirectConversation(member.id)}
                           >
                             <span className="groups-room-meta">
                               <strong>{member.name}</strong>
@@ -2211,6 +2246,15 @@ export default function GroupsSection({
             {selectedGroup ? (
               <>
                 <header className="groups-chat-header">
+                  <button
+                    type="button"
+                    className="groups-mobile-back-button"
+                    onClick={openGroupsList}
+                    aria-label="Back to chats"
+                    title="Back"
+                  >
+                    <span aria-hidden="true">←</span>
+                  </button>
                   <div>
                     <p className="dash-kicker">
                       {isDirectConversation ? "DM" : "Group Chat"}

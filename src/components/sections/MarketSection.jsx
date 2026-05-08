@@ -488,7 +488,7 @@ export default function MarketSection({
                             <button
                               type="button"
                               className="ghost"
-                              onClick={onOpenSettings}
+                              onClick={() => onOpenSettings?.("themes")}
                             >
                               Manage in Settings
                             </button>
@@ -509,7 +509,7 @@ export default function MarketSection({
                             <button
                               type="button"
                               className="ghost"
-                              onClick={onOpenSettings}
+                              onClick={() => onOpenSettings?.("banner")}
                             >
                               Open Settings
                             </button>

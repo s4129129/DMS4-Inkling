@@ -119,7 +119,7 @@ export default function AvatarPickerOverlay({
   const logoPresetOptions = useMemo(() => getLogoPresetOptions(), []);
   const recentAvatars = useMemo(() => {
     const imageItems = [];
-    const seenStorageIds = new Set();
+    const seenImageIds = new Set();
     const currentStorageId = String(userIconStorageId || "");
 
     if (userIconUrl) {
@@ -131,24 +131,28 @@ export default function AvatarPickerOverlay({
         type: "image",
       });
       if (currentStorageId) {
-        seenStorageIds.add(currentStorageId);
+        seenImageIds.add(currentStorageId);
       }
+      seenImageIds.add(userIconUrl);
     }
 
     for (const item of recentUserIcons || []) {
       const storageId = String(item?.storageId || "");
+      const assetKey = String(item?.assetKey || "");
       const url = String(item?.url || "");
-      if (!storageId || !url || seenStorageIds.has(storageId)) {
+      const imageId = storageId || assetKey || url;
+      if (!imageId || !url || seenImageIds.has(imageId)) {
         continue;
       }
       imageItems.push({
-        id: storageId,
+        id: imageId,
         label: "Recent",
         src: url,
         storageId,
+        assetKey,
         type: "image",
       });
-      seenStorageIds.add(storageId);
+      seenImageIds.add(imageId);
     }
 
     const presetItems = logoPresetOptions.map((option) => ({

@@ -9,6 +9,8 @@ This file is the default source of truth for UI work in this project unless a ta
 - Before designing or adding UI, read the active theme's `src/themes/*/prompt-guidelines.md` and let those instructions override generic layout instincts.
 - Do not add explanatory in-app copy for new buttons or features. Use short direct button text when it is naturally one or two words; otherwise use numbered `[PLACEHOLDER n]` copy until final product wording is provided.
 - The default dashboard theme is `default`; the old parchment theme is now `vintage`. Legacy saved `comic` theme IDs should resolve to `default`.
+- The `alpine` theme is a placeholder marketplace theme: dark glass panels, mountain-cold neutrals, one orange accent, tall serif headings, and low-outline inactive controls.
+- Alpine radius and spacing rules: large panels use the panel radius, overview/content cards use the shared card radius, list panels keep internal padding before headings and rows, utility footer buttons share one compact radius, pill controls stay fully rounded unless a feature explicitly calls for a different shape, Premium and Quills keep an accent fill with a visible outline, fixed sidebars keep an inset from the topbar and viewport bottom so rounded edges never look clipped, and mobile/tablet navigation surfaces must be opaque so they never fog content underneath.
 - Default dashboard backgrounds use neutral Main1 shades; keep non-premium surfaces flat. Premium may use the theme's saturated color blend; Quills stays saturated yellow.
 - Keep panels rectangular and disciplined. Default radius is `8px`; use `12px` for overlays and major shells only.
 - Avoid nested card visuals. A panel can contain rows or cards, but do not put floating card styling inside another floating card unless it is a modal or repeated item.
@@ -49,7 +51,8 @@ This file is the default source of truth for UI work in this project unless a ta
 - Primary dashboard panels span all 12 columns.
 - Side rails should be visually quieter than main content and separated with one border, not stacked shadows.
 - Desktop side rails with divider lines may expose draggable resize handles; hide those handles on phone layouts.
-- At `1013px` wide and below, primary dashboard navigation lives in a fixed bottom icon bar. Utility actions belong in the top-right hamburger menu.
+- At `1013px` wide and below, primary dashboard navigation lives in a compact fixed bottom icon bar with auto height. Utility actions belong in the top-right hamburger menu. Desktop/sidebar height rules must be reset at mobile breakpoints for every theme.
+- Phone reader tabs also keep the compact bottom icon bar visible, with the reader page progress strip persistently visible above it.
 - Landing pages may use a comic-store cover layout when requested: black first viewport, large condensed red headline, blue outer page field, clean comic cover rack, and palette tokens from `control.json`.
 - Comic landing flow cards may overlay the current viewport and slide right-to-left on scroll; keep the cards functional-looking only when they actually perform an action.
 - Repeated lists use compact rows with icon/initial, content, and value/action columns.
@@ -77,6 +80,7 @@ This file is the default source of truth for UI work in this project unless a ta
 - Stat cards use the same heading/value/meta structure.
 - Main dashboard rows use the same row geometry: initial badge, text stack, compact value.
 - Library progress and weekly pages should sit as paired overview panels on desktop and stack on tablet/phone layouts.
+- On phone, the four overview summary cards should stay in a compact `2x2` grid; reduce card internals before stacking them vertically.
 - Calendar and timeline panels use the same header and border treatment.
 - Accent customization applies to time indicators and timeline emphasis only unless a task explicitly expands the scope.
 

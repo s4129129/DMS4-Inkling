@@ -74,6 +74,13 @@ const MARKET_ITEMS = [
     description: "Simple mono palette",
   },
   {
+    id: "alpine",
+    type: "theme",
+    name: "Alpine",
+    cost: 180,
+    description: "Dark alpine glass interface",
+  },
+  {
     id: DEFAULT_INTERACTION_FEATURE_ID,
     type: "feature",
     name: "Default Interaction",
@@ -454,9 +461,16 @@ async function getOrCreateProfile(ctx: any, userId: any) {
       ownedFeatures: DEFAULT_OWNED_FEATURES,
       ownedOfficialBooks: [],
       userIconStorageId: undefined,
+      userIconAssetUrl: undefined,
+      userIconAssetKey: undefined,
+      userIconAssetProvider: undefined,
+      recentUserIconAssets: [],
       userIconPreset: DEFAULT_USER_ICON_PRESET,
       economyResetVersion: ECONOMY_RESET_VERSION,
       customBannerStorageId: undefined,
+      customBannerAssetUrl: undefined,
+      customBannerAssetKey: undefined,
+      customBannerAssetProvider: undefined,
       customBannerPositionX: DEFAULT_BANNER_POSITION_X,
       customBannerPositionY: DEFAULT_BANNER_POSITION_Y,
       customBannerOpacity: DEFAULT_BANNER_OPACITY,
@@ -483,9 +497,16 @@ async function getOrCreateProfile(ctx: any, userId: any) {
     ownedFeatures: DEFAULT_OWNED_FEATURES,
     ownedOfficialBooks: [],
     userIconStorageId: undefined,
+    userIconAssetUrl: undefined,
+    userIconAssetKey: undefined,
+    userIconAssetProvider: undefined,
+    recentUserIconAssets: [],
     userIconPreset: DEFAULT_USER_ICON_PRESET,
     economyResetVersion: ECONOMY_RESET_VERSION,
     customBannerStorageId: undefined,
+    customBannerAssetUrl: undefined,
+    customBannerAssetKey: undefined,
+    customBannerAssetProvider: undefined,
     customBannerPositionX: DEFAULT_BANNER_POSITION_X,
     customBannerPositionY: DEFAULT_BANNER_POSITION_Y,
     customBannerOpacity: DEFAULT_BANNER_OPACITY,
@@ -787,21 +808,32 @@ export const overview = query({
       profile.accentColorSecondary,
     );
 
-    const customBannerUrl = profile.customBannerStorageId
-      ? await ctx.storage.getUrl(profile.customBannerStorageId)
-      : null;
-    const userIconUrl = profile.userIconStorageId
-      ? await ctx.storage.getUrl(profile.userIconStorageId)
-      : null;
+    const customBannerUrl =
+      profile.customBannerAssetUrl ||
+      (profile.customBannerStorageId
+        ? await ctx.storage.getUrl(profile.customBannerStorageId)
+        : null);
+    const userIconUrl =
+      profile.userIconAssetUrl ||
+      (profile.userIconStorageId
+        ? await ctx.storage.getUrl(profile.userIconStorageId)
+        : null);
     const recentUserIcons = (
-      await Promise.all(
-        (profile.recentUserIconStorageIds ?? []).slice(0, 3).map(
-          async (storageId) => ({
-            storageId,
-            url: await ctx.storage.getUrl(storageId),
-          }),
-        ),
-      )
+      [
+        ...(profile.recentUserIconAssets ?? []).map((asset: any) => ({
+          assetKey: asset.assetKey,
+          assetProvider: asset.assetProvider,
+          url: asset.assetUrl,
+        })),
+        ...(await Promise.all(
+          (profile.recentUserIconStorageIds ?? []).map(
+            async (storageId) => ({
+              storageId,
+              url: await ctx.storage.getUrl(storageId),
+            }),
+          ),
+        )),
+      ].slice(0, 3)
     ).filter((item) => item.url);
     const customBannerPositionX = normalizeBannerPosition(
       profile.customBannerPositionX,
@@ -850,9 +882,15 @@ export const overview = query({
         ownedOfficialBooks,
         economyResetVersion: profile.economyResetVersion ?? 0,
         userIconStorageId: profile.userIconStorageId,
+        userIconAssetUrl: profile.userIconAssetUrl,
+        userIconAssetKey: profile.userIconAssetKey,
+        userIconAssetProvider: profile.userIconAssetProvider,
         userIconUrl,
         recentUserIcons,
         userIconPreset: profile.userIconPreset ?? DEFAULT_USER_ICON_PRESET,
+        customBannerAssetUrl: profile.customBannerAssetUrl,
+        customBannerAssetKey: profile.customBannerAssetKey,
+        customBannerAssetProvider: profile.customBannerAssetProvider,
         customBannerUrl,
         customBannerPositionX,
         customBannerPositionY,
@@ -989,9 +1027,11 @@ export const publicOverview = query({
       (sum, book) => sum + Math.max(0, book.unlockedPages),
       0,
     );
-    const userIconUrl = profile?.userIconStorageId
-      ? await ctx.storage.getUrl(profile.userIconStorageId)
-      : null;
+    const userIconUrl =
+      profile?.userIconAssetUrl ||
+      (profile?.userIconStorageId
+        ? await ctx.storage.getUrl(profile.userIconStorageId)
+        : null);
 
     return {
       displayName:
@@ -1138,10 +1178,29 @@ export const generateUserIconUploadUrl = mutation({
 export const setUserIcon = mutation({
   args: {
     storageId: v.optional(v.id("_storage")),
+    assetUrl: v.optional(v.string()),
+    assetKey: v.optional(v.string()),
+    assetProvider: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const profile = await getOrCreateProfile(ctx, userId);
+    const nextAssetUrl = String(args.assetUrl || "").trim();
+    const nextAssetKey = String(args.assetKey || "").trim();
+    const nextAssetProvider = String(args.assetProvider || "").trim();
+    const hasExternalAsset = Boolean(nextAssetUrl);
+    const recentUserIconAssets = hasExternalAsset
+      ? [
+          {
+            assetUrl: nextAssetUrl,
+            ...(nextAssetKey ? { assetKey: nextAssetKey } : {}),
+            ...(nextAssetProvider ? { assetProvider: nextAssetProvider } : {}),
+          },
+          ...(profile.recentUserIconAssets ?? []).filter(
+            (asset: any) => asset.assetUrl !== nextAssetUrl,
+          ),
+        ].slice(0, 3)
+      : (profile.recentUserIconAssets ?? []).slice(0, 3);
     const recentUserIconStorageIds = args.storageId
       ? [
           args.storageId,
@@ -1153,25 +1212,42 @@ export const setUserIcon = mutation({
 
     await ctx.db.patch(profile._id, {
       userIconStorageId: args.storageId,
+      userIconAssetUrl: hasExternalAsset ? nextAssetUrl : undefined,
+      userIconAssetKey: hasExternalAsset ? nextAssetKey : undefined,
+      userIconAssetProvider: hasExternalAsset ? nextAssetProvider : undefined,
+      recentUserIconAssets,
       recentUserIconStorageIds,
-      userIconPreset: args.storageId
+      userIconPreset: args.storageId || hasExternalAsset
         ? profile.userIconPreset ?? DEFAULT_USER_ICON_PRESET
         : DEFAULT_USER_ICON_PRESET,
       updatedAt: Date.now(),
     });
 
+    const userIconUrl = hasExternalAsset
+      ? nextAssetUrl
+      : args.storageId
+        ? await ctx.storage.getUrl(args.storageId)
+        : null;
     return {
       userIconStorageId: args.storageId,
-      userIconUrl: args.storageId ? await ctx.storage.getUrl(args.storageId) : null,
+      userIconAssetUrl: hasExternalAsset ? nextAssetUrl : null,
+      userIconUrl,
       recentUserIcons: (
-        await Promise.all(
-          recentUserIconStorageIds.map(async (storageId) => ({
-            storageId,
-            url: await ctx.storage.getUrl(storageId),
+        [
+          ...recentUserIconAssets.map((asset: any) => ({
+            assetKey: asset.assetKey,
+            assetProvider: asset.assetProvider,
+            url: asset.assetUrl,
           })),
-        )
+          ...(await Promise.all(
+            recentUserIconStorageIds.map(async (storageId) => ({
+              storageId,
+              url: await ctx.storage.getUrl(storageId),
+            })),
+          )),
+        ].slice(0, 3)
       ).filter((item) => item.url),
-      userIconPreset: args.storageId
+      userIconPreset: args.storageId || hasExternalAsset
         ? profile.userIconPreset ?? DEFAULT_USER_ICON_PRESET
         : DEFAULT_USER_ICON_PRESET,
     };
@@ -1190,6 +1266,9 @@ export const selectUserIconPreset = mutation({
     await ctx.db.patch(profile._id, {
       userIconPreset: preset,
       userIconStorageId: undefined,
+      userIconAssetUrl: undefined,
+      userIconAssetKey: undefined,
+      userIconAssetProvider: undefined,
       updatedAt: Date.now(),
     });
 
@@ -1379,6 +1458,9 @@ export const generateBannerUploadUrl = mutation({
 export const setCustomBanner = mutation({
   args: {
     storageId: v.optional(v.id("_storage")),
+    assetUrl: v.optional(v.string()),
+    assetKey: v.optional(v.string()),
+    assetProvider: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
@@ -1389,14 +1471,26 @@ export const setCustomBanner = mutation({
       throw new Error("Feature not owned");
     }
 
+    const nextAssetUrl = String(args.assetUrl || "").trim();
+    const nextAssetKey = String(args.assetKey || "").trim();
+    const nextAssetProvider = String(args.assetProvider || "").trim();
+    const hasExternalAsset = Boolean(nextAssetUrl);
+
     await ctx.db.patch(profile._id, {
       customBannerStorageId: args.storageId,
+      customBannerAssetUrl: hasExternalAsset ? nextAssetUrl : undefined,
+      customBannerAssetKey: hasExternalAsset ? nextAssetKey : undefined,
+      customBannerAssetProvider: hasExternalAsset
+        ? nextAssetProvider
+        : undefined,
       updatedAt: Date.now(),
     });
 
-    const customBannerUrl = args.storageId
-      ? await ctx.storage.getUrl(args.storageId)
-      : null;
+    const customBannerUrl = hasExternalAsset
+      ? nextAssetUrl
+      : args.storageId
+        ? await ctx.storage.getUrl(args.storageId)
+        : null;
     return { customBannerUrl };
   },
 });

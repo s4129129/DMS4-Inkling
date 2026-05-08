@@ -93,6 +93,8 @@ export default function CalendarSection({
   const calendarMainRef = useRef(null);
   const [activeView, setActiveView] = useState("timeGridWeek");
   const [mobilePanel, setMobilePanel] = useState("main");
+  const [isMobileCalendarMenuOpen, setIsMobileCalendarMenuOpen] =
+    useState(false);
   const [eventPopover, setEventPopover] = useState(null);
   const [calendarTitle, setCalendarTitle] = useState("");
   const [miniCalendarTitle, setMiniCalendarTitle] = useState("");
@@ -109,6 +111,11 @@ export default function CalendarSection({
   );
   const dayEventCounts = useMemo(() => buildDayEventCounts(events), [events]);
   const noEventsText = translateUiText("No events to display", language);
+  const activeViewLabel =
+    VIEW_OPTIONS.find((option) => option.key === activeView)?.label ?? "View";
+  const mobilePanelLabel =
+    MOBILE_PANEL_OPTIONS.find((option) => option.key === mobilePanel)?.label ??
+    "Panel";
 
   const visibleEvent = eventPopover?.event || null;
   const renderCenteredDayCell = (info) => {
@@ -277,35 +284,59 @@ export default function CalendarSection({
           if (!event.target.closest(".calendar-event-popover")) {
             setEventPopover(null);
           }
+          if (!event.target.closest(".calendar-mobile-menu-shell")) {
+            setIsMobileCalendarMenuOpen(false);
+          }
         }}
       >
-        <div className="calendar-mobile-controls">
-          <label>
-            <span>View</span>
-            <select
-              value={activeView}
-              onChange={(event) => onSetView(event.target.value)}
-            >
-              {VIEW_OPTIONS.map((option) => (
-                <option key={option.key} value={option.key}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Panel</span>
-            <select
-              value={mobilePanel}
-              onChange={(event) => setMobilePanel(event.target.value)}
-            >
-              {MOBILE_PANEL_OPTIONS.map((option) => (
-                <option key={option.key} value={option.key}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="calendar-mobile-menu-shell">
+          <button
+            type="button"
+            className="ghost calendar-mobile-menu-trigger"
+            onClick={() =>
+              setIsMobileCalendarMenuOpen((isOpen) => !isOpen)
+            }
+            aria-expanded={isMobileCalendarMenuOpen}
+          >
+            <span>{activeViewLabel}</span>
+            <span>{mobilePanelLabel}</span>
+          </button>
+          {isMobileCalendarMenuOpen ? (
+            <div className="calendar-mobile-menu" role="menu">
+              <section>
+                <p>View</p>
+                {VIEW_OPTIONS.map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    className={activeView === option.key ? "active" : ""}
+                    onClick={() => {
+                      onSetView(option.key);
+                      setIsMobileCalendarMenuOpen(false);
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </section>
+              <section>
+                <p>Panel</p>
+                {MOBILE_PANEL_OPTIONS.map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    className={mobilePanel === option.key ? "active" : ""}
+                    onClick={() => {
+                      setMobilePanel(option.key);
+                      setIsMobileCalendarMenuOpen(false);
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </section>
+            </div>
+          ) : null}
         </div>
 
         <aside className="calendar-side-rail">

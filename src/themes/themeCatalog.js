@@ -143,4 +143,41 @@ export const THEME_CATALOG = {
       },
     },
   },
+  alpine: {
+    id: "alpine",
+    name: "Alpine",
+    description: "Dark alpine glass interface",
+    modes: {
+      light: {
+        preview: {
+          bg: "#dfe8eb",
+          surface: "#f2f6f4",
+          accent: "#ff3b12",
+          text: "#101816",
+        },
+        roles: {
+          main1: "#dfe8eb",
+          main2: "#f2f6f4",
+          support: "#9aa7a4",
+          accent: "#ff3b12",
+          text: "#101816",
+        },
+      },
+      dark: {
+        preview: {
+          bg: "#050706",
+          surface: "#0b0f0d",
+          accent: "#ff3b12",
+          text: "#f4f2ec",
+        },
+        roles: {
+          main1: "#050706",
+          main2: "#0b0f0d",
+          support: "#1b211f",
+          accent: "#ff3b12",
+          text: "#f4f2ec",
+        },
+      },
+    },
+  },
 };

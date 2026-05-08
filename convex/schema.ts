@@ -22,10 +22,25 @@ export default defineSchema({
     ownedFeatures: v.optional(v.array(v.string())),
     ownedOfficialBooks: v.optional(v.array(v.string())),
     userIconStorageId: v.optional(v.id("_storage")),
+    userIconAssetUrl: v.optional(v.string()),
+    userIconAssetKey: v.optional(v.string()),
+    userIconAssetProvider: v.optional(v.string()),
     recentUserIconStorageIds: v.optional(v.array(v.id("_storage"))),
+    recentUserIconAssets: v.optional(
+      v.array(
+        v.object({
+          assetUrl: v.string(),
+          assetKey: v.optional(v.string()),
+          assetProvider: v.optional(v.string()),
+        }),
+      ),
+    ),
     userIconPreset: v.optional(v.string()),
     economyResetVersion: v.optional(v.number()),
     customBannerStorageId: v.optional(v.id("_storage")),
+    customBannerAssetUrl: v.optional(v.string()),
+    customBannerAssetKey: v.optional(v.string()),
+    customBannerAssetProvider: v.optional(v.string()),
     customBannerPositionX: v.optional(v.number()),
     customBannerPositionY: v.optional(v.number()),
     customBannerOpacity: v.optional(v.number()),
@@ -113,7 +128,10 @@ export default defineSchema({
     attachments: v.optional(
       v.array(
         v.object({
-          storageId: v.id("_storage"),
+          storageId: v.optional(v.id("_storage")),
+          assetUrl: v.optional(v.string()),
+          assetKey: v.optional(v.string()),
+          assetProvider: v.optional(v.string()),
           name: v.string(),
           mimeType: v.string(),
           size: v.number(),

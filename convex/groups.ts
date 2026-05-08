@@ -20,7 +20,7 @@ const MIN_READING_MATERIAL_TITLE_LENGTH = 2;
 const MAX_READING_MATERIAL_TITLE_LENGTH = 120;
 const INVITE_CODE_LENGTH = 8;
 const MAX_CHAT_MESSAGE_LENGTH = 1200;
-const ROOM_MESSAGE_LIMIT = 120;
+const ROOM_MESSAGE_LIMIT = 40;
 const MAX_ATTACHMENTS_PER_MESSAGE = 6;
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 const MAX_ATTACHMENT_NAME_LENGTH = 160;
@@ -31,7 +31,10 @@ const READ_RECEIPT_PROFILE_LIMIT = 4;
 const PUBLIC_GROUP_DISCOVERY_LIMIT = 60;
 
 const GROUP_ATTACHMENT_VALIDATOR = v.object({
-  storageId: v.id("_storage"),
+  storageId: v.optional(v.id("_storage")),
+  assetUrl: v.optional(v.string()),
+  assetKey: v.optional(v.string()),
+  assetProvider: v.optional(v.string()),
   name: v.string(),
   mimeType: v.string(),
   size: v.number(),
@@ -220,6 +223,27 @@ function normalizeAttachmentName(value: string) {
   return (name || "attachment").slice(0, MAX_ATTACHMENT_NAME_LENGTH);
 }
 
+function normalizeAssetUrl(value: unknown) {
+  const url = String(value || "").trim();
+  if (!url) {
+    return "";
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === "https:" ? parsedUrl.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function normalizeAssetKey(value: unknown) {
+  return String(value || "")
+    .trim()
+    .replace(/^\/+/, "")
+    .slice(0, 400);
+}
+
 function normalizeAttachments(value: Array<any> | undefined) {
   const attachments = Array.isArray(value) ? value : [];
   if (attachments.length > MAX_ATTACHMENTS_PER_MESSAGE) {
@@ -234,14 +258,35 @@ function normalizeAttachments(value: Array<any> | undefined) {
     if (size > MAX_ATTACHMENT_BYTES) {
       throw new Error("Attachment must be 25MB or smaller.");
     }
+    const assetUrl = normalizeAssetUrl(attachment.assetUrl);
+    const assetKey = normalizeAssetKey(attachment.assetKey);
+    const storageId = attachment.storageId;
+    if (!storageId && !assetUrl) {
+      throw new Error("Attachment upload is missing.");
+    }
 
-    return {
-      storageId: attachment.storageId,
+    const normalizedAttachment: Record<string, unknown> = {
       name: normalizeAttachmentName(attachment.name),
       mimeType,
       size,
       kind: normalizeAttachmentKind(attachment.kind, mimeType),
     };
+    if (storageId) {
+      normalizedAttachment.storageId = storageId;
+    }
+    if (assetUrl) {
+      normalizedAttachment.assetUrl = assetUrl;
+    }
+    if (assetKey) {
+      normalizedAttachment.assetKey = assetKey;
+    }
+    if (attachment.assetProvider) {
+      normalizedAttachment.assetProvider = String(attachment.assetProvider)
+        .trim()
+        .slice(0, 40);
+    }
+
+    return normalizedAttachment;
   });
 }
 
@@ -346,9 +391,11 @@ async function getUserIconPayload(ctx: any, userId: any) {
     .unique();
 
   return {
-    image: profile?.userIconStorageId
-      ? await ctx.storage.getUrl(profile.userIconStorageId)
-      : null,
+    image:
+      profile?.userIconAssetUrl ||
+      (profile?.userIconStorageId
+        ? await ctx.storage.getUrl(profile.userIconStorageId)
+        : null),
     iconPreset: profile?.userIconPreset ?? "default-light",
   };
 }
@@ -463,10 +510,17 @@ async function toReadProfiles(ctx: any, readByUserIds: Array<any>, viewerId: any
 
 async function toAttachmentPayload(ctx: any, attachments: Array<any>) {
   return await Promise.all(
-    (attachments || []).map(async (attachment: any) => ({
-      ...attachment,
-      url: await ctx.storage.getUrl(attachment.storageId),
-    })),
+    (attachments || []).map(async (attachment: any) => {
+      const url =
+        attachment.assetUrl ||
+        (attachment.storageId
+          ? await ctx.storage.getUrl(attachment.storageId)
+          : null);
+      return {
+        ...attachment,
+        url,
+      };
+    }),
   );
 }
 
@@ -523,9 +577,11 @@ async function collectRoomMessages(
       const isAuthor = `${message.userId}` === `${viewerId}`;
       const isDeleted = Boolean(message.deletedAt);
       const readByUserIds = uniqueIdList(message.readByUserIds ?? [message.userId]);
-      const readByProfiles = await toReadProfiles(ctx, readByUserIds, viewerId);
       const readBySomeoneElse = readByUserIds.some(
         (readByUserId: any) => `${readByUserId}` !== `${viewerId}`,
+      );
+      const readByMe = readByUserIds.some(
+        (readByUserId: any) => `${readByUserId}` === `${viewerId}`,
       );
 
       return {
@@ -537,8 +593,9 @@ async function collectRoomMessages(
         attachments: isDeleted
           ? []
           : await toAttachmentPayload(ctx, message.attachments ?? []),
-        readBy: readByProfiles,
+        readBy: [],
         readByCount: readByUserIds.length,
+        isReadByMe: readByMe,
         status: readBySomeoneElse ? "read" : "sent",
         createdAt: message.createdAt,
         editedAt: message.editedAt ?? null,
@@ -954,8 +1011,36 @@ export const room = query({
       mutedUntil: membership?.mutedUntil ?? null,
       members,
       messages,
-      typingMembers: await collectTypingMembers(ctx, group._id, userId),
     };
+  },
+});
+
+export const roomTyping = query({
+  args: {
+    groupId: v.optional(v.id("groups")),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx);
+    if (!args.groupId) {
+      return [];
+    }
+
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      return [];
+    }
+
+    const ban = await getGroupBan(ctx, group._id, userId);
+    if (ban) {
+      throw new Error("You cannot access this group.");
+    }
+
+    const membership = await getGroupMembership(ctx, group._id, userId);
+    if (group.visibility === "private" && !membership) {
+      throw new Error("This private group is only visible to members.");
+    }
+
+    return await collectTypingMembers(ctx, group._id, userId);
   },
 });
 

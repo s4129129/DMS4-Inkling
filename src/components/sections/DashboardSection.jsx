@@ -117,7 +117,6 @@ export default function DashboardSection({
   dailyActivity,
   timerSessions,
   timerSessions24h,
-  totalUnlockedPagesEver,
   totalSessionSecondsEver = 0,
   continueReadingBook,
   bookThumbnailMap,
@@ -163,13 +162,6 @@ export default function DashboardSection({
   );
   const hasLibraryBooks = Boolean((progressBooks || []).length);
 
-  const totalUnlocked =
-    typeof totalUnlockedPagesEver === "number"
-      ? totalUnlockedPagesEver
-      : (progressBooks || []).reduce(
-          (sum, book) => sum + Math.max(0, Number(book?.unlockedPages || 0)),
-          0,
-        );
   const totalPages = Math.max(1, Number(continueBook?.pageCount || 1));
   const continueProgressPercent = clampPercent(
     continueBook?.progressPercent ??
@@ -210,9 +202,9 @@ export default function DashboardSection({
     {
       key: "pages",
       tone: "ink",
-      label: "Total pages unlocked",
-      value: Math.max(0, Math.floor(totalUnlocked || 0)),
-      meta: `${activity.pagesUnlocked} today`,
+      label: "Total pages gained",
+      value: activity.pagesUnlocked,
+      meta: "Claimed today",
     },
     {
       key: "sessions",
