@@ -186,6 +186,15 @@
     return normalizeSessionStage(session && session.sessionStage) === "authenticated";
   }
 
+  function isViewingNow(session, now) {
+    return Boolean(
+      session &&
+        session.isActive &&
+        Number(session.lastActiveAt || 0) &&
+        now - Number(session.lastActiveAt || 0) <= ACTIVE_WINDOW_MS,
+    );
+  }
+
   function userIdentityKey(session) {
     return (
       session.googleAccountEmail ||
@@ -233,7 +242,7 @@
 
     var activeUserIds = new Set();
     authenticatedSessions.forEach(function (session) {
-      if (now - Number(session.lastSeen || 0) <= ACTIVE_WINDOW_MS) {
+      if (isViewingNow(session, now)) {
         activeUserIds.add(userIdentityKey(session));
       }
     });

@@ -196,6 +196,8 @@ export default defineSchema({
     sourceHost: v.string(),
     firstSeen: v.number(),
     lastSeen: v.number(),
+    lastActiveAt: v.optional(v.number()),
+    isActive: v.optional(v.boolean()),
     durationSec: v.number(),
     pageViews: v.number(),
     maxScrollPercent: v.number(),

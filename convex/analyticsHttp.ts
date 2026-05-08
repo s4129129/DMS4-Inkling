@@ -92,6 +92,13 @@ export const ingest = httpAction(async (ctx, request) => {
         : undefined,
     sourceHost,
     timestamp,
+    isActive:
+      typeof payload.isActive === "boolean" ? payload.isActive : undefined,
+    lastActiveAt:
+      typeof payload.lastActiveAt === "number" &&
+      Number.isFinite(payload.lastActiveAt)
+        ? payload.lastActiveAt
+        : undefined,
     durationSec:
       typeof payload.durationSec === "number" &&
       Number.isFinite(payload.durationSec)

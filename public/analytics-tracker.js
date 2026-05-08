@@ -220,6 +220,8 @@
       path: currentPath(),
       pathCounts: pathCounts,
       sourceHost: window.location.host,
+      isActive: !document.hidden && activeStartMs !== null,
+      lastActiveAt: lastActiveAt || null,
       referrer: document.referrer || "direct",
       userAgent: navigator.userAgent,
       reason: reason,
@@ -284,6 +286,7 @@
   var lastTrackedAt = 0;
   var activeAccumulatedMs = 0;
   var activeStartMs = document.hidden ? null : nowMs();
+  var lastActiveAt = activeStartMs;
 
   function ensureUser(store, ts) {
     var user = store.users[visitorId];
@@ -327,6 +330,8 @@
         startAt: ts,
         endAt: ts,
         lastSeen: ts,
+        lastActiveAt: activeStartMs ? ts : null,
+        isActive: activeStartMs !== null,
         durationSec: 0,
         pageViews: 0,
         maxScrollPercent: 0,
@@ -347,6 +352,12 @@
 
     user.lastSeen = ts;
     session.lastSeen = ts;
+    if (activeStartMs) {
+      user.lastActiveAt = ts;
+      user.isActive = true;
+      session.lastActiveAt = ts;
+      session.isActive = true;
+    }
 
     previousDurationSec = session.durationSec || 0;
     pageViews = session.pageViews || 0;
@@ -388,6 +399,13 @@
       session.sessionStage = sessionStage;
       session.lastSeen = ts;
       session.endAt = ts;
+      if (!document.hidden && activeStartMs !== null) {
+        lastActiveAt = ts;
+        session.lastActiveAt = ts;
+        session.isActive = true;
+        user.lastActiveAt = ts;
+        user.isActive = true;
+      }
 
       pruneSessions(store);
     });
@@ -406,6 +424,10 @@
 
     maxScrollPercent = Math.max(maxScrollPercent, computeScrollPercent());
     previousDurationSec = durationSec;
+    var currentlyActive = !document.hidden && activeStartMs !== null;
+    if (currentlyActive) {
+      lastActiveAt = ts;
+    }
 
     mutateStore(function (store) {
       var user = ensureUser(store, ts);
@@ -414,6 +436,10 @@
       user.lastSeen = ts;
       user.lastPath = currentPath();
       user.totalTimeSec += deltaSec;
+      user.isActive = currentlyActive;
+      if (currentlyActive) {
+        user.lastActiveAt = ts;
+      }
 
       session.durationSec = durationSec;
       session.maxScrollPercent = Math.max(
@@ -423,6 +449,10 @@
       session.sourceHost = window.location.host;
       session.lastSeen = ts;
       session.endAt = ts;
+      session.isActive = currentlyActive;
+      if (currentlyActive) {
+        session.lastActiveAt = ts;
+      }
       session.lastPath = currentPath();
       session.pageViews = pageViews;
       session.pathCounts = pathCounts;

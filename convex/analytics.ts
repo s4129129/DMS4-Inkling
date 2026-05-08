@@ -69,6 +69,17 @@ function isAuthenticatedSession(sessionStage?: string) {
   return sessionStage === "authenticated";
 }
 
+function isViewingNow(session: {
+  isActive?: boolean;
+  lastActiveAt?: number;
+}, now: number) {
+  return Boolean(
+    session.isActive &&
+      session.lastActiveAt &&
+      now - session.lastActiveAt <= 5 * 60 * 1000,
+  );
+}
+
 function userIdentityKey(session: {
   googleAccountEmail?: string;
   appUserId?: string;
@@ -87,6 +98,8 @@ export const ingestSnapshot = internalMutation({
     sessionStage: v.optional(v.string()),
     sourceHost: v.string(),
     timestamp: v.number(),
+    isActive: v.optional(v.boolean()),
+    lastActiveAt: v.optional(v.number()),
     durationSec: v.number(),
     pageViews: v.number(),
     maxScrollPercent: v.number(),
@@ -123,6 +136,8 @@ export const ingestSnapshot = internalMutation({
         sourceHost: args.sourceHost,
         firstSeen: ts,
         lastSeen: ts,
+        lastActiveAt: args.lastActiveAt,
+        isActive: args.isActive,
         durationSec,
         pageViews,
         maxScrollPercent,
@@ -149,6 +164,8 @@ export const ingestSnapshot = internalMutation({
       sessionStage: args.sessionStage?.slice(0, 40) ?? existing.sessionStage,
       sourceHost: args.sourceHost || existing.sourceHost,
       lastSeen: Math.max(existing.lastSeen, ts),
+      lastActiveAt: args.lastActiveAt ?? existing.lastActiveAt,
+      isActive: args.isActive ?? existing.isActive,
       durationSec: Math.max(existing.durationSec, durationSec),
       pageViews: Math.max(existing.pageViews, pageViews),
       maxScrollPercent: Math.max(existing.maxScrollPercent, maxScrollPercent),
@@ -263,7 +280,7 @@ export const summary = query({
       if (isAuthenticated) {
         const identityKey = userIdentityKey(session);
         visitorSet.add(identityKey);
-        if (now - session.lastSeen <= 5 * 60 * 1000) {
+        if (isViewingNow(session, now)) {
           activeVisitorSet.add(identityKey);
         }
       }
