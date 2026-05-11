@@ -31,14 +31,14 @@ export function ensureChartJs() {
   return chartLoaderPromise;
 }
 
-export function chartPalette(themeId, themeMode) {
+export function chartPalette(themeId, themeMode, accentColor = "") {
   const isCommand = themeId === "command";
   const isDefault = themeId === "default" || themeId === "comic";
   const isAlpine = themeId === "alpine";
   const isDark = themeMode === "dark";
 
   if (isAlpine) {
-    const accent = "#ff3b12";
+    const accent = accentColor || "#ff3b12";
     return {
       text: isDark ? "#f4f2ec" : "#101816",
       grid: isDark ? "rgba(244, 242, 236, 0.18)" : "rgba(16, 24, 22, 0.16)",

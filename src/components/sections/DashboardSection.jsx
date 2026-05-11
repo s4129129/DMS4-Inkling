@@ -223,8 +223,8 @@ export default function DashboardSection({
     [weekly],
   );
   const palette = useMemo(
-    () => chartPalette(themeId, themeMode),
-    [themeId, themeMode],
+    () => chartPalette(themeId, themeMode, accentColor),
+    [accentColor, themeId, themeMode],
   );
   const weeklyBarColor = accentColor || palette.bar;
   const pagesUnlockedLabel = translateUiText("Pages unlocked", language);

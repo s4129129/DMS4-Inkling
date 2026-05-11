@@ -690,9 +690,7 @@ function getAccentStyle(accentColor, accentColorSecondary, themeId, mode) {
   const safeAccentColorSecondary = normalizeAccentColor(accentColorSecondary);
 
   if (themeId === "alpine") {
-    const alpineAccent = safeAccentColorSecondary
-      ? "#ff3b12"
-      : safeAccentColor || "#ff3b12";
+    const alpineAccent = safeAccentColor || safeAccentColorSecondary || "#ff3b12";
     const alpineAccentText = readableTextForHex(alpineAccent);
     return {
       "--dashboard-accent": alpineAccent,
@@ -1450,9 +1448,8 @@ function ReaderWorkspace({ onThemeChange }) {
     profile?.accentColorSecondary,
   );
   const selectedThemeAccentColor =
-    selectedThemeId === "alpine" && selectedAccentColorSecondary
-      ? ""
-      : selectedAccentColor;
+    selectedAccentColor ||
+    (selectedThemeId === "alpine" ? selectedAccentColorSecondary : "");
   const selectedLanguage = normalizeLanguagePreference(profile?.language);
   useVietnameseDomTranslation(selectedLanguage);
   const messageNotificationUserId = me?._id ? String(me._id) : "";
