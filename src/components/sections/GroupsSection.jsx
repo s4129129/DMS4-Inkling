@@ -8,6 +8,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useMutation, useQuery } from "convex/react";
+import AvatarPickerOverlay from "../AvatarPickerOverlay";
 import DashboardSection from "./DashboardSection";
 import * as logoCatalog from "../../themes/logoCatalog";
 
@@ -313,6 +314,10 @@ function extractMessageAttachments(messages) {
         name: attachment.name,
         meta: `${formatFileSize(attachment.size)} - ${message?.author?.name || "member"}`,
         url: attachment.url,
+        kind: attachment.kind || "document",
+        mimeType: attachment.mimeType || "",
+        size: attachment.size || 0,
+        authorName: message?.author?.name || "member",
       });
     }
   }
@@ -485,6 +490,28 @@ function PaperclipIcon() {
   );
 }
 
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M12 2.5a5.5 5.5 0 0 0-5.5 5.5v2.8c0 .66-.22 1.3-.63 1.82L4.3 14.6A1.5 1.5 0 0 0 5.48 17h13.04a1.5 1.5 0 0 0 1.18-2.4l-1.57-1.98a2.94 2.94 0 0 1-.63-1.82V8A5.5 5.5 0 0 0 12 2.5Zm2.2 16a2.25 2.25 0 0 1-4.4 0h4.4Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function ImageIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 12.8 4.1-4.1a1 1 0 0 1 1.4 0l2.2 2.2 1.1-1.1a1 1 0 0 1 1.4 0L19 17.6V6H5v10.8ZM8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 function XIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden>
@@ -547,7 +574,11 @@ function GroupListItem({ group, selected, busy, onSelect, onJoin }) {
     <article className={`groups-room-item${selected ? " active" : ""}`}>
       <button type="button" className="groups-room-main" onClick={onSelect}>
         <span className="groups-room-avatar">
-          {initialsFromName(group.name)}
+          {group.iconUrl ? (
+            <img src={group.iconUrl} alt="" />
+          ) : (
+            initialsFromName(group.name)
+          )}
         </span>
         <span className="groups-room-meta">
           <strong>{group.name}</strong>
@@ -585,16 +616,72 @@ function activationRequirementText(memberCount, requiredMembers = 3) {
   )} members to activate`;
 }
 
-function WeeklyGroupProgress({ group, periodLabel }) {
+function parseWeekKeyDate(weekKey) {
+  const parts = String(weekKey || "")
+    .split("-")
+    .map((part) => Number(part));
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) {
+    return null;
+  }
+
+  const [year, month, day] = parts;
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function formatWeekRangeLabel(weekKey, language = "en", fallback = "This week") {
+  const start = parseWeekKeyDate(weekKey);
+  if (!start) {
+    return fallback;
+  }
+
+  const end = new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
+  if (language === "vi") {
+    const format = (date) =>
+      date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "UTC",
+      });
+    return `${format(start)} - ${format(end)}`;
+  }
+
+  const sameYear = start.getUTCFullYear() === end.getUTCFullYear();
+  const sameMonth = sameYear && start.getUTCMonth() === end.getUTCMonth();
+  const startFormat = sameMonth
+    ? { month: "short", day: "numeric", timeZone: "UTC" }
+    : {
+        month: "short",
+        day: "numeric",
+        year: sameYear ? undefined : "numeric",
+        timeZone: "UTC",
+      };
+
+  return `${start.toLocaleDateString(
+    "en-US",
+    startFormat,
+  )} - ${end.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  })}`;
+}
+
+function WeeklyGroupProgress({ group, periodLabel, language = "en" }) {
   const percent = clampPercent(group?.completionPercent);
   const targetHours = Math.max(1, Math.floor(group?.weeklyHourTarget ?? 80));
   const progressHours = formatProgressHours(group?.weeklyProgressHours ?? 0);
+  const weekRangeLabel = formatWeekRangeLabel(
+    group?.weekKey,
+    language,
+    periodLabel || "This week",
+  );
+  const memberCount = Math.max(0, Math.floor(group?.memberCount ?? 0));
   const requiredMembers = Math.max(
     1,
     Math.floor(group?.weeklyRequiredMembers ?? 3),
   );
-  const memberCount = Math.max(0, Math.floor(group?.memberCount ?? 0));
-  const multiplier = Math.max(0, Number(group?.weeklyTargetMultiplier || 0));
   const breakpoints = Array.isArray(group?.weeklyBreakpoints)
     ? group.weeklyBreakpoints
     : [
@@ -620,10 +707,7 @@ function WeeklyGroupProgress({ group, periodLabel }) {
       style={{ "--groups-weekly-progress": `${percent}%` }}
     >
       <div className="groups-weekly-progress-head">
-        <span>
-          {periodLabel || "This week"} · {memberCount}/{requiredMembers}
-          {multiplier ? ` · ${multiplier}x` : ""}
-        </span>
+        <span>{weekRangeLabel}</span>
         <strong>
           {progressHours}/{targetHours}h
         </strong>
@@ -647,8 +731,13 @@ function WeeklyGroupProgress({ group, periodLabel }) {
           <span
             key={`${breakpoint.hours}-${breakpoint.quills}`}
             className={breakpoint.isReached ? "is-reached" : ""}
+            style={{
+              "--groups-weekly-marker": `${clampPercent(
+                (Number(breakpoint.hours || 0) / targetHours) * 100,
+              )}%`,
+            }}
           >
-            {breakpoint.hours}h +{breakpoint.quills}
+            +{breakpoint.quills}
             <QuillIcon />
           </span>
         ))}
@@ -1138,6 +1227,7 @@ export default function GroupsSection({
   onMarkGroupMessagesRead,
   onSetGroupTyping,
   onUploadGroupAttachment,
+  onUploadGroupIcon,
   onUpdateGroupMetadata,
   onSetGroupMemberRole,
   onMuteGroupMember,
@@ -1147,6 +1237,7 @@ export default function GroupsSection({
   themeId = "ink",
   themeMode = "light",
   accentColor = "",
+  selectedLanguage = "en",
 }) {
   const initialUiStateRef = useRef(null);
   if (initialUiStateRef.current === null) {
@@ -1186,7 +1277,13 @@ export default function GroupsSection({
   const [isMobileConversationOpen, setIsMobileConversationOpen] = useState(false);
   const [typingNow, setTypingNow] = useState(Date.now());
   const [groupEditName, setGroupEditName] = useState("");
-  const [groupEditVisibility, setGroupEditVisibility] = useState("public");
+  const [mutedConversationKeys, setMutedConversationKeys] = useState(() => {
+    const stored = readStorageJson("inkling:groups-muted-conversations:v1");
+    return Array.isArray(stored) ? stored.map((item) => String(item)) : [];
+  });
+  const [isUploadingGroupIcon, setIsUploadingGroupIcon] = useState(false);
+  const [activeInfoPanelView, setActiveInfoPanelView] = useState("main");
+  const [isGroupIconPickerOpen, setIsGroupIconPickerOpen] = useState(false);
   const fileInputRef = useRef(null);
   const streamRef = useRef(null);
   const streamConversationKeyRef = useRef("");
@@ -1196,6 +1293,34 @@ export default function GroupsSection({
   const scrollRestoreFrameRef = useRef(0);
   const shouldStickToBottomRef = useRef(true);
   const pendingScrollRestoreKeyRef = useRef("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia("(max-width: 1128px)");
+    const syncCompactLayout = () => {
+      if (!mediaQuery.matches) {
+        return;
+      }
+
+      setIsListRailCollapsed(false);
+      setIsInfoPanelOpen(false);
+      setActiveInfoPanelView("main");
+    };
+
+    syncCompactLayout();
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", syncCompactLayout);
+      return () =>
+        mediaQuery.removeEventListener("change", syncCompactLayout);
+    }
+
+    mediaQuery.addListener(syncCompactLayout);
+    return () => mediaQuery.removeListener(syncCompactLayout);
+  }, []);
 
   const isControlledSelection = typeof selectedGroupId === "string";
   const effectiveSelectedGroupId = isControlledSelection
@@ -1266,8 +1391,6 @@ export default function GroupsSection({
   );
   const selectedGroupKey = selectedGroup?._id ?? "";
   const selectedGroupName = selectedGroup?.name ?? "";
-  const selectedGroupVisibility =
-    selectedGroup?.visibility === "private" ? "private" : "public";
 
   const activeRoom = useMemo(() => {
     if (!selectedGroup || !selectedGroupRoom) {
@@ -1341,20 +1464,31 @@ export default function GroupsSection({
     setIsMobileConversationOpen(false);
   }, []);
 
+  const closeCompactInfoPanel = useCallback(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 1128px)").matches
+    ) {
+      setIsInfoPanelOpen(false);
+    }
+  }, []);
+
   const selectGroupConversation = useCallback(
     (groupId) => {
       setConversationMode("groups");
       selectGroupId(groupId);
+      closeCompactInfoPanel();
       setIsMobileConversationOpen(true);
     },
-    [selectGroupId],
+    [closeCompactInfoPanel, selectGroupId],
   );
 
   const selectDirectConversation = useCallback((memberId) => {
     setSelectedDirectMemberId(memberId);
     setConversationMode("dms");
+    closeCompactInfoPanel();
     setIsMobileConversationOpen(true);
-  }, []);
+  }, [closeCompactInfoPanel]);
 
   const filteredDirectMessageEntries = useMemo(
     () =>
@@ -1389,14 +1523,55 @@ export default function GroupsSection({
   );
 
   const selectedAttachments = useMemo(() => {
-    if (!selectedGroup) {
+    if (!selectedGroup && !selectedDirectMember) {
       return [];
     }
     return [
       ...extractMessageAttachments(selectedChatMessages),
       ...extractMessageLinks(selectedChatMessages),
     ];
-  }, [selectedChatMessages, selectedGroup]);
+  }, [selectedChatMessages, selectedDirectMember, selectedGroup]);
+  const selectedImageAttachments = useMemo(
+    () =>
+      selectedAttachments.filter(
+        (attachment) =>
+          attachment.kind === "image" ||
+          String(attachment.mimeType || "").startsWith("image/"),
+      ),
+    [selectedAttachments],
+  );
+  const selectedFileAttachments = useMemo(
+    () =>
+      selectedAttachments.filter(
+        (attachment) =>
+          attachment.kind !== "image" &&
+          !String(attachment.mimeType || "").startsWith("image/"),
+      ),
+    [selectedAttachments],
+  );
+  const activeInfoKey = isDirectConversation
+    ? `dm:${selectedDirectMember?.id || ""}`
+    : `group:${selectedGroupKey}`;
+  const notificationsMuted = mutedConversationKeys.includes(activeInfoKey);
+  const selectedGroupIconUrl = activeRoom?.iconUrl || selectedGroup?.iconUrl || "";
+
+  const toggleNotificationsMuted = useCallback(() => {
+    if (!activeInfoKey || activeInfoKey === "group:" || activeInfoKey === "dm:") {
+      return;
+    }
+    setMutedConversationKeys((prev) => {
+      const exists = prev.includes(activeInfoKey);
+      const next = exists
+        ? prev.filter((item) => item !== activeInfoKey)
+        : [...prev, activeInfoKey];
+      writeStorageJson("inkling:groups-muted-conversations:v1", next);
+      return next;
+    });
+  }, [activeInfoKey]);
+
+  useEffect(() => {
+    setActiveInfoPanelView("main");
+  }, [activeInfoKey]);
 
   const unreadMessageIds = useMemo(
     () => {
@@ -1538,16 +1713,14 @@ export default function GroupsSection({
   useEffect(() => {
     if (!selectedGroupKey) {
       setGroupEditName("");
-      setGroupEditVisibility("public");
       return;
     }
     setGroupEditName(selectedGroupName);
-    setGroupEditVisibility(selectedGroupVisibility);
     setReplyTarget(null);
     setEditingMessage(null);
     setPendingAttachments([]);
     setChatInput("");
-  }, [selectedGroupKey, selectedGroupName, selectedGroupVisibility]);
+  }, [selectedGroupKey, selectedGroupName]);
 
   useEffect(() => {
     if (!activeConversationKey) {
@@ -1911,8 +2084,34 @@ export default function GroupsSection({
     }
     await onUpdateGroupMetadata(selectedGroup._id, {
       name: groupEditName.trim(),
-      visibility: groupEditVisibility,
     });
+  };
+
+  const onSelectGroupIconFile = async (eventOrFile) => {
+    const inputTarget = eventOrFile?.target;
+    const file =
+      eventOrFile instanceof File ? eventOrFile : inputTarget?.files?.[0];
+    if (inputTarget) {
+      inputTarget.value = "";
+    }
+    if (
+      !file ||
+      !selectedGroup ||
+      !canManageSelectedGroup ||
+      !onUploadGroupIcon
+    ) {
+      return;
+    }
+
+    setIsUploadingGroupIcon(true);
+    try {
+      const didUpload = await onUploadGroupIcon(selectedGroup._id, file);
+      if (didUpload) {
+        setIsGroupIconPickerOpen(false);
+      }
+    } finally {
+      setIsUploadingGroupIcon(false);
+    }
   };
 
   const onToggleMemberRole = async (member) => {
@@ -2245,6 +2444,7 @@ export default function GroupsSection({
           <section className="groups-chat-column">
             {selectedGroup ? (
               <>
+                <div className="groups-chat-top">
                 <header className="groups-chat-header">
                   <button
                     type="button"
@@ -2319,6 +2519,15 @@ export default function GroupsSection({
                     </button>
                   </div>
                 </header>
+
+                {!isDirectConversation ? (
+                  <WeeklyGroupProgress
+                    group={selectedGroup}
+                    periodLabel={monthLabel}
+                    language={selectedLanguage}
+                  />
+                ) : null}
+                </div>
 
                 <div
                   className="groups-chat-stream"
@@ -2535,218 +2744,502 @@ export default function GroupsSection({
 
           {isInfoPanelOpen ? (
             <aside className="groups-right-column">
+              <button
+                type="button"
+                className="groups-info-mobile-back-button"
+                onClick={() => setIsInfoPanelOpen(false)}
+                aria-label="Back to chat"
+                title="Chat"
+              >
+                <span aria-hidden="true">←</span>
+                <span>Chat</span>
+              </button>
               {isDirectConversation ? (
                 <>
-                  <section className="groups-side-card groups-profile-card">
-                    <button
-                      type="button"
-                      className="groups-profile-avatar-button groups-person-trigger"
-                      onClick={(event) =>
-                        selectedDirectMember
-                          ? openPersonMenu(selectedDirectMember, event)
-                          : undefined
-                      }
-                      aria-label={`Open ${selectedDirectMember?.name || "Messages"} options`}
-                      title={selectedDirectMember?.name || "Messages"}
-                    >
-                      <img
-                        src={
-                          selectedDirectMember?.image ||
-                          getPresetLogo(selectedDirectMember?.iconPreset)
-                        }
-                        alt=""
-                        className="groups-profile-avatar-image"
-                      />
-                    </button>
-                    <h3>{selectedDirectMember?.name || "Messages"}</h3>
-                    <p className="status-text">
-                      {selectedDirectMember?.role || "Member"}
-                    </p>
-                  </section>
-                  <section className="groups-side-card">
-                    <h3>Files</h3>
-                    <p className="status-text">No files</p>
-                  </section>
+                  {activeInfoPanelView === "main" ? (
+                    <>
+                      <section className="groups-side-card groups-profile-card">
+                        <button
+                          type="button"
+                          className="groups-profile-avatar-button groups-person-trigger"
+                          onClick={(event) =>
+                            selectedDirectMember
+                              ? openPersonMenu(selectedDirectMember, event)
+                              : undefined
+                          }
+                          aria-label={`Open ${selectedDirectMember?.name || "Messages"} options`}
+                          title={selectedDirectMember?.name || "Messages"}
+                        >
+                          <img
+                            src={
+                              selectedDirectMember?.image ||
+                              getPresetLogo(selectedDirectMember?.iconPreset)
+                            }
+                            alt=""
+                            className="groups-profile-avatar-image"
+                          />
+                        </button>
+                        <h3>{selectedDirectMember?.name || "Messages"}</h3>
+                        <p className="status-text">
+                          {selectedDirectMember?.role || "Member"}
+                        </p>
+                      </section>
+
+                      <section className="groups-side-card groups-info-menu-card">
+                        <button
+                          type="button"
+                          className="groups-info-menu-button"
+                          onClick={() => setActiveInfoPanelView("notifications")}
+                        >
+                          <span><BellIcon /></span>
+                          <strong>Notifications</strong>
+                          <em>{notificationsMuted ? "Muted" : "On"}</em>
+                        </button>
+                        <div className="groups-info-menu-heading">Attachments</div>
+                        <button
+                          type="button"
+                          className="groups-info-menu-button"
+                          onClick={() => setActiveInfoPanelView("images")}
+                        >
+                          <span><ImageIcon /></span>
+                          <strong>Images</strong>
+                          <em>{selectedImageAttachments.length}</em>
+                        </button>
+                        <button
+                          type="button"
+                          className="groups-info-menu-button"
+                          onClick={() => setActiveInfoPanelView("files")}
+                        >
+                          <span><PaperclipIcon /></span>
+                          <strong>Files</strong>
+                          <em>{selectedFileAttachments.length}</em>
+                        </button>
+                      </section>
+                    </>
+                  ) : (
+                    <section className="groups-side-card groups-info-subpanel">
+                      <header className="groups-info-subpanel-head">
+                        <button
+                          type="button"
+                          className="groups-mini-icon-button"
+                          onClick={() => setActiveInfoPanelView("main")}
+                          aria-label="Back"
+                          title="Back"
+                        >
+                          <ReplyIcon />
+                        </button>
+                        <h3>
+                          {activeInfoPanelView === "notifications"
+                            ? "Notifications"
+                            : activeInfoPanelView === "images"
+                              ? "Images"
+                              : "Files"}
+                        </h3>
+                      </header>
+
+                      {activeInfoPanelView === "notifications" ? (
+                        <button
+                          type="button"
+                          className="groups-notification-toggle"
+                          onClick={toggleNotificationsMuted}
+                        >
+                          {notificationsMuted ? "Muted" : "On"}
+                        </button>
+                      ) : null}
+
+                      {activeInfoPanelView === "images" ? (
+                        selectedImageAttachments.length === 0 ? (
+                          <p className="status-text">No images</p>
+                        ) : (
+                          <div className="groups-media-grid groups-media-grid-large">
+                            {selectedImageAttachments.map((attachment) => (
+                              <a
+                                key={attachment.id}
+                                className="groups-media-thumb"
+                                href={attachment.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                title={attachment.name}
+                              >
+                                <img src={attachment.url} alt="" />
+                              </a>
+                            ))}
+                          </div>
+                        )
+                      ) : null}
+
+                      {activeInfoPanelView === "files" ? (
+                        selectedFileAttachments.length === 0 ? (
+                          <p className="status-text">No files</p>
+                        ) : (
+                          <ul className="groups-attachment-list">
+                            {selectedFileAttachments.map((attachment) => (
+                              <li
+                                key={attachment.id}
+                                className="groups-attachment-item"
+                              >
+                                <span className="groups-attachment-icon">
+                                  {attachment.ext}
+                                </span>
+                                {attachment.url ? (
+                                  <a
+                                    className="groups-attachment-copy"
+                                    href={attachment.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    <strong>{attachment.name}</strong>
+                                    <span>{attachment.meta}</span>
+                                  </a>
+                                ) : (
+                                  <span className="groups-attachment-copy">
+                                    <strong>{attachment.name}</strong>
+                                    <span>{attachment.meta}</span>
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )
+                      ) : null}
+                    </section>
+                  )}
                 </>
               ) : selectedGroup ? (
               <>
-                <section className="groups-side-card">
-                  <h3>Attachments</h3>
-                  {selectedAttachments.length === 0 ? (
-                    <p className="status-text">No shared attachments yet.</p>
-                  ) : (
-                    <ul className="groups-attachment-list">
-                      {selectedAttachments.map((attachment) => (
-                        <li
-                          key={attachment.id}
-                          className="groups-attachment-item"
+                {activeInfoPanelView === "main" ? (
+                  <>
+                    <section className="groups-side-card groups-info-profile-card">
+                      {canManageSelectedGroup ? (
+                        <button
+                          type="button"
+                          className={`groups-info-avatar-shell groups-info-avatar-button${isUploadingGroupIcon ? " is-disabled" : ""}`}
+                          onClick={() => setIsGroupIconPickerOpen(true)}
+                          disabled={isUploadingGroupIcon}
+                          aria-label="Change group icon"
+                          title="Change"
                         >
-                          <span className="groups-attachment-icon">
-                            {attachment.ext}
-                          </span>
-                          {attachment.url ? (
+                          {selectedGroupIconUrl ? (
+                            <img
+                              src={selectedGroupIconUrl}
+                              alt=""
+                              className="groups-info-avatar-image"
+                            />
+                          ) : (
+                            <span className="groups-info-avatar-fallback">
+                              {initialsFromName(selectedGroup.name)}
+                            </span>
+                          )}
+                        </button>
+                      ) : (
+                        <div className="groups-info-avatar-shell">
+                          {selectedGroupIconUrl ? (
+                            <img
+                              src={selectedGroupIconUrl}
+                              alt=""
+                              className="groups-info-avatar-image"
+                            />
+                          ) : (
+                            <span className="groups-info-avatar-fallback">
+                              {initialsFromName(selectedGroup.name)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      <div className="groups-info-profile-copy">
+                        <h3>{selectedGroup.name}</h3>
+                        <p className="status-text">
+                          {selectedMembers.length || selectedGroup.memberCount} members -{" "}
+                          {selectedGroup.visibility === "private" ? "Private" : "Public"} room
+                        </p>
+                      </div>
+                    </section>
+
+                    <section className="groups-side-card groups-info-menu-card">
+                      <button
+                        type="button"
+                        className="groups-info-menu-button"
+                        onClick={() => setActiveInfoPanelView("notifications")}
+                      >
+                        <span><BellIcon /></span>
+                        <strong>Notifications</strong>
+                        <em>{notificationsMuted ? "Muted" : "On"}</em>
+                      </button>
+                      <div className="groups-info-menu-heading">Attachments</div>
+                      <button
+                        type="button"
+                        className="groups-info-menu-button"
+                        onClick={() => setActiveInfoPanelView("images")}
+                      >
+                        <span><ImageIcon /></span>
+                        <strong>Images</strong>
+                        <em>{selectedImageAttachments.length}</em>
+                      </button>
+                      <button
+                        type="button"
+                        className="groups-info-menu-button"
+                        onClick={() => setActiveInfoPanelView("files")}
+                      >
+                        <span><PaperclipIcon /></span>
+                        <strong>Files</strong>
+                        <em>{selectedFileAttachments.length}</em>
+                      </button>
+                      <button
+                        type="button"
+                        className="groups-info-menu-button"
+                        onClick={() => setActiveInfoPanelView("members")}
+                      >
+                        <span><DmIcon /></span>
+                        <strong>Members</strong>
+                        <em>{selectedMembers.length || selectedGroup.memberCount}</em>
+                      </button>
+                      <button
+                        type="button"
+                        className="groups-info-menu-button"
+                        onClick={() => setActiveInfoPanelView("group")}
+                      >
+                        <span><InfoIcon /></span>
+                        <strong>Group</strong>
+                        <em>{selectedGroup.visibility === "private" ? "Private" : "Public"}</em>
+                      </button>
+                    </section>
+                  </>
+                ) : (
+                  <section className="groups-side-card groups-info-subpanel">
+                    <header className="groups-info-subpanel-head">
+                      <button
+                        type="button"
+                        className="groups-mini-icon-button"
+                        onClick={() => setActiveInfoPanelView("main")}
+                        aria-label="Back"
+                        title="Back"
+                      >
+                        <ReplyIcon />
+                      </button>
+                      <h3>
+                        {activeInfoPanelView === "notifications"
+                          ? "Notifications"
+                          : activeInfoPanelView === "images"
+                            ? "Images"
+                            : activeInfoPanelView === "files"
+                              ? "Files"
+                              : activeInfoPanelView === "members"
+                                ? "Members"
+                                : "Group"}
+                      </h3>
+                    </header>
+
+                    {activeInfoPanelView === "notifications" ? (
+                      <button
+                        type="button"
+                        className="groups-notification-toggle"
+                        onClick={toggleNotificationsMuted}
+                      >
+                        {notificationsMuted ? "Muted" : "On"}
+                      </button>
+                    ) : null}
+
+                    {activeInfoPanelView === "images" ? (
+                      selectedImageAttachments.length === 0 ? (
+                        <p className="status-text">No images</p>
+                      ) : (
+                        <div className="groups-media-grid groups-media-grid-large">
+                          {selectedImageAttachments.map((attachment) => (
                             <a
-                              className="groups-attachment-copy"
+                              key={attachment.id}
+                              className="groups-media-thumb"
                               href={attachment.url}
                               target="_blank"
                               rel="noreferrer"
+                              title={attachment.name}
                             >
-                              <strong>{attachment.name}</strong>
-                              <span>{attachment.meta}</span>
+                              <img src={attachment.url} alt="" />
                             </a>
-                          ) : (
-                            <span className="groups-attachment-copy">
-                              <strong>{attachment.name}</strong>
-                              <span>{attachment.meta}</span>
-                            </span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </section>
+                          ))}
+                        </div>
+                      )
+                    ) : null}
 
-                <section className="groups-side-card">
-                  <h3>Members</h3>
-                  {isGroupRoomLoading ? (
-                    <p className="status-text">Loading...</p>
-                  ) : selectedMembers.length === 0 ? (
-                    <p className="status-text">
-                      No members found for this group.
-                    </p>
-                  ) : (
-                    <ul className="groups-member-list">
-                      {selectedMembers.map((member) => (
-                        <li
-                          key={`${member.userId}`}
-                          className="groups-member-item"
-                        >
-                          <button
-                            type="button"
-                            className="groups-member-avatar-button"
-                            onClick={(event) => openPersonMenu(member, event)}
-                            aria-label={`Open ${member.name} options`}
-                            title={member.name}
-                          >
-                            {member.image || getPresetLogo(member.iconPreset) ? (
-                              <img
-                              src={
-                                member.image ||
-                                getPresetLogo(member.iconPreset)
-                              }
-                              alt=""
-                              className="groups-member-avatar-image"
-                            />
-                            ) : (
-                              <span className="groups-member-avatar">
-                                {member.initials || initialsFromName(member.name)}
+                    {activeInfoPanelView === "files" ? (
+                      selectedFileAttachments.length === 0 ? (
+                        <p className="status-text">No files</p>
+                      ) : (
+                        <ul className="groups-attachment-list">
+                          {selectedFileAttachments.map((attachment) => (
+                            <li
+                              key={attachment.id}
+                              className="groups-attachment-item"
+                            >
+                              <span className="groups-attachment-icon">
+                                {attachment.ext}
                               </span>
-                            )}
-                          </button>
-                          <span className="groups-member-copy">
-                            <strong>{member.name}</strong>
-                            <span>
-                              {roleLabel(member)}
-                              {member.isMuted ? " - Muted" : ""}
-                            </span>
-                          </span>
+                              {attachment.url ? (
+                                <a
+                                  className="groups-attachment-copy"
+                                  href={attachment.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  <strong>{attachment.name}</strong>
+                                  <span>{attachment.meta}</span>
+                                </a>
+                              ) : (
+                                <span className="groups-attachment-copy">
+                                  <strong>{attachment.name}</strong>
+                                  <span>{attachment.meta}</span>
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )
+                    ) : null}
 
-                          {canManageSelectedGroup &&
-                          (member.canMute ||
-                            member.canBan ||
-                            member.canChangeRole) ? (
-                            <span className="groups-member-actions">
-                              {member.canChangeRole ? (
-                                <button
-                                  type="button"
-                                  className="groups-mini-icon-button"
-                                  onClick={() => onToggleMemberRole(member)}
-                                  aria-label="Change role"
-                                  title="Role"
-                                >
-                                  <ShieldIcon />
-                                </button>
-                              ) : null}
-                              {member.canMute ? (
-                                <button
-                                  type="button"
-                                  className="groups-mini-icon-button"
-                                  onClick={() => onToggleMemberMute(member)}
-                                  aria-label="Mute"
-                                  title="Mute"
-                                >
-                                  <XIcon />
-                                </button>
-                              ) : null}
-                              {member.canBan ? (
-                                <button
-                                  type="button"
-                                  className="groups-mini-icon-button danger"
-                                  onClick={() => onBanMember(member)}
-                                  aria-label="Ban"
-                                  title="Ban"
-                                >
-                                  <TrashIcon />
-                                </button>
-                              ) : null}
-                            </span>
-                          ) : null}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </section>
+                    {activeInfoPanelView === "members" ? (
+                      isGroupRoomLoading ? (
+                        <p className="status-text">Loading...</p>
+                      ) : selectedMembers.length === 0 ? (
+                        <p className="status-text">
+                          No members found for this group.
+                        </p>
+                      ) : (
+                        <ul className="groups-member-list">
+                          {selectedMembers.map((member) => (
+                            <li
+                              key={`${member.userId}`}
+                              className="groups-member-item"
+                            >
+                              <button
+                                type="button"
+                                className="groups-member-avatar-button"
+                                onClick={(event) => openPersonMenu(member, event)}
+                                aria-label={`Open ${member.name} options`}
+                                title={member.name}
+                              >
+                                {member.image || getPresetLogo(member.iconPreset) ? (
+                                  <img
+                                    src={
+                                      member.image ||
+                                      getPresetLogo(member.iconPreset)
+                                    }
+                                    alt=""
+                                    className="groups-member-avatar-image"
+                                  />
+                                ) : (
+                                  <span className="groups-member-avatar">
+                                    {member.initials || initialsFromName(member.name)}
+                                  </span>
+                                )}
+                              </button>
+                              <span className="groups-member-copy">
+                                <strong>{member.name}</strong>
+                                <span>
+                                  {roleLabel(member)}
+                                  {member.isMuted ? " - Muted" : ""}
+                                </span>
+                              </span>
 
-                {canManageSelectedGroup ? (
-                  <section className="groups-side-card">
-                    <h3>Group</h3>
-                    <form
-                      className="groups-admin-grid"
-                      onSubmit={onApplyGroupMetadata}
-                    >
-                      <label>
-                        Name
-                        <input
-                          type="text"
-                          value={groupEditName}
-                          maxLength={60}
-                          onChange={(event) =>
-                            setGroupEditName(event.target.value)
-                          }
-                        />
-                      </label>
-                      <label>
-                        Privacy
-                        <select
-                          value={groupEditVisibility}
-                          onChange={(event) =>
-                            setGroupEditVisibility(event.target.value)
-                          }
+                              {canManageSelectedGroup &&
+                              (member.canMute ||
+                                member.canBan ||
+                                member.canChangeRole) ? (
+                                <span className="groups-member-actions">
+                                  {member.canChangeRole ? (
+                                    <button
+                                      type="button"
+                                      className="groups-mini-icon-button"
+                                      onClick={() => onToggleMemberRole(member)}
+                                      aria-label="Change role"
+                                      title="Role"
+                                    >
+                                      <ShieldIcon />
+                                    </button>
+                                  ) : null}
+                                  {member.canMute ? (
+                                    <button
+                                      type="button"
+                                      className="groups-mini-icon-button"
+                                      onClick={() => onToggleMemberMute(member)}
+                                      aria-label="Mute"
+                                      title="Mute"
+                                    >
+                                      <XIcon />
+                                    </button>
+                                  ) : null}
+                                  {member.canBan ? (
+                                    <button
+                                      type="button"
+                                      className="groups-mini-icon-button danger"
+                                      onClick={() => onBanMember(member)}
+                                      aria-label="Ban"
+                                      title="Ban"
+                                    >
+                                      <TrashIcon />
+                                    </button>
+                                  ) : null}
+                                </span>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      )
+                    ) : null}
+
+                    {activeInfoPanelView === "group" ? (
+                      canManageSelectedGroup ? (
+                        <form
+                          className="groups-admin-grid groups-admin-grid-full"
+                          onSubmit={onApplyGroupMetadata}
                         >
-                          <option value="public">Public</option>
-                          <option value="private">Private</option>
-                        </select>
-                      </label>
-                      <button
-                        type="submit"
-                        className="groups-icon-button groups-admin-save"
-                        disabled={busy || groupEditName.trim().length < 3}
-                        aria-label="Save"
-                        title="Save"
-                      >
-                        <CheckIcon />
-                      </button>
-                    </form>
+                          <label>
+                            Name
+                            <input
+                              type="text"
+                              value={groupEditName}
+                              maxLength={60}
+                              onChange={(event) =>
+                                setGroupEditName(event.target.value)
+                              }
+                            />
+                          </label>
+                          <span className="groups-readonly-field">
+                            <span>Privacy</span>
+                            <strong>
+                              {selectedGroup.visibility === "private"
+                                ? "Private"
+                                : "Public"}
+                            </strong>
+                          </span>
+                          <button
+                            type="submit"
+                            className="groups-icon-button groups-admin-save"
+                            disabled={busy || groupEditName.trim().length < 3}
+                            aria-label="Save"
+                            title="Save"
+                          >
+                            <CheckIcon />
+                          </button>
+                        </form>
+                      ) : (
+                        <div className="groups-admin-grid groups-admin-grid-full">
+                          <span className="groups-readonly-field">
+                            <span>Name</span>
+                            <strong>{selectedGroup.name}</strong>
+                          </span>
+                          <span className="groups-readonly-field">
+                            <span>Privacy</span>
+                            <strong>
+                              {selectedGroup.visibility === "private"
+                                ? "Private"
+                                : "Public"}
+                            </strong>
+                          </span>
+                        </div>
+                      )
+                    ) : null}
                   </section>
-                ) : null}
+                )}
 
-                <section className="groups-side-card">
-                  <h3>Weekly Progress</h3>
-                  <WeeklyGroupProgress
-                    group={selectedGroup}
-                    periodLabel={monthLabel}
-                  />
-                </section>
               </>
             ) : (
               <section className="groups-side-card">
@@ -2865,6 +3358,52 @@ export default function GroupsSection({
           themeMode={themeMode}
           accentColor={accentColor}
         />
+
+        {isGroupIconPickerOpen &&
+        selectedGroup &&
+        typeof document !== "undefined" &&
+        document.body
+          ? createPortal(
+              <div
+                className={`groups-avatar-picker-theme mode-${themeMode} theme-${themeId}`}
+                style={
+                  accentColor
+                    ? {
+                        "--dashboard-accent": accentColor,
+                        "--theme-asset-accent": accentColor,
+                        "--theme-saturated-primary": accentColor,
+                        "--theme-saturated-secondary": accentColor,
+                        "--theme-saturated-gradient": `linear-gradient(135deg, ${accentColor} 0%, ${accentColor} 100%)`,
+                      }
+                    : undefined
+                }
+              >
+                <AvatarPickerOverlay
+                  title="Select Group Avatar"
+                  editTitle="Edit Group Avatar"
+                  userIconUrl={selectedGroupIconUrl}
+                  userIconStorageId={
+                    activeRoom?.iconAssetKey ||
+                    selectedGroup?.iconAssetKey ||
+                    ""
+                  }
+                  recentUserIcons={[]}
+                  userIconPreset="default-light"
+                  userIconState={{
+                    busy: isUploadingGroupIcon,
+                    message: message || "",
+                  }}
+                  onUploadUserIcon={(eventOrFile) =>
+                    void onSelectGroupIconFile(eventOrFile)
+                  }
+                  onSelectUserIconStorageId={() => {}}
+                  onSelectUserIconPreset={() => {}}
+                  onClose={() => setIsGroupIconPickerOpen(false)}
+                />
+              </div>,
+            document.body,
+          )
+          : null}
       </section>
     </div>
   );

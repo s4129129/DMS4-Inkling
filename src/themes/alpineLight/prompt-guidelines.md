@@ -1,10 +1,10 @@
-# Alpine Light Prompt Guidelines
+# Tech Fancy Light Prompt Guidelines
 
-Use this when generating UI copy, component styles, or visual prompts for the Alpine theme in light mode.
+Use this when generating UI copy, component styles, or visual prompts for the Tech Fancy theme in light mode.
 
 ## Core Identity
 
-- Mood: pale mountain air, glass panels, black-green text, one vivid orange signal.
+- Mood: pale tech glass, black-green text, one vivid orange signal.
 - Tone: clear, premium, restrained, and calm.
 - Avoid: dense comic framing, beige nostalgia, multicolor decorative accents, long explanatory UI text.
 

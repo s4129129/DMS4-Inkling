@@ -1,10 +1,10 @@
-# Alpine Dark Prompt Guidelines
+# Tech Fancy Dark Prompt Guidelines
 
-Use this when generating UI copy, component styles, or visual prompts for the Alpine theme in dark mode.
+Use this when generating UI copy, component styles, or visual prompts for the Tech Fancy theme in dark mode.
 
 ## Core Identity
 
-- Mood: black glass interface over cold mountain stone and mist.
+- Mood: black glass interface with sparse tech surfaces and one vivid orange signal.
 - Tone: quiet, premium, sparse, and data-focused.
 - Avoid: comic outlines, parchment warmth, many accent colors, heavy explanatory UI text.
 

@@ -11,6 +11,7 @@ const DEFAULT_PROVIDER = "s3";
 const COVER_CONTENT_TYPE = "image/webp";
 const MAX_GROUP_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 const MAX_USER_ICON_BYTES = 10 * 1024 * 1024;
+const MAX_GROUP_ICON_BYTES = 10 * 1024 * 1024;
 
 function getEnv(name: string) {
   return String(process.env[name] || "").trim();
@@ -464,6 +465,33 @@ export const generateGroupAttachmentUploadTarget = action({
       byteSize: args.byteSize,
       contentHash: args.contentHash,
       maxBytes: MAX_GROUP_ATTACHMENT_BYTES,
+    });
+  },
+});
+
+export const generateGroupIconUploadTarget = action({
+  args: {
+    groupId: v.string(),
+    fileName: v.string(),
+    contentType: v.optional(v.string()),
+    fileType: v.optional(v.string()),
+    byteSize: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx);
+    const contentType = String(args.contentType || "").trim();
+    if (!contentType.startsWith("image/")) {
+      throw new Error("Image only.");
+    }
+
+    return createUserAssetTarget({
+      userId,
+      folder: `group-icons/${String(args.groupId || "group")}`,
+      fileName: args.fileName || "group-icon",
+      contentType,
+      fileType: args.fileType,
+      byteSize: args.byteSize,
+      maxBytes: MAX_GROUP_ICON_BYTES,
     });
   },
 });

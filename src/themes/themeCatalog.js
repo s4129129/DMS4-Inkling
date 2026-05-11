@@ -145,8 +145,8 @@ export const THEME_CATALOG = {
   },
   alpine: {
     id: "alpine",
-    name: "Alpine",
-    description: "Dark alpine glass interface",
+    name: "Tech Fancy",
+    description: "Sleek tech interface",
     modes: {
       light: {
         preview: {

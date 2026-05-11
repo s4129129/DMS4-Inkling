@@ -11,7 +11,7 @@ const DEFAULT_TIME_ZONE = "UTC";
 const DEFAULT_INTERACTION_MODE = "classic";
 const DEFAULT_OWNED_THEMES = ["default"];
 const DEFAULT_INTERACTION_FEATURE_ID = "default-interaction-pack";
-const DEFAULT_OWNED_FEATURES: string[] = [];
+const DEFAULT_OWNED_FEATURES = [DEFAULT_INTERACTION_FEATURE_ID];
 const CUSTOM_BANNER_FEATURE_ID = "custom-banner-upload";
 const MECHANICAL_INTERACTION_FEATURE_ID = "sink-button-interactions";
 const ECONOMY_RESET_VERSION = 2;
@@ -76,15 +76,15 @@ const MARKET_ITEMS = [
   {
     id: "alpine",
     type: "theme",
-    name: "Alpine",
+    name: "Tech Fancy",
     cost: 180,
-    description: "Dark alpine glass interface",
+    description: "Sleek tech interface",
   },
   {
     id: DEFAULT_INTERACTION_FEATURE_ID,
     type: "feature",
     name: "Default Interaction",
-    cost: 90,
+    cost: 0,
     description: "Classic hover button animation used across the dashboard.",
   },
   {

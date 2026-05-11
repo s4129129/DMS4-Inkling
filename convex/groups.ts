@@ -861,6 +861,9 @@ async function toGroupSummary(
     ownerId: group.ownerId,
     name: group.name,
     visibility: group.visibility,
+    iconUrl: group.iconAssetUrl ?? "",
+    iconAssetKey: group.iconAssetKey ?? "",
+    iconAssetProvider: group.iconAssetProvider ?? "",
     inviteCode:
       isMember && group.visibility === "private" ? (group.inviteCode ?? "") : "",
     memberCount: members.length,
@@ -964,6 +967,80 @@ export const overview = query({
   },
 });
 
+export const messageNotifications = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await requireUserId(ctx);
+
+    const memberships = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const groupNotifications = [];
+    for (const membership of memberships) {
+      const latestMessages = await ctx.db
+        .query("groupMessages")
+        .withIndex("by_group_created", (q) =>
+          q.eq("groupId", membership.groupId),
+        )
+        .order("desc")
+        .take(8);
+
+      const latestUnread = latestMessages.find((message: any) => {
+        if (message.deletedAt || `${message.userId}` === `${userId}`) {
+          return false;
+        }
+        const readByUserIds = uniqueIdList(message.readByUserIds ?? []);
+        return !readByUserIds.some((id) => `${id}` === `${userId}`);
+      });
+
+      if (!latestUnread) {
+        continue;
+      }
+
+      groupNotifications.push({
+        kind: "group",
+        messageId: latestUnread._id,
+        conversationId: latestUnread.groupId,
+        createdAt: latestUnread.createdAt,
+      });
+    }
+
+    const directMessages = await ctx.db
+      .query("directMessages")
+      .withIndex("by_recipient_created", (q) => q.eq("recipientId", userId))
+      .order("desc")
+      .take(12);
+
+    const directNotifications = directMessages
+      .filter((message: any) => !message.deletedAt)
+      .map((message: any) => ({
+        kind: "dm",
+        messageId: message._id,
+        conversationId: message.conversationKey,
+        createdAt: message.createdAt,
+      }));
+
+    const notifications = [...groupNotifications, ...directNotifications]
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+      .slice(0, 20);
+
+    const latestKey = notifications
+      .map(
+        (item) =>
+          `${item.kind}:${item.conversationId}:${item.messageId}:${item.createdAt}`,
+      )
+      .join("|");
+
+    return {
+      hasUnread: notifications.length > 0,
+      latestKey,
+      latestCreatedAt: notifications[0]?.createdAt ?? 0,
+    };
+  },
+});
+
 export const room = query({
   args: {
     groupId: v.optional(v.id("groups")),
@@ -1005,6 +1082,9 @@ export const room = query({
 
     return {
       groupId: group._id,
+      iconUrl: group.iconAssetUrl ?? "",
+      iconAssetKey: group.iconAssetKey ?? "",
+      iconAssetProvider: group.iconAssetProvider ?? "",
       canPost: isMember && !isMuted,
       canManageGroup: canManageGroup(viewerRole),
       viewerRole,
@@ -1563,7 +1643,6 @@ export const updateGroupMetadata = mutation({
   args: {
     groupId: v.id("groups"),
     name: v.optional(v.string()),
-    visibility: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
@@ -1581,15 +1660,30 @@ export const updateGroupMetadata = mutation({
       patch.name = name;
     }
 
-    if (typeof args.visibility === "string") {
-      const visibility = normalizeVisibility(args.visibility);
-      patch.visibility = visibility;
-      if (visibility === "private" && !state.group.inviteCode) {
-        patch.inviteCode = await generateUniqueInviteCode(ctx);
-      }
-    }
-
     await ctx.db.patch(state.group._id, patch);
+    return { groupId: state.group._id };
+  },
+});
+
+export const setGroupIcon = mutation({
+  args: {
+    groupId: v.id("groups"),
+    assetUrl: v.optional(v.string()),
+    assetKey: v.optional(v.string()),
+    assetProvider: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx);
+    const state = await requireGroupManager(ctx, args.groupId, userId);
+    const assetUrl = String(args.assetUrl || "").trim();
+
+    await ctx.db.patch(state.group._id, {
+      iconAssetUrl: assetUrl || undefined,
+      iconAssetKey: String(args.assetKey || "").trim() || undefined,
+      iconAssetProvider: String(args.assetProvider || "").trim() || undefined,
+      updatedAt: Date.now(),
+    });
+
     return { groupId: state.group._id };
   },
 });

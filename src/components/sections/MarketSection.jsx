@@ -5,12 +5,18 @@ import marketplaceDefaultDarkImage from "../../assets/Marketplace/Comic D.png";
 import marketplaceDefaultLightImage from "../../assets/Marketplace/Comic L.png";
 import marketplaceMonoDarkImage from "../../assets/Marketplace/Mono D.png";
 import marketplaceMonoLightImage from "../../assets/Marketplace/Mono L.png";
+import marketplaceTechFancyDarkImage from "../../assets/Marketplace/Tech fancy D.png";
+import marketplaceTechFancyLightImage from "../../assets/Marketplace/Tech fancy L.png";
 import marketplaceVintageDarkImage from "../../assets/Marketplace/VIntage D.png";
 import marketplaceVintageLightImage from "../../assets/Marketplace/Vintage L.png";
 
 const MECHANICAL_INTERACTION_FEATURE_ID = "sink-button-interactions";
 const DEFAULT_INTERACTION_FEATURE_ID = "default-interaction-pack";
 const CUSTOM_BANNER_FEATURE_ID = "custom-banner-upload";
+const BASELINE_MARKET_ITEM_IDS = new Set([
+  "default",
+  DEFAULT_INTERACTION_FEATURE_ID,
+]);
 
 const STORE_CATEGORIES = [
   { id: "all", label: "All Items" },
@@ -41,6 +47,10 @@ const MARKETPLACE_ITEM_IMAGES = {
     command: {
       light: marketplaceMonoLightImage,
       dark: marketplaceMonoDarkImage,
+    },
+    alpine: {
+      light: marketplaceTechFancyLightImage,
+      dark: marketplaceTechFancyDarkImage,
     },
   },
   features: {
@@ -218,6 +228,22 @@ function OfficialBookPreview({ book, thumbnailSrc = "" }) {
   );
 }
 
+function settingsTabForMarketItem(item) {
+  if (item.type === "theme") {
+    return "themes";
+  }
+  if (item.id === CUSTOM_BANNER_FEATURE_ID) {
+    return "banner";
+  }
+  if (
+    item.id === MECHANICAL_INTERACTION_FEATURE_ID ||
+    item.id === DEFAULT_INTERACTION_FEATURE_ID
+  ) {
+    return "interactions";
+  }
+  return "general";
+}
+
 export default function MarketSection({
   marketMessage,
   market,
@@ -266,13 +292,15 @@ export default function MarketSection({
 
   const storeItems = useMemo(
     () =>
-      market.map((item, index) => ({
-        ...item,
-        featured:
-          item.id === MECHANICAL_INTERACTION_FEATURE_ID ||
-          (item.type === "theme" && index === 0) ||
-          item.id === CUSTOM_BANNER_FEATURE_ID,
-      })),
+      market
+        .filter((item) => !BASELINE_MARKET_ITEM_IDS.has(item.id))
+        .map((item, index) => ({
+          ...item,
+          featured:
+            item.id === MECHANICAL_INTERACTION_FEATURE_ID ||
+            (item.type === "theme" && index === 0) ||
+            item.id === CUSTOM_BANNER_FEATURE_ID,
+        })),
     [market],
   );
 
@@ -482,43 +510,27 @@ export default function MarketSection({
                         <InkIcon />
                       </p>
 
-                      {item.type === "theme" ? (
-                        item.owned ? (
-                          <div className="market-actions-row">
-                            <button
-                              type="button"
-                              className="ghost"
-                              onClick={() => onOpenSettings?.("themes")}
-                            >
-                              Manage in Settings
-                            </button>
-                          </div>
-                        ) : (
+                      {item.owned ? (
+                        <div className="market-actions-row">
                           <button
                             type="button"
-                            className="action"
-                            disabled={!item.affordable}
-                            onClick={() => onBuyTheme(item.id, item.type)}
+                            className="ghost"
+                            onClick={() =>
+                              onOpenSettings?.(settingsTabForMarketItem(item))
+                            }
                           >
-                            Buy Theme
+                            Configure in Settings
                           </button>
-                        )
-                      ) : item.owned ? (
-                        <div className="market-actions-row">
-                          {item.id === CUSTOM_BANNER_FEATURE_ID ? (
-                            <button
-                              type="button"
-                              className="ghost"
-                              onClick={() => onOpenSettings?.("banner")}
-                            >
-                              Open Settings
-                            </button>
-                          ) : (
-                            <button type="button" className="ghost" disabled>
-                              Active
-                            </button>
-                          )}
                         </div>
+                      ) : item.type === "theme" ? (
+                        <button
+                          type="button"
+                          className="action"
+                          disabled={!item.affordable}
+                          onClick={() => onBuyTheme(item.id, item.type)}
+                        >
+                          Buy Theme
+                        </button>
                       ) : (
                         <button
                           type="button"

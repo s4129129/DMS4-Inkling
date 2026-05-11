@@ -104,6 +104,9 @@ export default defineSchema({
     monthlyBookPageTarget: v.number(),
     readingMaterialTitle: v.optional(v.string()),
     readingMaterialSource: v.optional(v.string()),
+    iconAssetUrl: v.optional(v.string()),
+    iconAssetKey: v.optional(v.string()),
+    iconAssetProvider: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -157,7 +160,8 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_conversation_created", ["conversationKey", "createdAt"])
-    .index("by_recipient", ["recipientId"]),
+    .index("by_recipient", ["recipientId"])
+    .index("by_recipient_created", ["recipientId", "createdAt"]),
   groupTyping: defineTable({
     groupId: v.id("groups"),
     userId: v.id("users"),

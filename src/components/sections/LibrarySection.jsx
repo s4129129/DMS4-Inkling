@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import HintPopover from "../common/HintPopover";
 import { isOfficialBookAsset } from "../../reader/officialBooks";
 
@@ -47,9 +46,6 @@ export default function LibrarySection({
   readerLoadingProgress = 0,
   readerOnlyMode = false,
 }) {
-  const progressHideTimerRef = useRef(null);
-  const progressHoverRef = useRef(false);
-  const [isProgressVisible, setIsProgressVisible] = useState(false);
   const isUnsupportedInline =
     selectedBookFileType === "mobi" ||
     selectedBookFileType === "azw3" ||
@@ -108,95 +104,33 @@ export default function LibrarySection({
     void requestPage(currentPage + 1);
   };
 
-  const pageProgressSegments =
-    selectedBook && usesPageNavigation
-      ? Array.from({ length: Math.max(0, pageCount) }, (_, index) => {
-          const page = index + 1;
-          const isCurrent = page === currentPage;
-          const isLanding = page === landingPage;
-          const isUnlocked = page <= maxReachable;
-          const state = isCurrent
-            ? "current"
-            : isLanding
-              ? "landing"
-              : isUnlocked
-                ? "unlocked"
-                : "locked";
-
-          return {
-            page,
-            state,
-            isUnlocked,
-            canOpen: isUnlocked || pageCredits > 0,
-          };
-        })
-      : [];
-
-  useEffect(() => {
-    if (!readerOnlyMode || !pageProgressSegments.length) {
-      setIsProgressVisible(false);
-      return undefined;
-    }
-
-    const clearProgressTimer = () => {
-      if (progressHideTimerRef.current) {
-        window.clearTimeout(progressHideTimerRef.current);
-        progressHideTimerRef.current = null;
-      }
-    };
-
-    const scheduleProgressHide = () => {
-      clearProgressTimer();
-      progressHideTimerRef.current = window.setTimeout(() => {
-        if (!progressHoverRef.current) {
-          setIsProgressVisible(false);
-        }
-      }, 4000);
-    };
-
-    const showProgress = () => {
-      setIsProgressVisible(true);
-      scheduleProgressHide();
-    };
-
-    const onPointerMove = (event) => {
-      const distanceFromBottom = window.innerHeight - event.clientY;
-      if (distanceFromBottom <= 96) {
-        showProgress();
-      }
-    };
-
-    showProgress();
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-
-    return () => {
-      clearProgressTimer();
-      window.removeEventListener("pointermove", onPointerMove);
-    };
-  }, [currentPage, pageProgressSegments.length, readerOnlyMode]);
-
   return (
     <div
       className={`dash-grid${readerOnlyMode ? " library-reader-only-grid" : ""}`}
     >
       {!readerOnlyMode && (
         <section className="panel local-books-panel">
-          <h2>Local Books</h2>
-          <label className="upload-box" data-tutorial-anchor="library-upload">
-            <span>
-              {uploadState.busy
-                ? "Uploading..."
-                : hasReachedLocalLimit
-                  ? "Limit reached"
-                  : "Upload"}
-            </span>
-            <input
-              type="file"
-              accept={uploadAccept}
-              onChange={onUploadBook}
-              disabled={uploadState.busy || hasReachedLocalLimit}
-            />
-          </label>
+          <div className="library-panel-head">
+            <h2>Local Books</h2>
+            <label
+              className="upload-box library-header-action"
+              data-tutorial-anchor="library-upload"
+            >
+              <span>
+                {uploadState.busy
+                  ? "Uploading..."
+                  : hasReachedLocalLimit
+                    ? "Limit reached"
+                    : "Upload"}
+              </span>
+              <input
+                type="file"
+                accept={uploadAccept}
+                onChange={onUploadBook}
+                disabled={uploadState.busy || hasReachedLocalLimit}
+              />
+            </label>
+          </div>
           {uploadState.message && (
             <p className="status-text">{uploadState.message}</p>
           )}
@@ -264,7 +198,7 @@ export default function LibrarySection({
             <h2>Official Books</h2>
             <button
               type="button"
-              className="ghost"
+              className="upload-box library-header-action"
               onClick={() => onOpenOfficialMarketplace?.()}
             >
               Marketplace
@@ -641,53 +575,6 @@ export default function LibrarySection({
                   </div>
                 )}
               </div>
-              {readerOnlyMode && pageProgressSegments.length > 0 && (
-                <div
-                  className={`reader-page-progress${isProgressVisible ? "" : " is-hidden"}`}
-                  style={{
-                    "--reader-page-count": pageProgressSegments.length,
-                  }}
-                  aria-label="Page progress"
-                  onMouseEnter={() => {
-                    progressHoverRef.current = true;
-                    setIsProgressVisible(true);
-                    if (progressHideTimerRef.current) {
-                      window.clearTimeout(progressHideTimerRef.current);
-                      progressHideTimerRef.current = null;
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    progressHoverRef.current = false;
-                    if (progressHideTimerRef.current) {
-                      window.clearTimeout(progressHideTimerRef.current);
-                    }
-                    progressHideTimerRef.current = window.setTimeout(() => {
-                      setIsProgressVisible(false);
-                    }, 4000);
-                  }}
-                >
-                  {pageProgressSegments.map((segment) => (
-                    <button
-                      key={segment.page}
-                      type="button"
-                      className={`reader-page-segment is-${segment.state}`}
-                      onClick={() => {
-                        if (!segment.canOpen) {
-                          return;
-                        }
-                        void requestPage(segment.page);
-                      }}
-                      aria-disabled={!segment.canOpen}
-                      aria-label={`Page ${segment.page}`}
-                      aria-current={
-                        segment.state === "current" ? "page" : undefined
-                      }
-                    >
-                      <span>{segment.page}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </>
         )}

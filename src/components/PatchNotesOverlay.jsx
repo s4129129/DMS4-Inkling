@@ -1,35 +1,33 @@
 import { useEffect } from "react";
 
-const PATCH_NOTES_DISPLAY_VERSION = "v0.1.1";
+const PATCH_NOTES_DISPLAY_VERSION = "v0.1.2";
 
 const PATCH_NOTES_COPY = {
   en: {
     ariaLabel: "Patch notes",
-    title: "Inkling v0.1.1 patch notes",
+    title: "Inkling v0.1.2 patch notes",
     sections: [
       {
         heading: "New stuff",
         entries: [
-          "added a changelog in the help section",
-          "limit user attachment in groups to 25mb",
+          "Added 1 new theme: Tech fancy",
+          "A notification system for Groups",
+          "Tablet and Mobile adaptability",
         ],
       },
       {
         heading: "UI fixes",
         entries: [
-          "Added designed popups for the currency to better explain what it actually does",
-          "Actually generates a thumbnail for local PDFs now",
-          "Opening a book shows the top bar now and scrolling now goes to the perfect reading spot so less confusing on if theres a go back button",
+          "Remove timeline in Overview and move Sessions up to replace",
+          "Remove progress bar when reading books",
+          "Fix alot of design inconsistency in the default theme",
         ],
       },
       {
         heading: "Bug fixes and optimizations",
         entries: [
-          "Code reorganization",
-          "fixed not being able to read books from the marketplace",
-          "Re-added loading multiple PDFs at once",
-          "Fixed the cramped Groups UI bug",
-          "User book and marketplace books now correctly linked with Cloudflare's R2 bucket so faster load times and more storage",
+          "Fix default interaction being buyable",
+          "Fix overview calendar not showing all the dates and forcing users to scroll down a bit to see more",
         ],
       },
     ],
@@ -38,31 +36,29 @@ const PATCH_NOTES_COPY = {
   },
   vi: {
     ariaLabel: "Ghi chú cập nhật",
-    title: "Ghi chú cập nhật Inkling v0.1.1",
+    title: "Ghi chú cập nhật Inkling v0.1.2",
     sections: [
       {
         heading: "Mới",
         entries: [
-          "thêm phân chi tiết cập nhật trong mục Trợ Giúp",
-          "Giới hạn tệp đặng trên Group dưới 25MB",
+          "Thêm 1 giao diện mới: Tech fancy (Công nghệ thời thượng)",
+          "Hệ thống thông báo mới dành cho các Hội nhóm (Groups)",
+          "Tối ưu hóa khả năng hiển thị trên Máy tính bảng và Điện thoại (Responsive)",
         ],
       },
       {
-        heading: "UI fixes",
+        heading: "Sửa lỗi giao diện (UI)",
         entries: [
-          "Khi hơ chuột ở mấy cái tiền tệ thì nó sẽ giải thích",
-          "Khi tải PDF lên thì sẽ có thumbnail",
-          "Khi mở một cuốn sách thì nó sẽ hiện cái thanh trên và nếu kéo xuống thì nó sẽ ở vị trí mà nhìn được hết cuốn sách nên bớt hoang mang là có nút trở về bảng điều khiển không",
+          'Loại bỏ phần "Dòng thời gian" (Timeline) trong mục Tổng quan (Overview) và đưa mục Phiên làm việc (Sessions) lên thay thế',
+          "Ẩn thanh tiến trình khi đang đọc sách",
+          "Khắc phục nhiều điểm thiết kế chưa đồng bộ ở giao diện mặc định (Default theme)",
         ],
       },
       {
-        heading: "Bug fixes and optimizations",
+        heading: "Sửa lỗi và Tối ưu hóa hệ thống",
         entries: [
-          "Dọn code",
-          "Sửa bug không đọc được sách trong marketplace",
-          "Load được nhiều sách cùng 1 lúc",
-          "sửa bug chat bị chồng lên nhau trong Groups",
-          "Sách local giờ dùng chung R2 bucket của Cloudflare nên load nhanh hơn",
+          "Sửa lỗi hệ thống cho phép mua các tương tác mặc định (vốn phải được miễn phí)",
+          "Sửa lỗi lịch tổng quan không hiển thị đầy đủ các ngày trong tháng, khắc phục tình trạng người dùng phải cuộn chuột xuống mới xem được hết",
         ],
       },
     ],

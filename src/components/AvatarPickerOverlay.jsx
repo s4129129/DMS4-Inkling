@@ -99,6 +99,8 @@ async function renderAvatarEditToFile({ src, zoom, rotation, panX, panY }) {
 }
 
 export default function AvatarPickerOverlay({
+  title = "Select Avatar",
+  editTitle = "Edit Image",
   userIconUrl,
   userIconStorageId,
   recentUserIcons = [],
@@ -289,7 +291,7 @@ export default function AvatarPickerOverlay({
     >
       <section className="avatar-picker-panel">
         <header className="avatar-picker-header">
-          <h2>{editingAvatar ? "Edit Image" : "Select Avatar"}</h2>
+          <h2>{editingAvatar ? editTitle : title}</h2>
           <button
             type="button"
             className="avatar-picker-close"

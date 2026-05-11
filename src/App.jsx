@@ -44,6 +44,7 @@ import {
 } from "./reader/officialBooks";
 import { useOfficialBookLibrary } from "./hooks/useOfficialBookLibrary";
 import { useVietnameseDomTranslation } from "./i18n";
+import { setFaviconNotificationBadge } from "./utils/faviconBadge";
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -72,6 +73,8 @@ const LEGACY_THEME_ID_MAP = {
 const DASHBOARD_SIDEBAR_WIDTH_STORAGE_KEY = "inkling:dashboard-sidebar-width:v1";
 const DASHBOARD_SECTION_VISIBILITY_STORAGE_KEY =
   "inkling:dashboard-section-visibility:v1";
+const GROUP_MESSAGE_NOTIFICATION_ACK_STORAGE_PREFIX =
+  "inkling:group-message-notification-ack:v1";
 const DEFAULT_DASHBOARD_SIDEBAR_WIDTH = 300;
 const MIN_DASHBOARD_SIDEBAR_WIDTH = 220;
 const MAX_DASHBOARD_SIDEBAR_WIDTH = 430;
@@ -139,6 +142,39 @@ function writeSavedThemePreference(value) {
     window.localStorage.setItem(
       THEME_STORAGE_KEY,
       JSON.stringify(normalizeThemePreference(value)),
+    );
+  } catch {
+    // Local storage can be unavailable in stricter browser modes.
+  }
+}
+
+function groupMessageNotificationAckKey(userId) {
+  return `${GROUP_MESSAGE_NOTIFICATION_ACK_STORAGE_PREFIX}:${
+    userId ? String(userId) : "guest"
+  }`;
+}
+
+function readGroupMessageNotificationAck(userId) {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  try {
+    return window.localStorage.getItem(groupMessageNotificationAckKey(userId)) || "";
+  } catch {
+    return "";
+  }
+}
+
+function writeGroupMessageNotificationAck(userId, latestKey) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      groupMessageNotificationAckKey(userId),
+      String(latestKey || ""),
     );
   } catch {
     // Local storage can be unavailable in stricter browser modes.
@@ -232,7 +268,7 @@ const DASHBOARD_SECTION_KEYS = new Set([
 ]);
 
 const TUTORIAL_STORAGE_PREFIX = "inkling-dashboard-tutorial-complete:v1:";
-const PATCH_NOTES_VERSION = "v0.1.1";
+const PATCH_NOTES_VERSION = "v0.1.2";
 const PATCH_NOTES_STORAGE_PREFIX = "inkling-dashboard-patch-notes-seen:v1:";
 const AD_POPUP_DURATION_SECONDS = 30;
 const MAX_SESSION_MINUTES = 120;
@@ -1161,6 +1197,7 @@ function ReaderWorkspace({ onThemeChange }) {
   const timers = useQuery("timers:listTimers");
   const overview = useQuery("dashboard:overview");
   const groupsOverview = useQuery("groups:overview");
+  const groupMessageNotifications = useQuery("groups:messageNotifications");
   const createExternalBookUploadTarget = useAction(
     "bookAssets:generateUploadTarget",
   );
@@ -1169,6 +1206,9 @@ function ReaderWorkspace({ onThemeChange }) {
   );
   const createExternalGroupAttachmentUploadTarget = useAction(
     "bookAssets:generateGroupAttachmentUploadTarget",
+  );
+  const createExternalGroupIconUploadTarget = useAction(
+    "bookAssets:generateGroupIconUploadTarget",
   );
   const createExternalUserIconUploadTarget = useAction(
     "bookAssets:generateUserIconUploadTarget",
@@ -1209,6 +1249,7 @@ function ReaderWorkspace({ onThemeChange }) {
   const markGroupMessagesRead = useMutation("groups:markMessagesRead");
   const setGroupTyping = useMutation("groups:setTyping");
   const updateGroupMetadata = useMutation("groups:updateGroupMetadata");
+  const setGroupIcon = useMutation("groups:setGroupIcon");
   const setGroupMemberRole = useMutation("groups:setMemberRole");
   const muteGroupMember = useMutation("groups:muteMember");
   const banGroupMember = useMutation("groups:banMember");
@@ -1235,6 +1276,7 @@ function ReaderWorkspace({ onThemeChange }) {
   const lastNotifiedSecondRef = useRef(-1);
   const completionNotifiedRef = useRef(false);
   const completedTimerSyncIdsRef = useRef(new Set());
+  const messageNotificationBaselineRef = useRef({ userId: "", latestKey: "" });
 
   const [pdfDoc, setPdfDoc] = useState(null);
   const [cbzImages, setCbzImages] = useState([]);
@@ -1309,6 +1351,8 @@ function ReaderWorkspace({ onThemeChange }) {
   const [settingsMessage, setSettingsMessage] = useState("");
   const [marketMessage, setMarketMessage] = useState("");
   const [groupState, setGroupState] = useState({ busy: false, message: "" });
+  const [hasMessageNotificationBadge, setHasMessageNotificationBadge] =
+    useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [bookThumbnailMap, setBookThumbnailMap] = useState({});
   const bookThumbnailMapRef = useRef({});
@@ -1411,6 +1455,9 @@ function ReaderWorkspace({ onThemeChange }) {
       : selectedAccentColor;
   const selectedLanguage = normalizeLanguagePreference(profile?.language);
   useVietnameseDomTranslation(selectedLanguage);
+  const messageNotificationUserId = me?._id ? String(me._id) : "";
+  const latestMessageNotificationKey =
+    groupMessageNotifications?.latestKey ?? "";
   const dashboardTutorialSteps = useMemo(
     () => getDashboardTutorialSteps(selectedLanguage),
     [selectedLanguage],
@@ -1473,6 +1520,117 @@ function ReaderWorkspace({ onThemeChange }) {
       mode: selectedThemeMode,
     });
   }, [selectedThemeId, selectedThemeMode, onThemeChange]);
+
+  useEffect(() => {
+    if (!messageNotificationUserId) {
+      setHasMessageNotificationBadge(false);
+      return;
+    }
+
+    if (groupMessageNotifications === undefined) {
+      return;
+    }
+
+    const latestKey = latestMessageNotificationKey;
+    const isViewingMessages =
+      activeSection === "groups" &&
+      (typeof document === "undefined" ||
+        document.visibilityState === "visible");
+    const baseline = messageNotificationBaselineRef.current;
+
+    if (!latestKey) {
+      writeGroupMessageNotificationAck(messageNotificationUserId, "");
+      messageNotificationBaselineRef.current = {
+        userId: messageNotificationUserId,
+        latestKey: "",
+      };
+      setHasMessageNotificationBadge(false);
+      return;
+    }
+
+    if (baseline.userId !== messageNotificationUserId) {
+      const savedAck = readGroupMessageNotificationAck(
+        messageNotificationUserId,
+      );
+      messageNotificationBaselineRef.current = {
+        userId: messageNotificationUserId,
+        latestKey,
+      };
+
+      if (!savedAck) {
+        writeGroupMessageNotificationAck(messageNotificationUserId, latestKey);
+        setHasMessageNotificationBadge(false);
+        return;
+      }
+    }
+
+    if (isViewingMessages) {
+      writeGroupMessageNotificationAck(messageNotificationUserId, latestKey);
+      messageNotificationBaselineRef.current = {
+        userId: messageNotificationUserId,
+        latestKey,
+      };
+      setHasMessageNotificationBadge(false);
+      return;
+    }
+
+    const acknowledgedKey = readGroupMessageNotificationAck(
+      messageNotificationUserId,
+    );
+    setHasMessageNotificationBadge(
+      Boolean(latestKey && acknowledgedKey && acknowledgedKey !== latestKey),
+    );
+  }, [
+    activeSection,
+    groupMessageNotifications,
+    latestMessageNotificationKey,
+    messageNotificationUserId,
+  ]);
+
+  useEffect(() => {
+    if (!messageNotificationUserId) {
+      return undefined;
+    }
+
+    const acknowledgeVisibleMessages = () => {
+      if (
+        activeSection !== "groups" ||
+        !latestMessageNotificationKey ||
+        (typeof document !== "undefined" &&
+          document.visibilityState !== "visible")
+      ) {
+        return;
+      }
+
+      writeGroupMessageNotificationAck(
+        messageNotificationUserId,
+        latestMessageNotificationKey,
+      );
+      messageNotificationBaselineRef.current = {
+        userId: messageNotificationUserId,
+        latestKey: latestMessageNotificationKey,
+      };
+      setHasMessageNotificationBadge(false);
+    };
+
+    acknowledgeVisibleMessages();
+    window.addEventListener("focus", acknowledgeVisibleMessages);
+    document.addEventListener("visibilitychange", acknowledgeVisibleMessages);
+
+    return () => {
+      window.removeEventListener("focus", acknowledgeVisibleMessages);
+      document.removeEventListener(
+        "visibilitychange",
+        acknowledgeVisibleMessages,
+      );
+    };
+  }, [activeSection, latestMessageNotificationKey, messageNotificationUserId]);
+
+  useEffect(() => {
+    setFaviconNotificationBadge(hasMessageNotificationBadge);
+  }, [hasMessageNotificationBadge]);
+
+  useEffect(() => () => setFaviconNotificationBadge(false), []);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -2358,8 +2516,11 @@ function ReaderWorkspace({ onThemeChange }) {
         setIsCurrentPageLandscape((prev) =>
           prev === isLandscapePage ? prev : isLandscapePage,
         );
-        const toolbarReserve =
-          isReaderExpandedLayout && !isReaderOnlyLayout ? 96 : 20;
+        const toolbarReserve = isReaderOnlyLayout
+          ? 34
+          : isReaderExpandedLayout
+            ? 96
+            : 20;
         const safeWidth = Math.max(280, frameWidth - 24);
         const safeHeight = Math.max(220, frameHeight - toolbarReserve);
         const scaleByWidth = safeWidth / viewport.width;
@@ -2370,7 +2531,7 @@ function ReaderWorkspace({ onThemeChange }) {
         const regularScale = Math.min(scaleByWidth, scaleByHeight);
         const pageAspect = viewport.height / Math.max(1, viewport.width);
         const readerOnlyScale =
-          pageAspect > 1.65 ? Math.min(scaleByWidth, 1.45) : regularScale;
+          pageAspect > 1.65 ? Math.min(scaleByWidth, scaleByHeight) : regularScale;
         const scale = isReaderOnlyLayout
           ? readerOnlyScale
           : isReaderExpandedLayout
@@ -3632,6 +3793,68 @@ function ReaderWorkspace({ onThemeChange }) {
     }
   };
 
+  const onUploadGroupIcon = async (groupId, sourceFile) => {
+    if (!sourceFile) {
+      return false;
+    }
+
+    if (!String(sourceFile.type || "").startsWith("image/")) {
+      setGroupState({ busy: false, message: "Image only." });
+      return false;
+    }
+
+    if (sourceFile.size > 10 * 1024 * 1024) {
+      setGroupState({ busy: false, message: "10MB max." });
+      return false;
+    }
+
+    setGroupState({ busy: true, message: "" });
+    try {
+      const file = await convertImageFileToPng(sourceFile);
+      const uploadTarget = await createExternalGroupIconUploadTarget({
+        groupId: `${groupId}`,
+        fileName: file.name || `group-icon-${Date.now()}.png`,
+        contentType: "image/png",
+        fileType: "png",
+        byteSize: file.size || 0,
+      });
+
+      if (!uploadTarget?.configured || !uploadTarget.uploadUrl) {
+        throw new Error(
+          uploadTarget?.reason || "Group icon object storage is unavailable.",
+        );
+      }
+
+      const uploadResponse = await fetch(uploadTarget.uploadUrl, {
+        method: uploadTarget.method || "PUT",
+        headers: uploadTarget.headers || { "Content-Type": "image/png" },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Upload failed");
+      }
+
+      await setGroupIcon({
+        groupId,
+        assetUrl: uploadTarget.assetUrl,
+        assetKey: uploadTarget.assetKey,
+        assetProvider: uploadTarget.provider,
+      });
+      setGroupState({ busy: false, message: "Group icon updated." });
+      return true;
+    } catch (error) {
+      setGroupState({
+        busy: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not upload group icon.",
+      });
+      return false;
+    }
+  };
+
   const onUpdateGroupDetails = async (groupId, updates) => {
     setGroupState({ busy: true, message: "" });
     try {
@@ -4345,6 +4568,7 @@ function ReaderWorkspace({ onThemeChange }) {
             onMarkGroupMessagesRead={onMarkGroupChatMessagesRead}
             onSetGroupTyping={onSetGroupTyping}
             onUploadGroupAttachment={onUploadGroupAttachment}
+            onUploadGroupIcon={onUploadGroupIcon}
             onUpdateGroupMetadata={onUpdateGroupDetails}
             onSetGroupMemberRole={onSetGroupMemberRole}
             onMuteGroupMember={onMuteGroupMember}
@@ -4352,6 +4576,7 @@ function ReaderWorkspace({ onThemeChange }) {
             themeId={selectedThemeId}
             themeMode={selectedThemeMode}
             accentColor={selectedThemeAccentColor}
+            selectedLanguage={selectedLanguage}
           />
         )}
 

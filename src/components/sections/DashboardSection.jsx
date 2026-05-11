@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { chartPalette, ensureChartJs } from "./chartUtils";
 import {
@@ -177,7 +176,6 @@ export default function DashboardSection({
     () => buildDayEventCounts(calendarEvents),
     [calendarEvents],
   );
-  const noEventsText = translateUiText("No events to display", language);
   const totalSessionTimeLabel = formatTotalDuration(
     totalSessionSecondsEver ||
       sessions.reduce(
@@ -456,7 +454,7 @@ export default function DashboardSection({
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 headerToolbar={false}
-                height="100%"
+                height="auto"
                 fixedWeekCount={false}
                 events={calendarEvents}
                 dayMaxEvents={2}
@@ -489,25 +487,9 @@ export default function DashboardSection({
               />
             </section>
 
-            <section className="dashboard-timeline-panel">
+            <section className="dashboard-timeline-panel dashboard-sessions-panel">
               <div className="dashboard-panel-head">
-                <h3>Timeline</h3>
-              </div>
-              <div className="dashboard-timeline-calendar-frame">
-                <FullCalendar
-                  plugins={[timeGridPlugin, interactionPlugin]}
-                  initialView="timeGridDay"
-                  headerToolbar={false}
-                  dayHeaders={false}
-                  allDaySlot={false}
-                  nowIndicator
-                  height="100%"
-                  slotMinTime="06:00:00"
-                  slotMaxTime="22:00:00"
-                  slotDuration="00:30:00"
-                  events={calendarEvents}
-                  noEventsText={noEventsText}
-                />
+                <h3>Sessions</h3>
               </div>
               <div className="dashboard-session-list">
                 {sessions.length ? (

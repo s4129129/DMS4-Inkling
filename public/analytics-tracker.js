@@ -360,6 +360,10 @@
     }
 
     previousDurationSec = session.durationSec || 0;
+    activeAccumulatedMs = Math.max(
+      activeAccumulatedMs,
+      previousDurationSec * 1000,
+    );
     pageViews = session.pageViews || 0;
     maxScrollPercent = session.maxScrollPercent || 0;
     pathCounts = Object.assign({}, session.pathCounts || {});

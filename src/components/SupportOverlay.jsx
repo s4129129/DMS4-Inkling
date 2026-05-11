@@ -50,6 +50,61 @@ const HELP_LABELS = {
 
 const PATCH_LOGS = [
   {
+    version: "0.1.2",
+    sections: {
+      en: [
+        {
+          heading: "New stuff",
+          entries: [
+            "Added 1 new theme: Tech fancy",
+            "A notification system for Groups",
+            "Tablet and Mobile adaptability",
+          ],
+        },
+        {
+          heading: "UI fixes",
+          entries: [
+            "Remove timeline in Overview and move Sessions up to replace",
+            "Remove progress bar when reading books",
+            "Fix alot of design inconsistency in the default theme",
+          ],
+        },
+        {
+          heading: "Bug fixes and optimizations",
+          entries: [
+            "Fix default interaction being buyable",
+            "Fix overview calendar not showing all the dates and forcing users to scroll down a bit to see more",
+          ],
+        },
+      ],
+      vi: [
+        {
+          heading: "Mới",
+          entries: [
+            "Thêm 1 giao diện mới: Tech fancy (Công nghệ thời thượng)",
+            "Hệ thống thông báo mới dành cho các Hội nhóm (Groups)",
+            "Tối ưu hóa khả năng hiển thị trên Máy tính bảng và Điện thoại (Responsive)",
+          ],
+        },
+        {
+          heading: "Sửa lỗi giao diện (UI)",
+          entries: [
+            'Loại bỏ phần "Dòng thời gian" (Timeline) trong mục Tổng quan (Overview) và đưa mục Phiên làm việc (Sessions) lên thay thế',
+            "Ẩn thanh tiến trình khi đang đọc sách",
+            "Khắc phục nhiều điểm thiết kế chưa đồng bộ ở giao diện mặc định (Default theme)",
+          ],
+        },
+        {
+          heading: "Sửa lỗi và Tối ưu hóa hệ thống",
+          entries: [
+            "Sửa lỗi hệ thống cho phép mua các tương tác mặc định (vốn phải được miễn phí)",
+            "Sửa lỗi lịch tổng quan không hiển thị đầy đủ các ngày trong tháng, khắc phục tình trạng người dùng phải cuộn chuột xuống mới xem được hết",
+          ],
+        },
+      ],
+    },
+  },
+  {
     version: "0.1.1",
     sections: {
       en: [
