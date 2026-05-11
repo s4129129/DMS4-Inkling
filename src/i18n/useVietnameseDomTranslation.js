@@ -407,7 +407,7 @@ const EXACT_TRANSLATIONS = new Map(
     "Mono": "Đơn sắc",
     "Vintage": "Cổ điển",
     "Monochrome": "Đơn sắc",
-    "Tech Fancy": "Tech Fancy",
+    "Tech Fancy": "Công nghệ thời thượng",
     "Bold default reader theme": "Giao diện đọc mặc định nổi bật",
     "For coffee addicts": "Dành cho người mê cà phê",
     "Simple mono palette": "Bảng màu đơn sắc tối giản",

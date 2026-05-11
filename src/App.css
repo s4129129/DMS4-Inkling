@@ -9584,7 +9584,8 @@ button:disabled {
 .dashboard-shell.theme-default .market-card h3,
 .dashboard-shell.theme-default .dashboard-panel-head h3,
 .dashboard-shell.theme-default .dashboard-stat-card strong {
-  font-family: "Archivo Black", "Space Grotesk", "Segoe UI", sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0;
 }
