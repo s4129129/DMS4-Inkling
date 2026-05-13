@@ -3,8 +3,6 @@ import { formatGoogleCalendarErrorDetails } from "./googleCalendarDiagnostics";
 
 const GOOGLE_GSI_SRC = "https://accounts.google.com/gsi/client";
 const GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events";
-const GOOGLE_FALLBACK_CLIENT_ID =
-  "268825985658-n0cqs1blqdjhl7j66mtc8ek5lsjhnef7.apps.googleusercontent.com";
 const CALENDAR_CONNECTION_STORAGE_KEY = "inkling:google-calendar:connected:v1";
 const CALENDAR_TOKEN_STORAGE_KEY = "inkling:google-calendar:token:v1";
 const CALENDAR_AUTO_SYNC_INTERVAL_MS = 60 * 1000;
@@ -509,8 +507,7 @@ export default function DataDashboardPanel({
   const calendarLockMessage =
     String(calendarLockedReason || "").trim() ||
     "Google Calendar sync requires a signed-in account.";
-  const googleClientId =
-    import.meta.env.VITE_GOOGLE_CLIENT_ID || GOOGLE_FALLBACK_CLIENT_ID;
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
   const googleCalendarId = import.meta.env.VITE_GOOGLE_CALENDAR_ID || "primary";
   const hasGoogleSetup = Boolean(googleClientId);
 
